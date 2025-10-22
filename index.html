@@ -92,6 +92,10 @@
   #gate .panel{background:#0d1426;border:1px solid var(--border);border-radius:14px;padding:20px;width:min(380px,calc(100% - 24px));display:grid;gap:10px;color:var(--text)}
   #gate input{background:#0b1220;border:1px solid var(--border);color:var(--text);padding:10px;border-radius:10px;font-size:14px}
   #gate .err{color:#f87171;font-size:12px;min-height:16px}
+  #gate .passwrap{position:relative;display:flex;align-items:center}
+  #gate .passwrap input{width:100%;padding-inline-end:40px}
+  #gate .passwrap .eye{position:absolute;right:8px;background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px;border-radius:8px}
+  #gate .passwrap .eye:hover{color:var(--text);background:#0b1220}
 </style>
 </head>
 <body>
@@ -100,7 +104,10 @@
     <div class="panel">
       <h3 style="margin:0">ورود</h3>
       <div class="small">رمز عبور را وارد کن</div>
-      <input id="gatePass" type="password" placeholder="رمز عبور" />
+      <div class="passwrap">
+        <input id="gatePass" type="password" placeholder="رمز عبور" />
+        <button type="button" id="gateToggle" class="eye" aria-label="نمایش رمز">👁</button>
+      </div>
       <div id="gateErr" class="err"></div>
       <button class="btn" id="gateBtn">ورود</button>
     </div>
@@ -177,11 +184,29 @@ function setupGate(){
   const gate = document.getElementById('gate');
   const input= document.getElementById('gatePass');
   const btn  = document.getElementById('gateBtn');
+  const tgl  = document.getElementById('gateToggle');
   const authed = sessionStorage.getItem('auth')==='1';
   if(authed){ gate.style.display='none'; return renderCats(), renderList(); }
   gate.style.display='flex';
   btn.onclick = tryAuth;
   input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryAuth(); });
+  if(tgl) tgl.onclick = togglePass;
+}
+
+function togglePass(){
+  const input = document.getElementById('gatePass');
+  const tgl = document.getElementById('gateToggle');
+  if(!input || !tgl) return;
+  if(input.type === 'password'){
+    input.type = 'text';
+    tgl.textContent = '🙈';
+    tgl.setAttribute('aria-label','مخفی کردن رمز');
+  } else {
+    input.type = 'password';
+    tgl.textContent = '👁';
+    tgl.setAttribute('aria-label','نمایش رمز');
+  }
+  input.focus({ preventScroll: true });
 }
 
 /* ---------- داده‌های پیش‌فرض (فقط رسمی/قانونی) ---------- */
