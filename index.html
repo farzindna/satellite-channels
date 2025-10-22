@@ -93,8 +93,8 @@
   #gate input{background:#0b1220;border:1px solid var(--border);color:var(--text);padding:10px;border-radius:10px;font-size:14px}
   #gate .err{color:#f87171;font-size:12px;min-height:16px}
   #gate .passwrap{position:relative;display:flex;align-items:center}
-  #gate .passwrap input{width:100%;padding-inline-end:40px}
-  #gate .passwrap .eye{position:absolute;right:8px;background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px;border-radius:8px}
+  #gate .passwrap input{width:100%;padding-inline-end:40px;text-align:left}
+  #gate .passwrap .eye{position:absolute;inset-inline-end:8px;background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px;border-radius:8px}
   #gate .passwrap .eye:hover{color:var(--text);background:#0b1220}
 </style>
 </head>
@@ -104,7 +104,7 @@
     <div class="panel">
       <h3 style="margin:0">ورود</h3>
       <div class="small">رمز عبور را وارد کن</div>
-      <div class="passwrap">
+      <div class="passwrap" dir="ltr">
         <input id="gatePass" type="password" />
         <button type="button" id="gateToggle" class="eye" aria-label="نمایش رمز">👁</button>
       </div>
