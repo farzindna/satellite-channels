@@ -163,40 +163,20 @@ const DEFAULT_CHANNELS = [
   {name:"4music", category:"موسیقی", url:"https://www.parsatv.com/name=4Music#persian", logo:""},
 ];
 
-const KEY = "channels.v1.list";          // دیگر برای کانال‌ها استفاده نمی‌شود
-const FAV_KEY = "channels.fav.v1";       // علاقه‌مندی‌ها محلی می‌ماند (شخصی)
-const API = "/.netlify/functions/channels"; // API نتلیفای
+const KEY = "channels.v1.list";
+const FAV_KEY = "channels.fav.v1";
 
 /* ---------- ذخیره/بارگذاری ---------- */
-// بارگذاری از سرور
-async function serverLoad(){
-  let ok = false;
-  try{
-    const r = await fetch(API);
-    ok = r.ok;
-    if(!ok) throw new Error("api:"+r.status);
-    const list = await r.json();
-    channels = Array.isArray(list) ? list : [];
-  }catch(err){
-    console.warn("API unavailable; using defaults", err);
-    channels = DEFAULT_CHANNELS.slice();
-    return; // از تلاش برای پر کردن DB صرف‌نظر کن وقتی API خطا دارد
-  }
-  // اگر دیتابیس خالی بود، با پیش‌فرض‌ها یک‌بار پر کن
-  if(ok && !channels.length && DEFAULT_CHANNELS.length){
-    await fetch(API, {
-      method: 'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'bulkUpsert', list: DEFAULT_CHANNELS})
-    });
-    const r2 = await fetch(API); channels = await r2.json();
-  }
+function loadChannels(){
+  const raw = localStorage.getItem(KEY);
+  return raw ? JSON.parse(raw) : DEFAULT_CHANNELS.slice();
 }
-function saveChannels(){ /* no-op: ذخیره در سرور انجام می‌شود */ }
+function saveChannels(list){ localStorage.setItem(KEY, JSON.stringify(list)); }
 function loadFavs(){ const raw = localStorage.getItem(FAV_KEY); return raw ? new Set(JSON.parse(raw)) : new Set(); }
 function saveFavs(set){ localStorage.setItem(FAV_KEY, JSON.stringify([...set])); }
 
 /* ---------- حالت برنامه ---------- */
-let channels = [];
+let channels = loadChannels();
 let favorites = loadFavs();
 let activeCat = "همه";
 let draggedName = null;
@@ -311,11 +291,8 @@ function renderList(){
       if(fromIndex === toIndex) return;
       const [moved] = channels.splice(fromIndex,1);
       channels.splice(toIndex,0,moved);
-      // ذخیره ترتیب در سرور
-      fetch(API, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({action:'reorder', order: channels.map(c=>c.name)})
-      }).finally(()=>renderList());
+      saveChannels(channels);
+      renderList();
     });
 
     // ★ علاقه‌مندی
@@ -345,10 +322,8 @@ function renderList(){
     btnDelete.onclick = (e)=>{
       e.preventDefault(); e.stopPropagation();
       if(confirm(`آیا از حذف کانال «${ch.name}» مطمئنید؟`)){
-        fetch(API, {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({action:'delete', name: ch.name})
-        }).then(()=> refresh());
+        channels = channels.filter(c => c.name !== ch.name);
+        saveChannels(channels); renderList();
       }
     };
 
@@ -390,12 +365,10 @@ function openDialog(initial){
   }
 }
 function editChannel(ch){ openDialog(ch); }
-async function upsertChannel(data, oldName){
-  await fetch(API, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'upsert', data, oldName})
-  });
-  await refresh();
+function upsertChannel(data, oldName){
+  const i = channels.findIndex(c=>c.name===oldName);
+  if(i>=0) channels[i] = data; else channels.push(data);
+  saveChannels(channels); renderCats(); renderList();
 }
 
 /* ---------- رویدادها ---------- */
@@ -403,7 +376,7 @@ qEl.addEventListener("input", renderList);
 addBtn.onclick    = ()=>openDialog();
 closeDlg.onclick  = ()=>dlg.close();
 
-form.onsubmit = async (e)=>{
+form.onsubmit = (e)=>{
   e.preventDefault();
   const data = {
     name: form.name.value.trim(),
@@ -415,7 +388,7 @@ form.onsubmit = async (e)=>{
     alert("لطفاً لینک معتبر با http/https وارد کن.");
     return;
   }
-  await upsertChannel(data, dlg.dataset.edit);
+  upsertChannel(data, dlg.dataset.edit);
   dlg.close();
 };
 
@@ -436,17 +409,12 @@ importBtn.onclick = ()=>{
   inp.onchange = ()=>{
     const f = inp.files[0]; if(!f) return;
     const r = new FileReader();
-    r.onload = async ()=>{
+    r.onload = ()=>{
       try{
         const obj = JSON.parse(r.result);
-        if(Array.isArray(obj.channels)){
-          await fetch(API, {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({action:'bulkUpsert', list: obj.channels})
-          });
-        }
+        if(Array.isArray(obj.channels)){ channels = obj.channels; saveChannels(channels); }
         if(Array.isArray(obj.favorites)){ favorites = new Set(obj.favorites); saveFavs(favorites); }
-        await refresh();
+        renderCats(); renderList();
       }catch(err){ alert("فایل نامعتبر است."); }
     };
     r.readAsText(f);
@@ -454,17 +422,17 @@ importBtn.onclick = ()=>{
   inp.click();
 };
 
-// دکمه ریفرش از سرور (به جای ریست)
-resetBtn.onclick = async ()=>{ await refresh(); };
-
-async function refresh(){
-  await serverLoad();
-  renderCats(); renderList();
-}
+resetBtn.onclick = ()=>{
+  if(confirm("بازنشانی به تنظیمات اولیه؟")){
+    channels  = DEFAULT_CHANNELS.slice(); saveChannels(channels);
+    favorites = new Set();               saveFavs(favorites);
+    activeCat = "همه"; qEl.value="";
+    renderCats(); renderList();
+  }
+};
 
 /* ---------- شروع ---------- */
-// شروع: از سرور بخوان
-refresh();
+renderCats(); renderList();
 </script>
 </body>
 </html>
