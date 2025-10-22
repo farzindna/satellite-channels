@@ -170,11 +170,20 @@ const API = "/.netlify/functions/channels"; // API نتلیفای
 /* ---------- ذخیره/بارگذاری ---------- */
 // بارگذاری از سرور
 async function serverLoad(){
-  const r = await fetch(API);
-  const list = await r.json();
-  channels = Array.isArray(list) ? list : [];
+  let ok = false;
+  try{
+    const r = await fetch(API);
+    ok = r.ok;
+    if(!ok) throw new Error("api:"+r.status);
+    const list = await r.json();
+    channels = Array.isArray(list) ? list : [];
+  }catch(err){
+    console.warn("API unavailable; using defaults", err);
+    channels = DEFAULT_CHANNELS.slice();
+    return; // از تلاش برای پر کردن DB صرف‌نظر کن وقتی API خطا دارد
+  }
   // اگر دیتابیس خالی بود، با پیش‌فرض‌ها یک‌بار پر کن
-  if(!channels.length && DEFAULT_CHANNELS.length){
+  if(ok && !channels.length && DEFAULT_CHANNELS.length){
     await fetch(API, {
       method: 'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({action:'bulkUpsert', list: DEFAULT_CHANNELS})
@@ -427,7 +436,7 @@ importBtn.onclick = ()=>{
   inp.onchange = ()=>{
     const f = inp.files[0]; if(!f) return;
     const r = new FileReader();
-    r.onload = ()=>{
+    r.onload = async ()=>{
       try{
         const obj = JSON.parse(r.result);
         if(Array.isArray(obj.channels)){
