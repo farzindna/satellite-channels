@@ -100,7 +100,6 @@
         <button class="btn" id="addBtn">➕ افزودن کانال</button>
         <button class="btn ghost" id="exportBtn">⬇️ خروجی JSON</button>
         <button class="btn ghost" id="importBtn">⬆️ ورود JSON</button>
-        <button class="btn warn" id="resetBtn" title="بازنشانی به پیش‌فرض‌ها">Reset</button>
       </div>
       <div class="cats" id="cats"></div>
     </div>
@@ -144,7 +143,29 @@
 <script>
 /* ---------- داده‌های پیش‌فرض (فقط رسمی/قانونی) ---------- */
 const DEFAULT_CHANNELS = [
-  {name:"Iran International", category:"خبر", url:"https://www.iranintl.com/live", logo:""},
+  {name:"Iran International", category:"خبر", url:"https://www.youtube.com/watch?v=otooINZRTSQ", logo:""},
+  {name:"Iran international 2", category:"خبر", url:"https://www.parsatv.com/name=Iran-International-TV#persian", logo:""},
+  {name:"فیلم های یوتیوب", category:"فیلم‌وسریال", url:"https://www.youtube.com/channel/UClgRkhTL3_hImCAmdLfDE4g", logo:""},
+  {name:"نوا", category:"موسیقی", url:"https://telewebion.com/live/nava", logo:""},
+  {name:"لیسانسه ها", category:"فیلم‌وسریال", url:"https://telewebion.com/product/0xc20be8f", logo:""},
+  {name:"فوق لیسانسه ها", category:"فیلم‌وسریال", url:"https://telewebion.com/program/0x1b2a5df", logo:""},
+  {name:"من و تو", category:"فیلم‌وسریال", url:"https://www.youtube.com/watch?v=e8UIOWQqej4", logo:""},
+  {name:"IFilm", category:"فیلم‌وسریال", url:"https://telewebion.com/live/ifilm", logo:""},
+  {name:"شبکه نمایش", category:"فیلم‌وسریال", url:"https://telewebion.com/live/namayesh", logo:""},
+  {name:"مستند", category:"مستند", url:"https://telewebion.com/live/mostanad", logo:""},
+  {name:"نسیم", category:"فیلم‌وسریال", url:"https://telewebion.com/live/nasim", logo:""},
+  {name:"شمعدونی", category:"فیلم‌وسریال", url:"https://telewebion.com/product/0xc20c9b9", logo:""},
+  {name:"ساختمان پزشکان", category:"فیلم‌وسریال", url:"https://telewebion.com/program/0x1b29476", logo:""},
+  {name:"مگه تمام عمر چندتا بهاره", category:"فیلم‌وسریال", url:"https://www.filimo.com/m/sdp93", logo:""},
+  {name:"ای فیلم ۲", category:"فیلم‌وسریال", url:"https://fa2.ifilmtv.ir/Home/Live", logo:""},
+  {name:"BBC", category:"خبر", url:"https://www.parsatv.com/name=BBC-Persian#persian", logo:""},
+  {name:"PMC royal", category:"موسیقی", url:"https://www.parsatv.com/name=PMC-Royale#persian", logo:""},
+  {name:"PMC", category:"موسیقی", url:"https://www.parsatv.com/name=PMC#persian", logo:""},
+  {name:"4music", category:"موسیقی", url:"https://www.parsatv.com/name=4Music#persian", logo:""},
+  {name:"عرفان حلقه", category:"عمومی", url:"https://www.parsatv.com/name=Erfan-Halgheh#persian", logo:""},
+  {name:"Manoto", category:"فیلم‌وسریال", url:"https://www.parsatv.com/name=Manoto-TV#persian", logo:""},
+  {name:"Khatereh TV", category:"فیلم‌وسریال", url:"https://www.parsatv.com/name=Khatereh-TV#Persian", logo:""},
+  {name:"Manoto  یوتیوب", category:"فیلم‌وسریال", url:"https://www.youtube.com/watch?v=e8UIOWQqej4", logo:""}
 ];
 
 const KEY = "channels.v1.list";
@@ -176,7 +197,7 @@ const addBtn   = document.getElementById("addBtn");
 const closeDlg = document.getElementById("closeDlg");
 const exportBtn= document.getElementById("exportBtn");
 const importBtn= document.getElementById("importBtn");
-const resetBtn = document.getElementById("resetBtn");
+// const resetBtn = document.getElementById("resetBtn");
 
 /* ---------- دسته‌ها ---------- */
 function categories(){
@@ -406,14 +427,7 @@ importBtn.onclick = ()=>{
   inp.click();
 };
 
-resetBtn.onclick = ()=>{
-  if(confirm("بازنشانی به تنظیمات اولیه؟")){
-    channels  = DEFAULT_CHANNELS.slice(); saveChannels(channels);
-    favorites = new Set();               saveFavs(favorites);
-    activeCat = "همه"; qEl.value="";
-    renderCats(); renderList();
-  }
-};
+// دکمه ریست حذف شد تا داده‌ها از بین نرود
 
 /* ---------- شروع ---------- */
 renderCats(); renderList();
