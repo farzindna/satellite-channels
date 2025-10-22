@@ -163,20 +163,31 @@ const DEFAULT_CHANNELS = [
   {name:"4music", category:"موسیقی", url:"https://www.parsatv.com/name=4Music#persian", logo:""},
 ];
 
-const KEY = "channels.v1.list";
-const FAV_KEY = "channels.fav.v1";
+const KEY = "channels.v1.list";          // دیگر برای کانال‌ها استفاده نمی‌شود
+const FAV_KEY = "channels.fav.v1";       // علاقه‌مندی‌ها محلی می‌ماند (شخصی)
+const API = "/.netlify/functions/channels"; // API نتلیفای
 
 /* ---------- ذخیره/بارگذاری ---------- */
-function loadChannels(){
-  const raw = localStorage.getItem(KEY);
-  return raw ? JSON.parse(raw) : DEFAULT_CHANNELS.slice();
+// بارگذاری از سرور
+async function serverLoad(){
+  const r = await fetch(API);
+  const list = await r.json();
+  channels = Array.isArray(list) ? list : [];
+  // اگر دیتابیس خالی بود، با پیش‌فرض‌ها یک‌بار پر کن
+  if(!channels.length && DEFAULT_CHANNELS.length){
+    await fetch(API, {
+      method: 'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'bulkUpsert', list: DEFAULT_CHANNELS})
+    });
+    const r2 = await fetch(API); channels = await r2.json();
+  }
 }
-function saveChannels(list){ localStorage.setItem(KEY, JSON.stringify(list)); }
+function saveChannels(){ /* no-op: ذخیره در سرور انجام می‌شود */ }
 function loadFavs(){ const raw = localStorage.getItem(FAV_KEY); return raw ? new Set(JSON.parse(raw)) : new Set(); }
 function saveFavs(set){ localStorage.setItem(FAV_KEY, JSON.stringify([...set])); }
 
 /* ---------- حالت برنامه ---------- */
-let channels = loadChannels();
+let channels = [];
 let favorites = loadFavs();
 let activeCat = "همه";
 let draggedName = null;
@@ -291,8 +302,11 @@ function renderList(){
       if(fromIndex === toIndex) return;
       const [moved] = channels.splice(fromIndex,1);
       channels.splice(toIndex,0,moved);
-      saveChannels(channels);
-      renderList();
+      // ذخیره ترتیب در سرور
+      fetch(API, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({action:'reorder', order: channels.map(c=>c.name)})
+      }).finally(()=>renderList());
     });
 
     // ★ علاقه‌مندی
@@ -322,8 +336,10 @@ function renderList(){
     btnDelete.onclick = (e)=>{
       e.preventDefault(); e.stopPropagation();
       if(confirm(`آیا از حذف کانال «${ch.name}» مطمئنید؟`)){
-        channels = channels.filter(c => c.name !== ch.name);
-        saveChannels(channels); renderList();
+        fetch(API, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({action:'delete', name: ch.name})
+        }).then(()=> refresh());
       }
     };
 
@@ -365,10 +381,12 @@ function openDialog(initial){
   }
 }
 function editChannel(ch){ openDialog(ch); }
-function upsertChannel(data, oldName){
-  const i = channels.findIndex(c=>c.name===oldName);
-  if(i>=0) channels[i] = data; else channels.push(data);
-  saveChannels(channels); renderCats(); renderList();
+async function upsertChannel(data, oldName){
+  await fetch(API, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'upsert', data, oldName})
+  });
+  await refresh();
 }
 
 /* ---------- رویدادها ---------- */
@@ -376,7 +394,7 @@ qEl.addEventListener("input", renderList);
 addBtn.onclick    = ()=>openDialog();
 closeDlg.onclick  = ()=>dlg.close();
 
-form.onsubmit = (e)=>{
+form.onsubmit = async (e)=>{
   e.preventDefault();
   const data = {
     name: form.name.value.trim(),
@@ -388,7 +406,7 @@ form.onsubmit = (e)=>{
     alert("لطفاً لینک معتبر با http/https وارد کن.");
     return;
   }
-  upsertChannel(data, dlg.dataset.edit);
+  await upsertChannel(data, dlg.dataset.edit);
   dlg.close();
 };
 
@@ -412,9 +430,14 @@ importBtn.onclick = ()=>{
     r.onload = ()=>{
       try{
         const obj = JSON.parse(r.result);
-        if(Array.isArray(obj.channels)){ channels = obj.channels; saveChannels(channels); }
+        if(Array.isArray(obj.channels)){
+          await fetch(API, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({action:'bulkUpsert', list: obj.channels})
+          });
+        }
         if(Array.isArray(obj.favorites)){ favorites = new Set(obj.favorites); saveFavs(favorites); }
-        renderCats(); renderList();
+        await refresh();
       }catch(err){ alert("فایل نامعتبر است."); }
     };
     r.readAsText(f);
@@ -422,17 +445,17 @@ importBtn.onclick = ()=>{
   inp.click();
 };
 
-resetBtn.onclick = ()=>{
-  if(confirm("بازنشانی به تنظیمات اولیه؟")){
-    channels  = DEFAULT_CHANNELS.slice(); saveChannels(channels);
-    favorites = new Set();               saveFavs(favorites);
-    activeCat = "همه"; qEl.value="";
-    renderCats(); renderList();
-  }
-};
+// دکمه ریفرش از سرور (به جای ریست)
+resetBtn.onclick = async ()=>{ await refresh(); };
+
+async function refresh(){
+  await serverLoad();
+  renderCats(); renderList();
+}
 
 /* ---------- شروع ---------- */
-renderCats(); renderList();
+// شروع: از سرور بخوان
+refresh();
 </script>
 </body>
 </html>
