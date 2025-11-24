@@ -87,28 +87,11 @@
   .form-row{display:grid;gap:10px;grid-template-columns:1fr 1fr}
   .small{font-size:12px;color:var(--muted)}
 
-  /* Gate (simple password overlay) */
-  #gate{position:fixed;inset:0;background:rgba(8,12,24,.96);display:none;align-items:center;justify-content:center;z-index:9999}
-  #gate .panel{background:#0d1426;border:1px solid var(--border);border-radius:14px;padding:20px;width:min(380px,calc(100% - 24px));display:grid;gap:10px;color:var(--text)}
-  #gate input{background:#0b1220;border:1px solid var(--border);color:var(--text);padding:10px;border-radius:10px;font-size:14px}
-  #gate .err{color:#f87171;font-size:12px;min-height:16px}
-  #gate .passwrap{position:relative;display:flex;align-items:center}
-  #gate .passwrap input{width:100%;text-align:left}
+
 </style>
 </head>
 <body>
-  <!-- Password Gate -->
-  <div id="gate" aria-modal="true" role="dialog">
-    <div class="panel">
-      <h3 style="margin:0">ورود</h3>
-      <div class="small">رمز عبور را وارد کن</div>
-      <div class="passwrap" dir="ltr">
-        <input id="gatePass" type="password" />
-      </div>
-      <div id="gateErr" class="err"></div>
-      <button class="btn" id="gateBtn">ورود</button>
-    </div>
-  </div>
+
   <header>
     <div class="wrap">
       <div class="title">
@@ -163,32 +146,7 @@
   </dialog>
 
 <script>
-/* ---------- محافظ ساده (رمز عبور سمت کاربر) ---------- */
-const PASS = "9039"; // رمز دلخواه
-function tryAuth(){
-  const input = document.getElementById('gatePass');
-  const err   = document.getElementById('gateErr');
-  if(!input) return;
-  if(input.value === PASS){
-    sessionStorage.setItem('auth','1');
-    document.getElementById('gate').style.display='none';
-    renderCats(); renderList();
-  }else{
-    err.textContent = 'رمز اشتباه است.';
-    input.focus();
-  }
-}
-function setupGate(){
-  const gate = document.getElementById('gate');
-  const input= document.getElementById('gatePass');
-  const btn  = document.getElementById('gateBtn');
-  const authed = sessionStorage.getItem('auth')==='1';
-  if(authed){ gate.style.display='none'; return renderCats(), renderList(); }
-  gate.style.display='flex';
-  btn.onclick = tryAuth;
-  input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryAuth(); });
-  // چشم حذف شد؛ نیازی به toggle نیست
-}
+
 
 
 /* ---------- داده‌های پیش‌فرض (فقط رسمی/قانونی) ---------- */
@@ -485,8 +443,9 @@ resetBtn.onclick = ()=>{
 };
 
 /* ---------- شروع ---------- */
-// ابتدا گیت ساده را فعال کن
-setupGate();
+// شروع مستقیم برنامه
+renderCats();
+renderList();
 </script>
 </body>
 </html>
