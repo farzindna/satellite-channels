@@ -24,6 +24,7 @@
   body{
     margin:0;background:linear-gradient(180deg,var(--bg),#0b1022);
     color:var(--text);font-family:var(--font);
+    font-size:18px;
   }
   header{
     position:sticky;top:0;z-index:10;background:rgba(17,24,39,.85);
@@ -132,7 +133,6 @@
           <option value="کودک">کودک</option>
           <option value="ورزشی">ورزشی</option>
           <option value="عمومی">عمومی</option>
-          <option value="بزرگسالان">بزرگسالان</option>
         </select>
       </div>
       <input name="url" placeholder="لینک پخش رسمی (https://…)" required />
@@ -168,21 +168,28 @@ const DEFAULT_CHANNELS = [
   {name:"BBC", category:"خبر", url:"https://www.parsatv.com/name=BBC-Persian#persian", logo:""},
   {name:"PMC", category:"موسیقی", url:"https://www.parsatv.com/name=PMC-Royale#persian", logo:""},
   {name:"4music", category:"موسیقی", url:"https://www.parsatv.com/name=4Music#persian", logo:""},
-  {name:"XVideos", category:"بزرگسالان", url:"https://www.xvideos.com/", logo:""},
-  {name:"Pornhub", category:"بزرگسالان", url:"https://www.pornhub.com/", logo:""},
-  {name:"XNXX", category:"بزرگسالان", url:"https://www.xnxx.com/", logo:""},
-  {name:"Beeg", category:"بزرگسالان", url:"https://beeg.com/", logo:""},
 ];
+const DISALLOWED_CATEGORY = "بزرگسالان";
 
-const KEY = "channels.v1.list";
+const KEY = "channels.v2.list";
 const FAV_KEY = "channels.fav.v1";
 
 /* ---------- ذخیره/بارگذاری ---------- */
+function sanitizeChannels(list){
+  return list.filter(c=>c.category !== DISALLOWED_CATEGORY);
+}
 function loadChannels(){
   const raw = localStorage.getItem(KEY);
-  return raw ? JSON.parse(raw) : DEFAULT_CHANNELS.slice();
+  if(!raw) return DEFAULT_CHANNELS.slice();
+  try{
+    const parsed = JSON.parse(raw);
+    if(Array.isArray(parsed)) return sanitizeChannels(parsed);
+  }catch(_){}
+  return DEFAULT_CHANNELS.slice();
 }
-function saveChannels(list){ localStorage.setItem(KEY, JSON.stringify(list)); }
+function saveChannels(list){
+  localStorage.setItem(KEY, JSON.stringify(sanitizeChannels(list)));
+}
 function loadFavs(){ const raw = localStorage.getItem(FAV_KEY); return raw ? new Set(JSON.parse(raw)) : new Set(); }
 function saveFavs(set){ localStorage.setItem(FAV_KEY, JSON.stringify([...set])); }
 
