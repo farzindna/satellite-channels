@@ -65,6 +65,7 @@
   .list::-webkit-scrollbar-track{border:2px solid #ddd;border-radius:1rem;margin:.25rem 0;background:#000}
   .list::-webkit-scrollbar-thumb{background:#ddd;border-radius:1rem;border:3px solid #000}
   .row{display:flex;align-items:center;gap:.7rem;padding:0 .5rem;font-size:1.32rem;font-weight:700;line-height:1.9;cursor:pointer;user-select:none;border:2px solid transparent;scroll-margin:2rem;white-space:nowrap}
+  .row:hover:not(.sel){background:#1c1c1c}
   .row.sel{background:linear-gradient(180deg,#fff8dc 0%,#fbe6a0 35%,#f6c54d 70%,#eeaa1c 100%);color:var(--sel-text)}
   .row.dragging{opacity:.4}
   .row.drop-before{border-top-color:var(--frame)}
@@ -201,8 +202,8 @@
  <button id="pvBtn" class="icon-btn" type="button" title="پیش‌نمایش شبکه‌ی انتخاب‌شده">📺 پیش‌نمایش روشن</button>
       <button id="menuBtn" class="icon-btn" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙</button>
     </div>
-    <div class="preview" id="preview"><p class="pv-note" id="pvNote">نوار زرد رو یک ثانیه روی یه شبکه نگه دار تا اینجا پخش بشه.</p></div>
-    <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · <kbd>Enter</kbd> یا کلیک = پخش · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب</p>
+    <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ کلیک دوباره = تمام‌صفحه.</p></div>
+    <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش، دوباره = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب</p>
   </div>
 </div>
 
@@ -558,7 +559,6 @@ function render(){
     listEl.innerHTML = shown.map(rowHTML).join('');
   }
   renderInfo();
-  schedulePreview();
 }
 function scrollToSel(){
   const el = selId && listEl.querySelector(`.row[data-id="${CSS.escape(selId)}"]`);
@@ -572,7 +572,6 @@ function select(id, noScroll){
   const el = listEl.querySelector(`.row[data-id="${CSS.escape(id)}"]`);
   if (el) { el.classList.add('sel'); el.setAttribute('aria-selected', 'true'); if (!noScroll) el.scrollIntoView({ block: 'nearest' }); }
   renderInfo();
-  schedulePreview();
 }
 function moveSel(step){
   if (!shown.length) return;
@@ -873,9 +872,11 @@ function openSite(ch){
   guard(ch, url, () => openUrl(url));
 }
 // شبکه‌هایی که پخش مستقیم دارن داخل صفحه پخش می‌شن، بقیه سایتشون باز می‌شه
+// کلیک اول = پخش در پیش‌نمایش کنار فهرست، کلیک دوباره روی همون شبکه = تمام‌صفحه
 function startChannel(ch){
-  if (inPage(ch)) goFull(ch);
-  else openSite(ch);
+  if (!inPage(ch)) return openSite(ch);
+  if (previewOn && !(mode === 'preview' && playing && playing.id === ch.id)) previewChannel(ch);
+  else goFull(ch);
 }
 
 /* ---------- زدن شماره‌ی شبکه مثل کنترل ماهواره ---------- */
@@ -966,18 +967,6 @@ function paintPreviewBtn(){
   const b = $('pvBtn');
   b.classList.toggle('on', previewOn);
   b.textContent = previewOn ? '📺 پیش‌نمایش روشن' : '📺 پیش‌نمایش خاموش';
-}
-// نوار زرد یک ثانیه روی یه شبکه بمونه، همون شبکه سمت راست پخش می‌شه
-function schedulePreview(){
-  if (!previewOn || mode === 'full' || !selId) return;
-  if ((playing && playing.id === selId) || previewFor === selId) return;
-  clearTimeout(previewTimer);
-  previewFor = selId;
-  previewTimer = setTimeout(() => {
-    previewFor = null;
-    const c = selId && byId(selId);
-    if (c && mode !== 'full') previewChannel(c);
-  }, 1000);
 }
 function previewChannel(ch){
   if (!inPage(ch)) {
@@ -1195,19 +1184,12 @@ function togglePause(){
 }
 video.addEventListener('pause', () => { if (mode === 'full' && playing && video.src) $('pPause').hidden = false; });
 video.addEventListener('play', () => { $('pPause').hidden = true; });
-// موس که از فهرست بیرون می‌ره، همون شبکه‌ای که داره پخش می‌شه انتخاب‌شده می‌مونه
-listEl.addEventListener('mouseleave', () => {
-  clearTimeout(previewTimer);
-  previewFor = null;
-  if (playing && mode === 'preview') select(playing.id, true);
-});
 $('pvBtn').addEventListener('click', () => {
   previewOn = !previewOn;
   store.set('sat.preview.v1', previewOn);
   paintPreviewBtn();
   if (!previewOn && mode === 'preview') stopPlayback();
-  setNote(previewOn ? 'نوار زرد رو یک ثانیه روی یه شبکه نگه دار تا اینجا پخش بشه.' : 'پیش‌نمایش خاموشه؛ با کلیک روی هر شبکه، تمام‌صفحه پخش می‌شه.');
-  if (previewOn) schedulePreview();
+  setNote(previewOn ? 'روی یه شبکه کلیک کن تا اینجا پخش بشه؛ کلیک دوباره = تمام‌صفحه.' : 'پیش‌نمایش خاموشه؛ با کلیک روی هر شبکه، تمام‌صفحه پخش می‌شه.');
 });
 
 /* ---------- افزودن / ویرایش ---------- */
@@ -1345,16 +1327,15 @@ listEl.addEventListener('click', e => {
   const ch = byId(row.dataset.id);
   if (!ch) return;
   if (e.target.closest('[data-act="fav"]')) { selId = ch.id; toggleFav(ch.id); return; }
-  select(ch.id);
+  select(ch.id, true);
   if (!editMode) startChannel(ch);
-});
-listEl.addEventListener('mouseover', e => {
-  const row = e.target.closest('.row');
-  if (row && !dragId) select(row.dataset.id, true);
 });
 listEl.addEventListener('dblclick', e => {
   const row = e.target.closest('.row');
-  if (row && editMode) openEditor(byId(row.dataset.id));
+  const ch = row && byId(row.dataset.id);
+  if (!ch) return;
+  if (editMode) openEditor(ch);
+  else if (inPage(ch)) goFull(ch);
 });
 
 // کشیدن و رها کردن ردیف‌ها در حالت ویرایش
@@ -1504,7 +1485,6 @@ render();
 paintSignal();
 paintScan();
 paintPreviewBtn();
-schedulePreview();
 maybeCheck();
 setInterval(() => maybeCheck(50000), 60000);
 document.addEventListener('visibilitychange', () => maybeCheck(10000));
