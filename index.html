@@ -320,7 +320,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=8"></script>
+<script src="channels.js?v=9"></script>
 <script>
 (() => {
 'use strict';
@@ -505,6 +505,7 @@ const FILTERS = { all: 'همه', ok: 'فقط سالم‌ها', ir: 'داخلی',
 const primaryUrl = c => c.streams[0] || c.embed || c.urls[0];
 // داخل خود صفحه پخش می‌شه (لینک مستقیم یا یوتیوب)، نه با باز کردن سایت
 const inPage = c => c.streams.length > 0 || !!c.embed;
+const isYT = u => /youtube\.com|youtu\.be/.test(u || '');
 
 let shown = [];       // شبکه‌هایی که الان در فهرست دیده می‌شن
 let selId = null;
@@ -528,7 +529,7 @@ function currentList(){
   return list;
 }
 
-const ST_TEXT = { live: 'سالم؛ قبلاً توی همین مرورگر پخش شده', ok: 'احتمالاً سالم؛ بررسی شده ولی هنوز امتحانش نکردی', codec: 'فرمت تصویرش با این مرورگر پخش نمی‌شه', cors: 'سرورش فقط توی Safari پخش رو اجازه می‌ده', bad: 'الان جواب نمی‌ده', unk: 'هنوز بررسی نشده', embed: 'از یوتیوب داخل صفحه پخش می‌شه', site: 'فقط سایت شبکه باز می‌شه' };
+const ST_TEXT = { live: 'سالم؛ قبلاً توی همین مرورگر پخش شده', ok: 'احتمالاً سالم؛ بررسی شده ولی هنوز امتحانش نکردی', codec: 'فرمت تصویرش با این مرورگر پخش نمی‌شه', cors: 'سرورش فقط توی Safari پخش رو اجازه می‌ده', bad: 'الان جواب نمی‌ده', unk: 'هنوز بررسی نشده', embed: 'داخل صفحه پخش می‌شه (یوتیوب یا سایت پخش)', site: 'فقط سایت شبکه باز می‌شه' };
 function rowHTML(c){
   const vpn = needsVpn(primaryUrl(c)), fav = favList.includes(c.id), st = healthOf(c);
   return `<div class="row${c.id === selId ? ' sel' : ''}${vpn ? ' need-vpn' : ''}${st === 'bad' || st === 'codec' ? ' st-row-bad' : ''}" role="option" aria-selected="${c.id === selId}" data-id="${esc(c.id)}"${editMode ? ' draggable="true"' : ''}>
@@ -590,7 +591,7 @@ function renderInfo(){
   if (!c) { infoEl.innerHTML = editMode ? editHelpHTML(null) : ''; return; }
   const url = primaryUrl(c), vpn = needsVpn(url), warn = vpnWarning(url), st = healthOf(c);
   const how = c.streams.length ? (c.streams.length > 1 ? `${fa(c.streams.length)} منبع پخش` : 'پخش مستقیم')
-    : c.embed ? 'پخش از یوتیوب' : `سایت ${esc(hostOf(url))} (اونجا باید روی پخش بزنی)`;
+    : c.embed ? (isYT(c.embed) ? 'پخش از یوتیوب' : `پخش از ${esc(hostOf(c.embed))} داخل صفحه (روی پخش بزن)`) : `سایت ${esc(hostOf(url))} (اونجا باید روی پخش بزنی)`;
   infoEl.innerHTML = `
     <div class="irow"><span class="iname">${esc(c.name)}</span><span class="iname" dir="rtl">${esc(c.fa || '')}</span></div>
     <div class="irow imeta"><span dir="ltr">CH ${pad4(c.num)}</span><span dir="rtl">${esc(CAT[c.cat] ? CAT[c.cat].name : '')} · ${how} · ${vpn ? 'VPN' : 'داخلی'}</span></div>
@@ -1057,7 +1058,12 @@ function showEmbed(ch){
   f.allow = 'autoplay; fullscreen; encrypted-media; picture-in-picture';
   f.allowFullscreen = true;
   f.referrerPolicy = 'strict-origin-when-cross-origin';
-  f.src = ch.embed + (ch.embed.includes('?') ? '&' : '?') + 'autoplay=1&rel=0';
+  if (isYT(ch.embed)) f.src = ch.embed + (ch.embed.includes('?') ? '&' : '?') + 'autoplay=1&rel=0';
+  else {
+    // صفحه‌ی سایت‌های پخش (مثل پارسا تی‌وی) داخل کادر؛ بدون اجازه‌ی پاپ‌آپ و بردن کل صفحه به سایت دیگه
+    f.sandbox = 'allow-scripts allow-same-origin allow-presentation allow-forms';
+    f.src = ch.embed;
+  }
   video.hidden = true;
   player.insertBefore(f, pInfo);
   player.classList.remove('idle');
