@@ -75,7 +75,7 @@
   .row.st-row-bad:not(.sel) .rname{opacity:.5}
   .rtags{display:flex;align-items:center;gap:.45rem;flex:0 0 auto}
   .st{width:.62rem;height:.62rem;border-radius:50%;background:#666}
-  .st-ok{background:#2ee66b}.st-cors{background:#ffa726}.st-bad{background:#ff3b3b}
+  .st-live{background:#2ee66b}.st-ok{background:transparent;box-shadow:inset 0 0 0 2.5px #2ee66b}.st-cors{background:#ffa726}.st-bad,.st-codec{background:#ff3b3b}
   .st-site,.st-embed{background:transparent;box-shadow:inset 0 0 0 1.5px #888}
   .rfav{background:none;border:0;font-size:1.15rem;line-height:1;padding:0 .1rem;color:#555}
   .rfav.on{color:#ffd54f}
@@ -203,7 +203,7 @@
       <button id="menuBtn" class="icon-btn" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙</button>
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ کلیک دوباره = تمام‌صفحه.</p></div>
-    <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش، دوباره = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب</p>
+    <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش، دوباره = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب</p>
   </div>
 </div>
 
@@ -315,7 +315,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=5"></script>
+<script src="channels.js?v=6"></script>
 <script>
 (() => {
 'use strict';
@@ -516,17 +516,17 @@ function currentList(){
   } else {
     list = view === 'all' ? all : all.filter(c => c.cat === view);
   }
-  if (filter === 'ok') list = list.filter(c => { const st = healthOf(c); return st === 'ok' || st === 'embed' || (st === 'cors' && nativeHls); });
+  if (filter === 'ok') list = list.filter(c => { const st = healthOf(c); return st === 'live' || st === 'ok' || st === 'embed' || (st === 'cors' && nativeHls); });
   else if (filter === 'ir') list = list.filter(c => !needsVpn(primaryUrl(c)));
   else if (filter === 'vpn') list = list.filter(c => needsVpn(primaryUrl(c)));
   if (sortAZ) list = [...list].sort((a, b) => collator.compare(a.name, b.name));
   return list;
 }
 
-const ST_TEXT = { ok: 'سالم؛ داخل صفحه پخش می‌شه', cors: 'سرورش فقط توی Safari پخش رو اجازه می‌ده', bad: 'الان جواب نمی‌ده', unk: 'هنوز بررسی نشده', embed: 'از یوتیوب داخل صفحه پخش می‌شه', site: 'فقط سایت شبکه باز می‌شه' };
+const ST_TEXT = { live: 'سالم؛ قبلاً توی همین مرورگر پخش شده', ok: 'احتمالاً سالم؛ بررسی شده ولی هنوز امتحانش نکردی', codec: 'فرمت تصویرش با این مرورگر پخش نمی‌شه', cors: 'سرورش فقط توی Safari پخش رو اجازه می‌ده', bad: 'الان جواب نمی‌ده', unk: 'هنوز بررسی نشده', embed: 'از یوتیوب داخل صفحه پخش می‌شه', site: 'فقط سایت شبکه باز می‌شه' };
 function rowHTML(c){
   const vpn = needsVpn(primaryUrl(c)), fav = favList.includes(c.id), st = healthOf(c);
-  return `<div class="row${c.id === selId ? ' sel' : ''}${vpn ? ' need-vpn' : ''}${st === 'bad' ? ' st-row-bad' : ''}" role="option" aria-selected="${c.id === selId}" data-id="${esc(c.id)}"${editMode ? ' draggable="true"' : ''}>
+  return `<div class="row${c.id === selId ? ' sel' : ''}${vpn ? ' need-vpn' : ''}${st === 'bad' || st === 'codec' ? ' st-row-bad' : ''}" role="option" aria-selected="${c.id === selId}" data-id="${esc(c.id)}"${editMode ? ' draggable="true"' : ''}>
     <span class="grip" aria-hidden="true">☰</span>
     <span class="rnum">${pad4(c.num)}</span>
     <span class="rname">${esc(c.name)}</span>
@@ -736,14 +736,14 @@ function maybeCheck(minGap = 0){
    لینک‌های پخش مستقیم توی همین مرورگر و با همین اینترنت امتحان می‌شن (هر چند ساعت یک بار
    و هر بار که VPN وصل یا قطع بشه): ok = پخش می‌شه، cors = سرورش فقط پخش توی Safari رو
    اجازه می‌ده، bad = الان جواب نمی‌ده. لینکی که جواب داده اولِ پخش امتحان می‌شه. */
-const HEALTH_KEY = 'sat.health.v2';
+const HEALTH_KEY = 'sat.health.v3';
 let health = store.get(HEALTH_KEY, null);
 if (!health || typeof health !== 'object' || !health.res || typeof health.res !== 'object') health = { at: 0, sig: '', res: {} };
 let scan = null;
 function healthOf(c){
   if (!c.streams.length) return c.embed ? 'embed' : 'site';
   const r = health.res[c.id];
-  return r && ['ok', 'cors', 'bad'].includes(r.s) ? r.s : 'unk';
+  return r && ['live', 'ok', 'cors', 'bad', 'codec'].includes(r.s) ? r.s : 'unk';
 }
 async function fetchText(url, ms = 8000){
   const ctrl = new AbortController();
@@ -771,12 +771,20 @@ async function fetchOk(url, mode, ms = 8000){
 }
 // فقط جواب دادن فهرست پخش کافی نیست: تا اولین تکه‌ی تصویر هم می‌ریم که مطمئن بشیم واقعاً پخش می‌شه
 const firstUri = text => text.split(/\r?\n/).map(l => l.trim()).find(l => l && !l.startsWith('#'));
+function codecOk(list){
+  const type = `video/mp4; codecs="${list}"`;
+  if (nativeHls) return video.canPlayType(type) !== '';
+  return !!(window.MediaSource && MediaSource.isTypeSupported(type));
+}
 // جواب: true = سالم، 'net' = خطای شبکه یا CORS، false = سرور جواب بد داد
 async function deepCheck(url){
   let m = await fetchText(url);
   if (m.err) return m.err === 'net' ? 'net' : false;
   if (!m.text.trimStart().startsWith('#EXTM3U')) return false;
   if (/#EXT-X-STREAM-INF/.test(m.text)) {
+    // اگه هیچ کیفیتی با فرمتی که این مرورگر پخش می‌کنه نیست، از همین اول کنارش می‌ذاریم
+    const codecs = [...m.text.matchAll(/CODECS="([^"]+)"/g)].map(x => x[1]);
+    if (codecs.length && !codecs.some(codecOk)) return 'codec';
     const v = firstUri(m.text);
     if (!v) return false;
     m = await fetchText(new URL(v, m.url).href);
@@ -797,16 +805,17 @@ async function deepCheck(url){
   }
 }
 async function checkChannel(c){
-  let reachable = false;
+  let reachable = false, codecFail = false;
   for (let i = 0; i < c.streams.length; i++) {
     const u = c.streams[i];
     // سافاری خودش HLS پخش می‌کنه و محدودیت CORS براش مهم نیست
     if (nativeHls) { if (await fetchOk(u, 'no-cors')) return { s: 'ok', i }; continue; }
     const res = await deepCheck(u);
     if (res === true) return { s: 'ok', i };
+    if (res === 'codec') { codecFail = true; continue; }
     if (res === 'net' && !reachable && await fetchOk(u, 'no-cors', 6000)) reachable = true;
   }
-  return { s: reachable ? 'cors' : 'bad', i: 0 };
+  return { s: reachable ? 'cors' : codecFail ? 'codec' : 'bad', i: 0 };
 }
 async function scanAll(force){
   if (scan || signal.state === 'checking') return;
@@ -820,7 +829,10 @@ async function scanAll(force){
   const worker = async () => {
     while (k < list.length) {
       const c = list[k++];
-      res[c.id] = health.res[c.id] = await checkChannel(c);
+      const prev = health.res[c.id], got = await checkChannel(c);
+      // شبکه‌ای که قبلاً واقعاً پخش شده و الان هم جواب می‌ده، «سالم قطعی» می‌مونه
+      if (got.s === 'ok' && prev && prev.s === 'live') got.s = 'live';
+      res[c.id] = health.res[c.id] = got;
       scan.done++;
       if (scan.done % 8 === 0) { paintScan(); render(); }
     }
@@ -836,7 +848,7 @@ function paintScan(){
   const el = $('scanText');
   if (scan) { el.textContent = `در حال بررسی شبکه‌ها… ${fa(scan.done)} از ${fa(scan.total)}`; return; }
   const all = [...BUILTIN, ...custom].filter(c => c.streams.length && !hidden.has(c.id));
-  const ok = all.filter(c => healthOf(c) === 'ok').length, cors = all.filter(c => healthOf(c) === 'cors').length;
+  const ok = all.filter(c => ['ok', 'live'].includes(healthOf(c))).length, cors = all.filter(c => healthOf(c) === 'cors').length;
   el.textContent = health.at ? `✓ ${fa(ok)} شبکه سالم${cors && !nativeHls ? ` · ${fa(cors)} فقط در Safari` : ''}` : '';
 }
 
@@ -947,6 +959,7 @@ function wakePlayer(){
   idleTimer = setTimeout(() => { if (mode === 'full' && pMsg.hidden && !$('pFrame')) player.classList.add('idle'); }, 3500);
 }
 /* حالت‌ها: off = چیزی پخش نمی‌شه، preview = پیش‌نمایش سمت راست فهرست، full = تمام‌صفحه */
+let lastErr = '';
 let mode = 'off', previewOn = store.get('sat.preview.v1', true) !== false, previewTimer, previewFor = null, autoMuted = false;
 const previewBox = $('preview'), pvNote = $('pvNote');
 function placePlayer(){
@@ -1088,7 +1101,7 @@ async function playStream(){
       if (token !== playToken) return;
       if (!Hls || !Hls.isSupported()) throw new Error('unsupported');
       hls = new Hls({ manifestLoadingMaxRetry: 2, levelLoadingMaxRetry: 2, fragLoadingMaxRetry: 3 });
-      hls.on(Hls.Events.ERROR, (_, data) => { if (data.fatal) streamFailed(token); });
+      hls.on(Hls.Events.ERROR, (_, data) => { if (data.fatal) { lastErr = String(data.details || ''); streamFailed(token); } });
       hls.loadSource(url);
       hls.attachMedia(video);
     }
@@ -1103,7 +1116,7 @@ function refreshDot(id){
   if (!row || !c) return;
   const st = healthOf(c);
   row.querySelector('.st').className = 'st st-' + st;
-  row.classList.toggle('st-row-bad', st === 'bad');
+  row.classList.toggle('st-row-bad', st === 'bad' || st === 'codec');
   if (id === selId) renderInfo();
 }
 // اگه یه منبع کار نکرد، بعدی امتحان می‌شه؛ آخر سر پیشنهاد باز کردن سایت شبکه
@@ -1111,7 +1124,8 @@ function streamFailed(token){
   if (token !== playToken || !playing) return;
   const ch = playing;
   if (++streamIdx < attempts.length) return playStream();
-  health.res[ch.id] = { s: healthOf(ch) === 'cors' ? 'cors' : 'bad', i: 0 };
+  health.res[ch.id] = { s: healthOf(ch) === 'cors' ? 'cors' : /codec/i.test(lastErr) ? 'codec' : 'bad', i: 0 };
+  lastErr = '';
   store.set(HEALTH_KEY, health);
   refreshDot(ch.id);
   if (ch.embed) return showEmbed(ch);
@@ -1164,7 +1178,7 @@ video.addEventListener('playing', () => {
   wakePlayer();
   // پخش واقعاً شروع شد: همین لینک برای دفعه‌ی بعد علامت سالم می‌گیره
   if (playing && playing.streams.length) {
-    health.res[playing.id] = { s: 'ok', i: attempts[streamIdx] | 0 };
+    health.res[playing.id] = { s: 'live', i: attempts[streamIdx] | 0 };
     store.set(HEALTH_KEY, health);
     refreshDot(playing.id);
   }
