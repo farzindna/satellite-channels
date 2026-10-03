@@ -42,6 +42,8 @@ const PERSIANA = n => `https://${n}.persiana.live/hls/stream.m3u8`;
 const WNS = n => `https://${n}.wns.live/hls/stream.m3u8`;
 const TWB = n => `https://ncdn.telewebion.ir/${n}/live/playlist.m3u8`;
 const TWB_SITE = n => `https://telewebion.com/live/${n}`;
+// سپهر، سایت رسمی پخش زنده‌ی صداوسیما؛ داخل کادر پیش‌نمایش باز می‌شه (با VPN خاموش)
+const SEPEHR = n => `https://sepehrtv.ir/live/${n}`;
 
 window.SAT_CHANNELS = [
   /* ── خبری ── */
@@ -126,17 +128,17 @@ window.SAT_CHANNELS = [
   { id: "classictv", name: "Classic TV", fa: "کلاسیک تی‌وی", cat: "iranfilm", badge: "CLASSIC TV", color: "#4e342e", streams: [WNS("clshls")] },
   { id: "khatereh", name: "Khatereh TV", fa: "خاطره", cat: "iranfilm", badge: "خاطره", color: "#6d4c41", urls: [P("Khatereh-TV")] },
   { id: "ifilm", name: "iFilm", fa: "آی‌فیلم", cat: "iranfilm", badge: "iFILM", color: "#c77800",
-    streams: [TWB("ifilm"), "https://live.presstv.ir/hls/ifilmfa.m3u8"], urls: [TWB_SITE("ifilm"), P("iFilm-Persian")] },
+    streams: ["https://live.presstv.ir/hls/ifilmfa.m3u8"], embed: SEPEHR("ifilm"), urls: [SEPEHR("ifilm"), TWB_SITE("ifilm"), P("iFilm-Persian")] },
   { id: "ifilm2", name: "iFilm 2", fa: "آی‌فیلم ۲", cat: "iranfilm", badge: "iFILM 2", color: "#a35f00",
     streams: ["https://live.presstv.ir/hls/ifilm2.m3u8"], urls: ["https://fa2.ifilmtv.ir/Home/Live"] },
-  { id: "namayesh", name: "IRIB Namayesh", fa: "نمایش", cat: "iranfilm", badge: "نمایش", color: "#5e35b1", streams: [TWB("namayesh")], urls: [TWB_SITE("namayesh")] },
-  { id: "tamasha", name: "IRIB Tamasha", fa: "تماشا", cat: "movies", badge: "تماشا", color: "#283593", streams: [TWB("hdtest")] },
+  { id: "namayesh", name: "IRIB Namayesh", fa: "نمایش", cat: "iranfilm", badge: "نمایش", color: "#5e35b1", streams: [], embed: SEPEHR("namayesh"), urls: [SEPEHR("namayesh"), TWB_SITE("namayesh")] },
+  { id: "tamasha", name: "IRIB Tamasha", fa: "تماشا", cat: "movies", badge: "تماشا", color: "#283593", streams: [], embed: SEPEHR("tamasha"), urls: [SEPEHR("tamasha"), TWB_SITE("hdtest")] },
   { id: "ytfilms", name: "YouTube Movies", fa: "فیلم‌های یوتیوب", cat: "movies", badge: "YouTube", color: "#d32f2f", embed: "https://www.youtube.com/embed/videoseries?list=UUlgRkhTL3_hImCAmdLfDE4g", urls: ["https://www.youtube.com/channel/UClgRkhTL3_hImCAmdLfDE4g"] },
 
   /* ── مستند و تاریخی ── */
   { id: "mostanad", name: "IRIB Mostanad", fa: "شبکه مستند", cat: "docs", badge: "مستند", color: "#2e7d32",
-    streams: [TWB("mostanad")], urls: [TWB_SITE("mostanad"), P("Mostanad")] },
-  { id: "tv4", name: "IRIB TV4", fa: "شبکه چهار", cat: "docs", badge: "۴", color: "#00695c", streams: [TWB("tv4")], urls: [TWB_SITE("tv4")] },
+    streams: [], embed: SEPEHR("mostanad"), urls: [SEPEHR("mostanad"), TWB_SITE("mostanad"), P("Mostanad")] },
+  { id: "tv4", name: "IRIB TV4", fa: "شبکه چهار", cat: "docs", badge: "۴", color: "#00695c", streams: [], embed: SEPEHR("tv4"), urls: [SEPEHR("tv4"), TWB_SITE("tv4")] },
   { id: "persianadocs", name: "Persiana Docs", fa: "پرشیانا مستند", cat: "docs", badge: "PERSIANA DOCS", color: "#33691e", streams: [PERSIANA("scihls")] },
   { id: "persianatravel", name: "Persiana Travel", fa: "پرشیانا سفر", cat: "docs", badge: "TRAVEL", color: "#0277bd", streams: [PERSIANA("ptravelhls"), WNS("mardomhls")] },
   { id: "persianamedical", name: "Persiana Medical", fa: "پرشیانا پزشکی", cat: "docs", badge: "MEDICAL", color: "#00838f", streams: [PERSIANA("phd2hls"), WNS("tfnhls")] },
@@ -173,13 +175,13 @@ window.SAT_CHANNELS = [
   { id: "nasatv", name: "NASA TV", fa: "NASA TV", cat: "docs", badge: "NASA", color: "#0b3d91", embed: "https://www.youtube.com/embed/live_stream?channel=UCLA_DiR1FfKNvjuUpBHmylQ", urls: [P("NASA-TV")] },
 
   /* ── ورزشی ── */
-  { id: "varzesh", name: "IRIB Varzesh", fa: "شبکه ورزش", cat: "sports", badge: "ورزش", color: "#1b5e20", streams: [TWB("varzesh")], urls: [TWB_SITE("varzesh")] },
-  { id: "tv3", name: "IRIB TV3", fa: "شبکه سه", cat: "sports", badge: "۳", color: "#0d47a1", streams: [TWB("tv3")], urls: [TWB_SITE("tv3")] },
+  { id: "varzesh", name: "IRIB Varzesh", fa: "شبکه ورزش", cat: "sports", badge: "ورزش", color: "#1b5e20", streams: [], embed: SEPEHR("varzesh"), urls: [SEPEHR("varzesh"), TWB_SITE("varzesh")] },
+  { id: "tv3", name: "IRIB TV3", fa: "شبکه سه", cat: "sports", badge: "۳", color: "#0d47a1", streams: [], embed: SEPEHR("tv3"), urls: [SEPEHR("tv3"), TWB_SITE("tv3")] },
   { id: "persianafight", name: "Persiana Fight", fa: "پرشیانا فایت (رزمی)", cat: "sports", badge: "FIGHT", color: "#b71c1c", streams: [PERSIANA("fighthls")] },
   { id: "gemfit", name: "GEM Fit", fa: "جم فیت (ورزش و تناسب)", cat: "sports", badge: "GEM FIT", color: "#00897b", streams: [], embed: PM("GEM-Fit"), urls: [P("GEM-Fit")] },
 
   /* ── موسیقی ── */
-  { id: "nava", name: "IRIB Nava", fa: "نوا", cat: "music", badge: "نوا", color: "#00796b", streams: [TWB("nava")], urls: [TWB_SITE("nava")] },
+  { id: "nava", name: "IRIB Nava", fa: "نوا", cat: "music", badge: "نوا", color: "#00796b", streams: [], embed: SEPEHR("nava"), urls: [SEPEHR("nava"), TWB_SITE("nava")] },
   { id: "pmc", name: "PMC", fa: "PMC", cat: "music", badge: "PMC", color: "#ad1457", streams: [WNS("pmchls")], urls: [P("PMC")] },
   { id: "pmcroyale", name: "PMC Royale", fa: "PMC Royale", cat: "music", badge: "ROYALE", color: "#6a1b9a", streams: [WNS("pmcrohls")], urls: [P("PMC-Royale")] },
   { id: "4music", name: "4Music", fa: "4Music", cat: "music", badge: "4MUSIC", color: "#283593", streams: [WNS("itthls")], urls: [P("4Music")] },
@@ -190,7 +192,7 @@ window.SAT_CHANNELS = [
   { id: "gemmifa", name: "GEM Mifa", fa: "جم میفا", cat: "music", badge: "MIFA", color: "#d81b60", streams: [], embed: PM("GEM-Mifa-Plus"), urls: [P("GEM-Mifa-Plus")] },
 
   /* ── کودک و نوجوان ── */
-  { id: "pooya", name: "IRIB Pooya", fa: "پویا و نهال", cat: "kids", badge: "پویا", color: "#f9a825", streams: [TWB("pooya")] },
+  { id: "pooya", name: "IRIB Pooya", fa: "پویا و نهال", cat: "kids", badge: "پویا", color: "#f9a825", streams: [], embed: SEPEHR("pooya"), urls: [SEPEHR("pooya"), TWB_SITE("pooya")] },
   { id: "gemjunior", name: "GEM Junior", fa: "جم جونیور", cat: "kids", badge: "JUNIOR", color: "#fb8c00", streams: [], embed: PM("GEM-Junior"), urls: [P("GEM-Junior")] },
   { id: "gemkids", name: "GEM Kids", fa: "جم کیدز", cat: "kids", badge: "GEM KIDS", color: "#43a047", streams: [], embed: PM("GEM-Kids"), urls: [P("GEM-Kids")] },
   { id: "persianajunior", name: "Persiana Junior", fa: "پرشیانا جونیور", cat: "kids", badge: "JUNIOR", color: "#039be5", streams: [PERSIANA("junhls")] },
@@ -219,14 +221,15 @@ window.SAT_CHANNELS = [
     streams: ["https://hls.erfanhalgheh.live/hls/stream.m3u8"], urls: [P("Erfan-Halgheh")] },
 
   /* ── شبکه‌های داخلی (صدا و سیما) ── */
-  { id: "tv1", name: "IRIB TV1", fa: "شبکه یک", cat: "iran", badge: "۱", color: "#1565c0", streams: [TWB("tv1")], urls: [TWB_SITE("tv1")] },
-  { id: "tv2", name: "IRIB TV2", fa: "شبکه دو", cat: "iran", badge: "۲", color: "#2e7d32", streams: [TWB("tv2")], urls: [TWB_SITE("tv2")] },
-  { id: "tehran", name: "IRIB Tehran", fa: "شبکه تهران", cat: "iran", badge: "تهران", color: "#6a1b9a", streams: [TWB("tehran")], urls: [TWB_SITE("tehran")] },
-  { id: "nasim", name: "IRIB Nasim", fa: "نسیم", cat: "iran", badge: "نسیم", color: "#00838f", streams: [TWB("nasim")], urls: [TWB_SITE("nasim")] },
-  { id: "omid", name: "IRIB Omid", fa: "امید", cat: "iran", badge: "امید", color: "#ef6c00", streams: [TWB("omid")] },
-  { id: "ofogh", name: "IRIB Ofogh", fa: "افق", cat: "iran", badge: "افق", color: "#4e342e", streams: [TWB("ofogh")] },
-  { id: "salamat", name: "IRIB Salamat", fa: "سلامت", cat: "iran", badge: "سلامت", color: "#00897b", streams: [TWB("salamat")] },
-  { id: "amouzesh", name: "IRIB Amouzesh", fa: "آموزش", cat: "iran", badge: "آموزش", color: "#3949ab", streams: [TWB("amouzesh")] },
+  { id: "tv1", name: "IRIB TV1", fa: "شبکه یک", cat: "iran", badge: "۱", color: "#1565c0", streams: [], embed: SEPEHR("tv1"), urls: [SEPEHR("tv1"), TWB_SITE("tv1")] },
+  { id: "tv2", name: "IRIB TV2", fa: "شبکه دو", cat: "iran", badge: "۲", color: "#2e7d32", streams: [], embed: SEPEHR("tv2"), urls: [SEPEHR("tv2"), TWB_SITE("tv2")] },
+  { id: "tehran", name: "IRIB Tehran", fa: "شبکه تهران", cat: "iran", badge: "تهران", color: "#6a1b9a", streams: [], embed: SEPEHR("tehran"), urls: [SEPEHR("tehran"), TWB_SITE("tehran")] },
+  { id: "nasim", name: "IRIB Nasim", fa: "نسیم", cat: "iran", badge: "نسیم", color: "#00838f", streams: [], embed: SEPEHR("nasim"), urls: [SEPEHR("nasim"), TWB_SITE("nasim")] },
+  { id: "omid", name: "IRIB Omid", fa: "امید", cat: "iran", badge: "امید", color: "#ef6c00", streams: [], embed: SEPEHR("omid"), urls: [SEPEHR("omid"), TWB_SITE("omid")] },
+  { id: "ofogh", name: "IRIB Ofogh", fa: "افق", cat: "iran", badge: "افق", color: "#4e342e", streams: [], embed: SEPEHR("ofogh"), urls: [SEPEHR("ofogh"), TWB_SITE("ofogh")] },
+  { id: "salamat", name: "IRIB Salamat", fa: "سلامت", cat: "iran", badge: "سلامت", color: "#00897b", streams: [], embed: SEPEHR("salamat"), urls: [SEPEHR("salamat"), TWB_SITE("salamat")] },
+  { id: "amouzesh", name: "IRIB Amouzesh", fa: "آموزش", cat: "iran", badge: "آموزش", color: "#3949ab", streams: [], embed: SEPEHR("amouzesh"), urls: [SEPEHR("amouzesh"), TWB_SITE("amouzesh")] },
+  { id: "irinn", name: "IRIB News", fa: "شبکه خبر", cat: "iran", badge: "خبر", color: "#b71c1c", streams: [], embed: SEPEHR("irinn"), urls: [SEPEHR("irinn"), TWB_SITE("irinn")] },
   { id: "iribuhd", name: "IRIB UHD", fa: "فراتر (UHD)", cat: "iran", badge: "UHD", color: "#212121", streams: [TWB("faratar")] },
 
   /* ── اضافه‌شده‌ها: مستند، فیلم خارجی، کودک، موسیقی و آشپزی (از سرویس‌های رایگان Samsung TV Plus / Rakuten / ...) ── */
