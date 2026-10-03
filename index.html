@@ -143,6 +143,22 @@
 
   .toast{position:fixed;top:8.5rem;left:50%;transform:translateX(-50%);background:rgba(11,18,32,.96);border:1px solid var(--border);border-radius:.8rem;padding:.7rem 1.2rem;z-index:50;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.6);max-width:90vw;text-align:center}
 
+  /* ---------- پخش‌کننده‌ی داخل صفحه ---------- */
+  .player{position:fixed;inset:0;z-index:60;background:#000;display:flex;align-items:center;justify-content:center}
+  .player video{width:100%;height:100%;object-fit:contain;background:#000}
+  .p-info{position:absolute;top:1.4rem;right:1.6rem;display:flex;align-items:center;gap:1rem;background:rgba(5,8,16,.85);border:1px solid #23314f;border-top:3px solid var(--accent);border-radius:1rem;padding:.7rem 1.1rem;transition:opacity .3s}
+  .p-info .onum{font-family:var(--mono);font-size:2.2rem;line-height:1;color:var(--led);text-shadow:0 0 10px rgba(61,255,143,.5);direction:ltr}
+  .p-info .logo{width:5rem;height:3.1rem}
+  .p-info .otitle{font-size:1.3rem;font-weight:800}
+  .p-msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(5,8,16,.9);border:1px solid #23314f;border-radius:1rem;padding:1.1rem 1.5rem;text-align:center;font-size:1.15rem;font-weight:600;max-width:min(36rem,90vw);line-height:1.9}
+  .p-msg .dlg-actions{justify-content:center}
+  .p-bar{position:absolute;bottom:1.4rem;left:50%;transform:translateX(-50%);display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;background:rgba(5,8,16,.8);border:1px solid #23314f;border-radius:1rem;padding:.6rem .8rem;transition:opacity .3s}
+  .player.idle{cursor:none}
+  .player.idle .p-bar,.player.idle .p-info{opacity:0;pointer-events:none}
+  .tile.live .logo{position:relative}
+  .tile.live .logo::after{content:"▶";position:absolute;bottom:-.45rem;left:-.45rem;width:1.5rem;height:1.5rem;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:.7rem;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.6)}
+  .osd,.num-entry,.toast{z-index:70}
+
   /* ---------- پنجره‌ها ---------- */
   dialog{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:1.2rem;padding:0;width:min(36rem,92vw);box-shadow:0 30px 80px rgba(0,0,0,.85)}
   dialog::backdrop{background:rgba(0,0,0,.65)}
@@ -216,13 +232,27 @@
 <main id="main"></main>
 
 <footer class="help">
-  <p>📺 شبکه‌ها توی یک تب جدا باز می‌شن؛ برای عوض کردن شبکه برگرد به همین تب (<kbd>⌘1</kbd>) و شبکه‌ی بعدی رو بزن.</p>
+  <p>▶ شبکه‌هایی که علامت ▶ دارن داخل همین صفحه و تمام‌صفحه پخش می‌شن: <kbd>↑</kbd> <kbd>↓</kbd> عوض کردن کانال · <kbd>F</kbd> تمام‌صفحه · <kbd>Esc</kbd> برگشت به ریموت.</p>
+  <p>📺 بقیه‌ی شبکه‌ها توی یک تب جدا باز می‌شن؛ برای عوض کردن شبکه برگرد به همین تب (<kbd>⌘1</kbd>).</p>
   <p><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> حرکت · <kbd>Enter</kbd> پخش · <kbd>0</kbd>–<kbd>9</kbd> رفتن به شماره‌ی شبکه · <kbd>F</kbd> علاقه‌مندی · <kbd>S</kbd> منبع دوم · <kbd>/</kbd> جستجو · <kbd>PgUp</kbd> <kbd>PgDn</kbd> دسته‌ها</p>
 </footer>
 
 <div id="osd" class="osd" hidden></div>
 <div id="numEntry" class="num-entry" hidden></div>
 <div id="toast" class="toast" role="status" hidden></div>
+
+<div id="player" class="player" hidden>
+  <video id="video" playsinline></video>
+  <div id="pInfo" class="p-info"></div>
+  <div id="pMsg" class="p-msg" hidden></div>
+  <div class="p-bar">
+    <button class="btn ghost" type="button" data-pact="next" title="شبکه‌ی بعدی (↑)">▲ بعدی</button>
+    <button class="btn ghost" type="button" data-pact="prev" title="شبکه‌ی قبلی (↓)">▼ قبلی</button>
+    <button class="btn ghost" type="button" data-pact="site" id="pSite" title="باز کردن سایت شبکه (S)">🌐 سایت شبکه</button>
+    <button class="btn ghost" type="button" data-pact="full" title="تمام‌صفحه (F)">⛶ تمام‌صفحه</button>
+    <button class="btn" type="button" data-pact="close" title="بستن (Esc)">✕ بستن</button>
+  </div>
+</div>
 
 <dialog id="signalDlg" aria-labelledby="sigTitle">
   <div class="dlg-body">
@@ -337,6 +367,8 @@ function fixUrl(v){ v = String(v || '').trim(); return v && !/^[a-z][a-z0-9+.-]*
 // سایت‌های داخلی بدون VPN باز می‌شن؛ بقیه‌ی سایت‌ها برای پخش به VPN نیاز دارن
 const DOMESTIC_HOSTS = ['telewebion.com', 'aparat.com', 'filimo.com'];
 function needsVpn(u){ const h = hostOf(u); return !(h.endsWith('.ir') || DOMESTIC_HOSTS.some(d => h === d || h.endsWith('.' + d))); }
+// لینک پخش مستقیم (HLS) که داخل خود صفحه پخش می‌شه
+const isStream = u => /\.m3u8(?:[?#]|$)/i.test(u);
 
 const store = {
   get(k, fallback){ try { const v = localStorage.getItem(k); return v == null ? fallback : JSON.parse(v); } catch { return fallback; } },
@@ -348,9 +380,10 @@ const K = { custom: 'sat.custom.v1', fav: 'sat.fav.v1', hidden: 'sat.hidden.v1',
 const CATS = Array.isArray(window.SAT_CATEGORIES) && window.SAT_CATEGORIES.length ? window.SAT_CATEGORIES : [{ id: 'general', name: 'شبکه‌ها', icon: '📺' }];
 const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
 const FALLBACK_CAT = CAT.general ? 'general' : CATS[0].id;
+const httpList = v => (Array.isArray(v) ? v : []).map(u => String(u || '').trim()).filter(isHttpUrl);
 const BUILTIN = (Array.isArray(window.SAT_CHANNELS) ? window.SAT_CHANNELS : [])
-  .filter(c => c && c.id && c.name && Array.isArray(c.urls) && c.urls.some(isHttpUrl))
-  .map((c, i) => ({ ...c, urls: c.urls.filter(isHttpUrl), cat: CAT[c.cat] ? c.cat : FALLBACK_CAT, num: i + 1, builtin: true }));
+  .filter(c => c && c.id && c.name && (httpList(c.urls).length || httpList(c.streams).length))
+  .map((c, i) => ({ ...c, urls: httpList(c.urls), streams: httpList(c.streams), cat: CAT[c.cat] ? c.cat : FALLBACK_CAT, num: i + 1, builtin: true }));
 const BUILTIN_IDS = new Set(BUILTIN.map(c => c.id));
 
 const PALETTE = ['#1565c0', '#6a1b9a', '#00796b', '#c62828', '#e65100', '#2e7d32', '#ad1457', '#37474f', '#4527a0', '#00838f'];
@@ -377,13 +410,14 @@ function nextNum(used){ let n = 101; while (used.has(n)) n++; return n; }
 function cleanChannel(raw, used){
   if (!raw || typeof raw !== 'object') return null;
   const name = String(raw.name || '').trim().slice(0, 60);
-  const urls = (Array.isArray(raw.urls) ? raw.urls : [raw.url]).map(u => String(u || '').trim()).filter(isHttpUrl).slice(0, 3);
-  if (!name || !urls.length) return null;
+  const all = [...httpList(Array.isArray(raw.urls) ? raw.urls : [raw.url]), ...httpList(raw.streams)];
+  const streams = all.filter(isStream).slice(0, 3), urls = all.filter(u => !isStream(u)).slice(0, 3);
+  if (!name || !(urls.length || streams.length)) return null;
   const num = Number.isInteger(raw.num) && raw.num > 100 && !used.has(raw.num) ? raw.num : nextNum(used);
   used.add(num);
   return {
     id: typeof raw.id === 'string' && /^[\w-]{1,40}$/.test(raw.id) ? raw.id : newId(),
-    name, urls, num,
+    name, urls, streams, num,
     cat: CAT[raw.cat] ? raw.cat : FALLBACK_CAT,
     badge: String(raw.badge || '').trim().slice(0, 12),
     color: isHex(raw.color) ? raw.color : '',
@@ -426,11 +460,11 @@ const LEGACY_CATS = { 'خبر': 'news', 'فیلم‌وسریال': 'movies', 'م
 
 // شبکه‌های تکراری (با لینک یکسان) و حذف‌شده‌ها رد می‌شن؛ تعداد اضافه‌شده‌ها برمی‌گرده
 function mergeCustom(list){
-  const known = new Set([...BUILTIN, ...custom].flatMap(c => c.urls).map(normUrl));
+  const known = new Set([...BUILTIN, ...custom].flatMap(c => [...c.urls, ...c.streams]).map(normUrl));
   const used = new Set(custom.map(c => c.num)), ids = new Set(custom.map(c => c.id));
   let added = 0;
   for (const raw of list) {
-    const key = normUrl(raw && (Array.isArray(raw.urls) ? raw.urls[0] : raw.url));
+    const key = normUrl(raw && [...httpList(raw.streams), ...httpList(raw.urls), raw.url][0]);
     if (!key || known.has(key) || LEGACY_DROPPED.has(key)) continue;
     const c = cleanChannel(raw, used);
     if (!c) continue;
@@ -476,12 +510,19 @@ function renderCats(){
   ).join('');
 }
 
+// منبع اصلی: پخش مستقیم اگه باشه، وگرنه سایت شبکه
+const primaryUrl = c => c.streams[0] || c.urls[0];
+// دکمه‌های کوچک «سایت» (وقتی پخش مستقیم هست) یا «منبع ۲» (وقتی فقط سایت هست)
+const siteLinks = c => c.streams.length
+  ? c.urls.map((u, i) => ({ i, label: i ? `سایت ${fa(i + 1)}` : '🌐 سایت', url: u }))
+  : c.urls.slice(1).map((u, i) => ({ i: i + 1, label: `منبع ${fa(i + 2)}`, url: u }));
+
 function tileHTML(c, sec){
-  const url = c.urls[0], vpn = needsVpn(url), fav = favs.has(c.id);
-  const alts = c.urls.slice(1).map((u, i) =>
-    `<button class="tbtn" type="button" data-act="alt" data-i="${i + 1}" tabindex="-1" title="${esc(hostOf(u))}">منبع ${fa(i + 2)}</button>`).join('');
-  return `<div class="tile${vpn ? ' need-vpn' : ''}" data-id="${esc(c.id)}" data-sec="${esc(sec)}">
-    <a class="tile-main" href="${esc(url)}" data-act="open" data-key="${esc(sec + ':' + c.id)}">
+  const url = primaryUrl(c), vpn = needsVpn(url), fav = favs.has(c.id), live = c.streams.length > 0;
+  const alts = siteLinks(c).map(s =>
+    `<button class="tbtn" type="button" data-act="site" data-i="${s.i}" tabindex="-1" title="${esc(hostOf(s.url))}">${s.label}</button>`).join('');
+  return `<div class="tile${vpn ? ' need-vpn' : ''}${live ? ' live' : ''}" data-id="${esc(c.id)}" data-sec="${esc(sec)}">
+    <a class="tile-main" href="${esc(c.urls[0] || url)}" data-act="open" data-key="${esc(sec + ':' + c.id)}"${live ? ' title="پخش در همین صفحه"' : ''}>
       <span class="tnum">${pad2(c.num)}</span>
       <span class="vpn ${vpn ? 'need' : 'local'}">${vpn ? 'VPN' : 'داخلی'}</span>
       ${logoHTML(c)}
@@ -677,7 +718,7 @@ function maybeCheck(minGap = 0){
 /* ---------- پخش ---------- */
 // همه‌ی شبکه‌ها در یک تب ثابت باز می‌شن تا مثل عوض کردن کانال، پخش قبلی جایگزین بشه
 const PLAYER = 'satellite-player';
-let skipWarn = false, pendingUrl = null;
+let skipWarn = false, pendingAction = null;
 
 function vpnWarning(url){
   const s = signal.state, vpn = needsVpn(url);
@@ -686,17 +727,28 @@ function vpnWarning(url){
   if (!vpn && (s === 'vpn' || s === 'weak') && signal.domestic === false) return 'این شبکه داخلیه و با VPN فعلی باز نمی‌شه؛ بهتره VPN رو خاموش کنی.';
   return '';
 }
-function tryOpen(ch, i = 0){
-  const url = ch.urls[i] || ch.urls[0];
+// اگه با وضعیت فعلی VPN احتمالاً باز نمی‌شه، اول هشدار می‌ده
+function guard(ch, url, action){
   const warn = skipWarn ? '' : vpnWarning(url);
-  if (!warn) return openUrl(url);
-  pendingUrl = url;
+  if (!warn) return action();
+  pendingAction = action;
   $('warnName').textContent = ch.name;
   $('warnText').textContent = warn;
   $('warnSkip').checked = false;
   warnDlg.showModal();
   $('warnOpen').focus();
 }
+function tryOpen(ch, i = 0){
+  const url = ch.urls[i] || ch.urls[0];
+  if (!url) return toast('این شبکه سایت پخش نداره.');
+  guard(ch, url, () => openUrl(url));
+}
+// شبکه‌هایی که پخش مستقیم دارن داخل صفحه پخش می‌شن، بقیه سایتشون باز می‌شه
+function startChannel(ch){
+  if (ch.streams.length) guard(ch, ch.streams[0], () => playChannel(ch));
+  else tryOpen(ch);
+}
+const openSite = ch => tryOpen(ch, ch.streams.length ? 0 : 1);
 function openUrl(url){
   const w = window.open(url, PLAYER);
   if (w) { try { w.focus(); } catch { /* بعضی مرورگرها اجازه نمی‌دن */ } }
@@ -707,7 +759,7 @@ function openUrl(url){
 let osdTimer, osdChannel = null;
 function showOSD(ch, keepTimer){
   osdChannel = ch;
-  const url = ch.urls[0], vpn = needsVpn(url), cat = CAT[ch.cat], warn = vpnWarning(url);
+  const url = primaryUrl(ch), vpn = needsVpn(url), cat = CAT[ch.cat], warn = vpnWarning(url), hasSite = siteLinks(ch).length > 0;
   osd.innerHTML = `<div class="onum">${pad2(ch.num)}</div>${logoHTML(ch)}
     <div class="oinfo">
       <div class="otitle">${esc(ch.name)}</div>
@@ -715,11 +767,11 @@ function showOSD(ch, keepTimer){
         ${cat ? `<span>${esc(cat.icon + ' ' + cat.name)}</span>` : ''}
         <span>${vpn ? '🔒 نیاز به VPN' : '🏠 داخلی، بدون VPN'}</span>
         <span dir="ltr">${esc(hostOf(url))}</span>
-        ${ch.urls.length > 1 ? `<span>${fa(ch.urls.length)} منبع</span>` : ''}
+        ${ch.streams.length ? '<span>▶ پخش در همین صفحه</span>' : ''}
       </div>
       ${warn ? `<div class="owarn">⚠️ ${esc(warn)}</div>` : ''}
     </div>
-    <div class="ohint"><kbd>Enter</kbd> پخش${ch.urls.length > 1 ? ' · <kbd>S</kbd> منبع دوم' : ''} · <kbd>F</kbd> علاقه‌مندی</div>`;
+    <div class="ohint"><kbd>Enter</kbd> پخش${hasSite ? ` · <kbd>S</kbd> ${ch.streams.length ? 'سایت شبکه' : 'منبع دوم'}` : ''} · <kbd>F</kbd> علاقه‌مندی</div>`;
   osd.hidden = false;
   if (!keepTimer) {
     clearTimeout(osdTimer);
@@ -748,9 +800,18 @@ function commitNumber(open){
     numTimer = setTimeout(() => { numEl.hidden = true; }, 1500);
     return;
   }
+  if (!player.hidden) {
+    // وسط پخش: مستقیم برو روی همون شبکه
+    if (ch.streams.length) { numEl.hidden = true; playChannel(ch); }
+    else {
+      numEl.innerHTML = `${esc(pad2(n))}<small>این شبکه پخش مستقیم نداره</small>`;
+      numTimer = setTimeout(() => { numEl.hidden = true; }, 1800);
+    }
+    return;
+  }
   numEl.hidden = true;
   focusChannel(ch);
-  if (open) tryOpen(ch);
+  if (open) startChannel(ch);
 }
 function cancelNumber(){ clearTimeout(numTimer); numBuf = ''; numEl.hidden = true; }
 
@@ -794,6 +855,157 @@ const focusedChannel = () => {
   return tile ? byId(tile.dataset.id) : null;
 };
 
+/* ---------- پخش‌کننده‌ی داخل صفحه (HLS) ----------
+   سافاری خودش HLS پخش می‌کنه؛ برای کروم کتابخونه‌ی hls.js فقط موقع نیاز بار می‌شه. */
+const player = $('player'), video = $('video'), pInfo = $('pInfo'), pMsg = $('pMsg');
+const nativeHls = !!video.canPlayType('application/vnd.apple.mpegurl');
+let hls = null, hlsLoading = null, playing = null, streamIdx = 0, playToken = 0, stallTimer, idleTimer, weFullscreened = false;
+
+function loadHls(){
+  if (window.Hls) return Promise.resolve(window.Hls);
+  if (!hlsLoading) hlsLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'vendor/hls.light.min.js';
+    s.onload = () => resolve(window.Hls);
+    s.onerror = () => { hlsLoading = null; reject(new Error('hls.js')); };
+    document.head.appendChild(s);
+  });
+  return hlsLoading;
+}
+const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+function enterFullscreen(){
+  const el = document.documentElement, fn = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!fn || fsElement()) return;
+  try { const r = fn.call(el); weFullscreened = true; if (r && r.catch) r.catch(() => { weFullscreened = false; }); } catch { /* اجازه نداد */ }
+}
+function exitFullscreen(){
+  const fn = document.exitFullscreen || document.webkitExitFullscreen;
+  if (fn && fsElement()) { try { const r = fn.call(document); if (r && r.catch) r.catch(() => {}); } catch { /* */ } }
+}
+function setMsg(html){ pMsg.innerHTML = html; pMsg.hidden = !html; }
+function wakePlayer(){
+  player.classList.remove('idle');
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => { if (!pMsg.hidden) return; player.classList.add('idle'); }, 3500);
+}
+
+function playChannel(ch){
+  playing = ch;
+  streamIdx = 0;
+  if (player.hidden) {
+    player.hidden = false;
+    hideOSD();
+    enterFullscreen();
+  }
+  pInfo.innerHTML = `<div class="onum">${pad2(ch.num)}</div>${logoHTML(ch)}<div><div class="otitle">${esc(ch.name)}</div><div class="ometa">${esc((CAT[ch.cat] || {}).name || '')}</div></div>`;
+  $('pSite').hidden = !ch.urls.length;
+  wakePlayer();
+  playStream();
+}
+function stopStream(){
+  clearTimeout(stallTimer);
+  if (hls) { hls.destroy(); hls = null; }
+  video.removeAttribute('src');
+  video.load();
+}
+async function playStream(){
+  const ch = playing, token = ++playToken, url = ch.streams[streamIdx];
+  stopStream();
+  setMsg('⏳ در حال اتصال…' + (ch.streams.length > 1 ? ` <span class="hint">(منبع ${fa(streamIdx + 1)} از ${fa(ch.streams.length)})</span>` : ''));
+  stallTimer = setTimeout(() => streamFailed(token), 15000);
+  try {
+    if (nativeHls) {
+      video.src = url;
+    } else {
+      const Hls = await loadHls();
+      if (token !== playToken) return;
+      if (!Hls || !Hls.isSupported()) throw new Error('unsupported');
+      hls = new Hls({ manifestLoadingMaxRetry: 2, levelLoadingMaxRetry: 2, fragLoadingMaxRetry: 3 });
+      hls.on(Hls.Events.ERROR, (_, data) => { if (data.fatal) streamFailed(token); });
+      hls.loadSource(url);
+      hls.attachMedia(video);
+    }
+    video.play().catch(err => {
+      if (token === playToken && err && err.name === 'NotAllowedError') setMsg('▶ برای شروع پخش، روی صفحه کلیک کن');
+    });
+  } catch {
+    streamFailed(token);
+  }
+}
+// اگه یه منبع کار نکرد، بعدی امتحان می‌شه؛ آخر سر پیشنهاد باز کردن سایت شبکه
+function streamFailed(token){
+  if (token !== playToken || !playing) return;
+  const ch = playing;
+  if (++streamIdx < ch.streams.length) return playStream();
+  playToken++;
+  stopStream();
+  const url = ch.streams[0], s = signal.state;
+  const why = needsVpn(url) && s !== 'vpn' && s !== 'weak' ? 'احتمالاً VPN لازمه.'
+    : !needsVpn(url) && (s === 'vpn' || s === 'weak') ? 'شبکه‌های داخلی معمولاً با VPN پخش نمی‌شن؛ VPN رو خاموش کن.'
+    : 'ممکنه لینک پخش عوض شده باشه.';
+  setMsg(`پخش مستقیم «${esc(ch.name)}» الان کار نمی‌کنه.<br><span class="hint">${why}</span>
+    <div class="dlg-actions">
+      <button class="btn" type="button" data-pact="retry">↻ دوباره</button>
+      ${ch.urls.length ? '<button class="btn ghost" type="button" data-pact="site">🌐 باز کردن سایت شبکه</button>' : ''}
+    </div>`);
+  wakePlayer();
+}
+function closePlayer(){
+  const ch = playing;
+  playToken++;
+  stopStream();
+  setMsg('');
+  playing = null;
+  player.hidden = true;
+  if (weFullscreened) exitFullscreen();
+  weFullscreened = false;
+  if (ch) {
+    const el = main.querySelector(`.tile[data-id="${CSS.escape(ch.id)}"] .tile-main`);
+    if (el) { el.focus({ preventScroll: true }); el.scrollIntoView({ block: 'center' }); }
+  }
+}
+// شبکه‌های دارای پخش مستقیم، به ترتیب نمایش صفحه
+function zap(step){
+  const order = Object.fromEntries(CATS.map((c, i) => [c.id, i]));
+  const list = visibleChannels().filter(c => c.streams.length).sort((a, b) => order[a.cat] - order[b.cat] || a.num - b.num);
+  if (!list.length || !playing) return;
+  const i = list.findIndex(c => c.id === playing.id);
+  playChannel(list[(i + step + list.length) % list.length]);
+}
+function playerAction(act){
+  if (act === 'next') zap(1);
+  else if (act === 'prev') zap(-1);
+  else if (act === 'close') closePlayer();
+  else if (act === 'retry') { streamIdx = 0; playStream(); }
+  else if (act === 'site' && playing) openSite(playing);
+  else if (act === 'full') { if (fsElement()) exitFullscreen(); else enterFullscreen(); }
+}
+function playerKey(e){
+  const digit = /^(?:Digit|Numpad)(\d)$/.exec(e.code);
+  wakePlayer();
+  if (digit && !e.shiftKey) pushDigit(digit[1]);
+  else if (numBuf && (e.key === 'Enter' || e.code === 'NumpadEnter')) commitNumber(true);
+  else if (e.key === 'Escape' || e.key === 'Backspace') closePlayer();
+  else if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'ArrowRight') zap(1);
+  else if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'ArrowLeft') zap(-1);
+  else if (e.key === ' ') { if (video.paused) video.play().catch(() => {}); else video.pause(); }
+  else if (e.code === 'KeyF') playerAction('full');
+  else if (e.code === 'KeyM') video.muted = !video.muted;
+  else if (e.code === 'KeyS' && playing && playing.urls.length) openSite(playing);
+  else return;
+  e.preventDefault();
+}
+video.addEventListener('playing', () => { clearTimeout(stallTimer); setMsg(''); wakePlayer(); });
+video.addEventListener('waiting', () => { if (pMsg.hidden) setMsg('⏳'); });
+video.addEventListener('error', () => { if (nativeHls && playing) streamFailed(playToken); });
+video.addEventListener('dblclick', () => playerAction('full'));
+video.addEventListener('click', () => { if (video.paused && playing) video.play().catch(() => {}); });
+player.addEventListener('mousemove', wakePlayer);
+player.addEventListener('click', e => {
+  const b = e.target.closest('[data-pact]');
+  if (b) playerAction(b.dataset.pact);
+});
+
 /* ---------- افزودن / ویرایش ---------- */
 let editing = null;
 function openEditor(ch){
@@ -802,8 +1014,9 @@ function openEditor(ch){
   $('editTitle').textContent = !ch ? 'افزودن شبکه' : builtin ? ch.name : 'ویرایش شبکه';
   fCat.innerHTML = CATS.map(c => `<option value="${esc(c.id)}">${esc(c.icon + ' ' + c.name)}</option>`).join('');
   fName.value = ch ? ch.name : '';
-  fUrl.value = ch ? ch.urls[0] : '';
-  fUrl2.value = ch && ch.urls[1] ? ch.urls[1] : '';
+  const links = ch ? [...ch.streams, ...ch.urls] : [];
+  fUrl.value = links[0] || '';
+  fUrl2.value = links[1] || '';
   fCat.value = ch ? ch.cat : (CAT[activeCat] ? activeCat : FALLBACK_CAT);
   fBadge.value = ch ? (ch.badge || '') : '';
   fColor.value = ch ? (isHex(ch.color) ? ch.color : autoColor(ch.name)) : PALETTE[custom.length % PALETTE.length];
@@ -819,7 +1032,9 @@ function openEditor(ch){
 }
 function updateVpnHint(){
   const u = fixUrl(fUrl.value);
-  $('fVpnHint').textContent = !isHttpUrl(u) ? '' : needsVpn(u) ? '🔒 این لینک خارجیه و برای باز شدن به VPN نیاز داره.' : '🏠 این لینک داخلیه و بدون VPN باز می‌شه.';
+  $('fVpnHint').textContent = !isHttpUrl(u) ? ''
+    : (isStream(u) ? '▶ لینک پخش مستقیمه و داخل همین صفحه پخش می‌شه. ' : '')
+      + (needsVpn(u) ? '🔒 لینک خارجیه و به VPN نیاز داره.' : '🏠 لینک داخلیه و بدون VPN باز می‌شه.');
 }
 
 editForm.addEventListener('submit', e => {
@@ -925,8 +1140,8 @@ main.addEventListener('click', e => {
     // Cmd/Ctrl+کلیک مثل لینک معمولی در تب تازه باز می‌شه
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
-    tryOpen(ch);
-  } else if (act === 'alt') tryOpen(ch, Number(el.dataset.i) || 1);
+    startChannel(ch);
+  } else if (act === 'site') tryOpen(ch, Number(el.dataset.i) || 0);
   else if (act === 'fav') toggleFav(ch.id);
   else if (act === 'edit') openEditor(ch);
 });
@@ -959,8 +1174,9 @@ $('recheckBtn').addEventListener('click', () => { lastCheck = Date.now(); checkS
 $('warnOpen').addEventListener('click', () => {
   if ($('warnSkip').checked) skipWarn = true;
   warnDlg.close();
-  if (pendingUrl) openUrl(pendingUrl);
-  pendingUrl = null;
+  const action = pendingAction;
+  pendingAction = null;
+  if (action) action();
 });
 document.addEventListener('click', e => {
   const closer = e.target.closest('[data-close]');
@@ -971,6 +1187,7 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
   if (document.querySelector('dialog[open]')) return;
+  if (!player.hidden) { playerKey(e); return; }
   const t = e.target;
   if (t === searchEl) {
     if (e.key === 'Escape') { searchEl.value = ''; renderMain(); searchEl.blur(); }
@@ -991,7 +1208,7 @@ document.addEventListener('keydown', e => {
   const ch = focusedChannel();
   if (e.code === 'Slash') { e.preventDefault(); searchEl.focus(); searchEl.select(); }
   else if (e.code === 'KeyF' && ch) { e.preventDefault(); toggleFav(ch.id); }
-  else if (e.code === 'KeyS' && ch && ch.urls.length > 1) { e.preventDefault(); tryOpen(ch, 1); }
+  else if (e.code === 'KeyS' && ch && siteLinks(ch).length) { e.preventDefault(); openSite(ch); }
 });
 
 /* ---------- ساعت رسیور ---------- */
