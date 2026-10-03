@@ -1027,6 +1027,8 @@ shield.addEventListener('click', e => {
   shieldTimer = setTimeout(() => { shieldTimer = 0; shieldOff = true; updShield(); }, 320);
 });
 // موس که از کادر بیرون رفت، لایه برمی‌گرده (داخل iframe حرکت موس به صفحه نمی‌رسه، پس هر حرکتی بیرون از پخش‌کننده یعنی بیرون رفته)
+// چرخ موس روی لایه: لایه فوراً کنار می‌ره تا اسکرول به خود صفحه‌ی سایت برسه
+shield.addEventListener('wheel', () => { shieldOff = true; updShield(); }, { passive: true });
 document.addEventListener('mousemove', e => { if (shieldOff && !player.contains(e.target)) { shieldOff = false; updShield(); } });
 window.addEventListener('resize', placePlayer);
 if (window.ResizeObserver) new ResizeObserver(placePlayer).observe(previewBox);
