@@ -12,6 +12,7 @@
     badge    متن کوتاه لوگو (اختیاری)
     color    رنگ لوگو (اختیاری)
     streams  لینک‌های پخش مستقیم (.m3u8) که داخل خود صفحه پخش می‌شن؛ به ترتیب امتحان می‌شن
+    embed    پخش یوتیوب داخل خود صفحه (اختیاری)
     urls     سایت‌های پخش شبکه؛ اگه پخش مستقیم نبود یا کار نکرد، اینا باز می‌شن
 
   لینک‌های پخش مستقیم از https://github.com/iptv-org/iptv برداشته شدن و ممکنه گاهی عوض بشن.
@@ -41,7 +42,7 @@ window.SAT_CHANNELS = [
   /* ── خبری ── */
   { id: "iranintl", name: "ایران اینترنشنال", cat: "news", badge: "IRAN INTL", color: "#b3121b",
     streams: ["https://hlspackager.akamaized.net/live/DB/IRAN_INTERNATIONAL/HLS/IRAN_INTERNATIONAL.m3u8", "https://live.livetvstream.co.uk/LS-63503-4/index.m3u8"],
-    urls: ["https://www.youtube.com/@IRANINTL/live", P("Iran-International-TV")] },
+    embed: "https://www.youtube.com/embed/live_stream?channel=UCat6bC0Wrqq9Bcq7EkH_yQw", urls: ["https://www.youtube.com/@IRANINTL/live", P("Iran-International-TV")] },
   { id: "bbcpersian", name: "بی‌بی‌سی فارسی", cat: "news", badge: "BBC", color: "#a50e0e",
     streams: ["https://vs-hls-pushb-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_persian_tv/mobile_wifi_main_hd_abr_v2.m3u8",
               "https://vs-hls-pushb-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_persian_tv/pc_hd_abr_v2.m3u8"],
@@ -50,6 +51,9 @@ window.SAT_CHANNELS = [
     streams: ["https://voa-ingest.akamaized.net/hls/live/2033876/tvmc07/playlist.m3u8", WNS("voaphls")], urls: [P("VOA-Persian")] },
   { id: "iranefarda", name: "ایران فردا", cat: "news", badge: "FARDA TV", color: "#37474f",
     streams: ["https://iranefardalive.com/stream/live.m3u8"], urls: [P("Irane-Farda")] },
+  { id: "dwenglish", name: "DW English", cat: "news", badge: "DW", color: "#0a4d8c",
+    streams: ["https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/master.m3u8",
+              "https://amg01644-amg01644c1-amgplt0343.playout.now3.amagi.tv/ts-eu-w1-n2/playlist/amg01644-amg01644c1-amgplt0343/playlist.m3u8"] },
   { id: "radiofarda", name: "رادیو فردا", cat: "news", badge: "فردا", color: "#c2410c",
     urls: [P("Radio-Farda"), P("Radio-Farda-TV")] },
   { id: "kanalyek", name: "کانال یک", cat: "news", badge: "CH 1", color: "#0d47a1",
@@ -97,7 +101,7 @@ window.SAT_CHANNELS = [
     streams: ["https://live.presstv.ir/hls/ifilm2.m3u8"], urls: ["https://fa2.ifilmtv.ir/Home/Live"] },
   { id: "namayesh", name: "نمایش", cat: "movies", badge: "نمایش", color: "#5e35b1", streams: [TWB("namayesh")], urls: [TWB_SITE("namayesh")] },
   { id: "tamasha", name: "تماشا", cat: "movies", badge: "تماشا", color: "#283593", streams: [TWB("hdtest")] },
-  { id: "ytfilms", name: "فیلم‌های یوتیوب", cat: "movies", badge: "YouTube", color: "#d32f2f", urls: ["https://www.youtube.com/channel/UClgRkhTL3_hImCAmdLfDE4g"] },
+  { id: "ytfilms", name: "فیلم‌های یوتیوب", cat: "movies", badge: "YouTube", color: "#d32f2f", embed: "https://www.youtube.com/embed/videoseries?list=UUlgRkhTL3_hImCAmdLfDE4g", urls: ["https://www.youtube.com/channel/UClgRkhTL3_hImCAmdLfDE4g"] },
 
   /* ── مستند و تاریخی ── */
   { id: "mostanad", name: "شبکه مستند", cat: "docs", badge: "مستند", color: "#2e7d32",
@@ -108,7 +112,7 @@ window.SAT_CHANNELS = [
   { id: "persianamedical", name: "پرشیانا پزشکی", cat: "docs", badge: "MEDICAL", color: "#00838f", streams: [PERSIANA("phd2hls"), WNS("tfnhls")] },
   { id: "gemnature", name: "جم نیچر", cat: "docs", badge: "GEM NATURE", color: "#2e7d32", streams: [GEM("gemnature")] },
   { id: "manotodocs", name: "مستندهای منوتو", cat: "docs", badge: "manoto", color: "#37474f",
-    urls: ["https://www.youtube.com/playlist?list=PLK_tIl1mumy8EHJtlHd0H_omDgqKGsrwu"] },
+    embed: "https://www.youtube.com/embed/videoseries?list=PLK_tIl1mumy8EHJtlHd0H_omDgqKGsrwu", urls: ["https://www.youtube.com/playlist?list=PLK_tIl1mumy8EHJtlHd0H_omDgqKGsrwu"] },
   { id: "historyhit", name: "History Hit (تاریخی)", cat: "docs", badge: "HISTORY HIT", color: "#7f1d1d", streams: ["https://lds-timeline-rakuten.amagi.tv/playlist.m3u8"] },
   { id: "historyhunters", name: "History Hunters (تاریخی)", cat: "docs", badge: "HISTORY", color: "#6d4c41",
     streams: ["https://amg00841-amg00841c7-rakuten-uk-2820.playouts.now.amagi.tv/playlist/amg00841-aeemeafast-historyhuntersrakuten-rakutenuk/playlist.m3u8"] },
@@ -135,8 +139,8 @@ window.SAT_CHANNELS = [
     streams: ["https://amg01775-amg01775c1-amgplt0343.playout.now3.amagi.tv/playlist/amg01775-amg01775c1-amgplt0343/playlist.m3u8"] },
   { id: "chinatravel", name: "China Travel (سفر)", cat: "docs", badge: "CHINA TRAVEL", color: "#c62828",
     streams: ["https://fastlive.cctvplus.com/out/v1/ca6f9297b7314a63959435028af287fc/index.m3u8"] },
-  { id: "dwdocs", name: "DW Documentary", cat: "docs", badge: "DW DOC", color: "#0a4d8c", urls: ["https://www.youtube.com/channel/UCW39zufHfsuGgpLviKh297Q"] },
-  { id: "nasatv", name: "NASA TV", cat: "docs", badge: "NASA", color: "#0b3d91", urls: [P("NASA-TV")] },
+  { id: "dwdocs", name: "DW Documentary", cat: "docs", badge: "DW DOC", color: "#0a4d8c", embed: "https://www.youtube.com/embed/videoseries?list=UUW39zufHfsuGgpLviKh297Q", urls: ["https://www.youtube.com/channel/UCW39zufHfsuGgpLviKh297Q"] },
+  { id: "nasatv", name: "NASA TV", cat: "docs", badge: "NASA", color: "#0b3d91", embed: "https://www.youtube.com/embed/live_stream?channel=UCLA_DiR1FfKNvjuUpBHmylQ", urls: [P("NASA-TV")] },
 
   /* ── ورزشی ── */
   { id: "varzesh", name: "شبکه ورزش", cat: "sports", badge: "ورزش", color: "#1b5e20", streams: [TWB("varzesh")], urls: [TWB_SITE("varzesh")] },
