@@ -539,7 +539,8 @@ function rowHTML(c){
 
 function render(){
   shown = currentList();
-  if (!shown.some(c => c.id === selId)) selId = shown.length ? shown[0].id : null;
+  // اگه شبکه‌ی انتخاب‌شده توی فهرست جدید نیست، نوار زرد می‌ره روی شبکه‌ای که داره پخش می‌شه (یا اولی)؛ این فقط انتخابه و چیزی پخش نمی‌کنه
+  if (!shown.some(c => c.id === selId)) selId = playing && shown.some(c => c.id === playing.id) ? playing.id : shown.length ? shown[0].id : null;
   const q = searchEl.value.trim();
   $('catTitle').innerHTML = `${esc(q ? `جستجو: «${q}»` : viewName(view))}<small>${fa(shown.length)} شبکه</small>`;
   $('kRedText').textContent = filter === 'all' ? 'سالم/داخلی/VPN' : FILTERS[filter];
@@ -604,6 +605,7 @@ function editHelpHTML(c){
 
 function setView(v){
   view = v;
+  if (playing) selId = playing.id;
   store.set(K.view, v);
   searchEl.value = '';
   render();
@@ -1401,7 +1403,7 @@ $('kGreen').addEventListener('click', pressGreen);
 $('kYellow').addEventListener('click', pressYellow);
 $('kBlue').addEventListener('click', pressBlue);
 
-searchEl.addEventListener('input', render);
+searchEl.addEventListener('input', () => { if (playing) selId = playing.id; render(); });
 $('menuBtn').addEventListener('click', () => {
   $('mHiddenCount').textContent = hidden.size ? `(${fa(hidden.size)})` : '';
   $('mUnhide').disabled = !hidden.size;
@@ -1453,6 +1455,8 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (t.closest && t.closest('input, select, textarea')) return;
+  // Enter یا فاصله روی یه دکمه (مثل فلش دسته‌ها) فقط همون دکمه رو می‌زنه، نه پخش شبکه‌ی انتخاب‌شده
+  if ((e.key === 'Enter' || e.key === ' ') && t.closest && t.closest('button')) return;
   const digit = /^(?:Digit|Numpad)(\d)$/.exec(e.code);
   if (digit && !e.shiftKey) { e.preventDefault(); pushDigit(digit[1]); return; }
   const ch = selId && byId(selId);
