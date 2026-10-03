@@ -36,7 +36,6 @@ window.SAT_CATEGORIES = [
 ];
 
 const P = n => `https://www.parsatv.com/name=${n}`;
-const GEM = n => `https://ca-rt.onetv.app/${n}/index-0.m3u8?token=onetv202`;
 const PERSIANA = n => `https://${n}.persiana.live/hls/stream.m3u8`;
 const WNS = n => `https://${n}.wns.live/hls/stream.m3u8`;
 const TWB = n => `https://ncdn.telewebion.ir/${n}/live/playlist.m3u8`;
@@ -91,16 +90,16 @@ window.SAT_CHANNELS = [
   { id: "classicarts", name: "Classic Arts Showcase", fa: "هنر کلاسیک", cat: "english", streams: ["https://classicarts.akamaized.net/hls/live/1024257/CAS/master.m3u8"] },
 
   /* ── فیلم و سریال ── */
-  { id: "gemtv", name: "GEM TV", fa: "جم تی‌وی", cat: "movies", badge: "GEM", color: "#7b1fa2", streams: [GEM("gem"), GEM("gemtvplus")], urls: [P("GEM-TV")] },
-  { id: "gemseries", name: "GEM Series", fa: "جم سریال", cat: "movies", badge: "GEM SERIES", color: "#8e24aa", streams: [GEM("gemseriesplus")], urls: [P("GEM-Series")] },
-  { id: "gemfilm", name: "GEM Film", fa: "جم فیلم", cat: "movies", badge: "GEM FILM", color: "#6a1b9a", streams: [GEM("gemfilm")] },
-  { id: "gemclassic", name: "GEM Classic", fa: "جم کلاسیک", cat: "movies", badge: "CLASSIC", color: "#5d4037", streams: [GEM("gemclassic")] },
-  { id: "gemonyx", name: "GEM Onyx", fa: "جم اونیکس", cat: "movies", badge: "ONYX", color: "#212121", streams: [GEM("gemonyx")] },
-  { id: "gemdrama", name: "GEM Drama", fa: "جم درام", cat: "movies", badge: "GEM DRAMA", color: "#ad1457", streams: [GEM("gemdrama"), GEM("gemdramaplus")], urls: [P("GEM-Drama")] },
-  { id: "gemriver", name: "GEM River", fa: "جم ریور", cat: "movies", badge: "GEM RIVER", color: "#00796b", streams: [GEM("gemriver"), GEM("gemriverplus")], urls: [P("GEM-River")] },
-  { id: "gemrubix", name: "GEM Rubix", fa: "جم روبیکس", cat: "movies", badge: "RUBIX", color: "#e65100", streams: [GEM("gemrubix"), GEM("gemrubixplus")], urls: [P("GEM-Rubix")] },
-  { id: "gembollywood", name: "GEM Bollywood", fa: "جم بالیوود", cat: "movies", badge: "BOLLYWOOD", color: "#c2185b", streams: [GEM("gembollywood")], urls: [P("GEM-Bollywood")] },
-  { id: "gemcomedy", name: "GEM Comedy", fa: "جم کمدی", cat: "movies", badge: "GEM COMEDY", color: "#f57f17", streams: [GEM("gemcomedy")] },
+  { id: "gemtv", name: "GEM TV", fa: "جم تی‌وی", cat: "movies", badge: "GEM", color: "#7b1fa2", streams: [], urls: [P("GEM-TV")] },
+  { id: "gemseries", name: "GEM Series", fa: "جم سریال", cat: "movies", badge: "GEM SERIES", color: "#8e24aa", streams: [], urls: [P("GEM-Series-TV")] },
+  { id: "gemfilm", name: "GEM Film", fa: "جم فیلم", cat: "movies", badge: "GEM FILM", color: "#6a1b9a", streams: [], urls: [P("GEM-Film")] },
+  { id: "gemclassic", name: "GEM Classic", fa: "جم کلاسیک", cat: "movies", badge: "CLASSIC", color: "#5d4037", streams: [], urls: [P("GEM-Classic")] },
+  { id: "gemonyx", name: "GEM Onyx", fa: "جم اونیکس", cat: "movies", badge: "ONYX", color: "#212121", streams: [], urls: [P("GEM-Onyx")] },
+  { id: "gemdrama", name: "GEM Drama", fa: "جم درام", cat: "movies", badge: "GEM DRAMA", color: "#ad1457", streams: [], urls: [P("GEM-Drama")] },
+  { id: "gemriver", name: "GEM River", fa: "جم ریور", cat: "movies", badge: "GEM RIVER", color: "#00796b", streams: [], urls: [P("GEM-River")] },
+  { id: "gemrubix", name: "GEM Rubix", fa: "جم روبیکس", cat: "movies", badge: "RUBIX", color: "#e65100", streams: [], urls: [P("GEM-Rubix")] },
+  { id: "gembollywood", name: "GEM Bollywood", fa: "جم بالیوود", cat: "movies", badge: "BOLLYWOOD", color: "#c2185b", streams: [], urls: [P("GEM-Bollywood")] },
+  { id: "gemcomedy", name: "GEM Comedy", fa: "جم کمدی", cat: "movies", badge: "GEM COMEDY", color: "#f57f17", streams: [], urls: [P("GEM-Comedy")] },
   { id: "persianacinema", name: "Persiana Cinema", fa: "پرشیانا سینما", cat: "movies", badge: "PERSIANA CINEMA", color: "#b71c1c",
     streams: [PERSIANA("cinehls"), WNS("todayhls")], urls: [P("Persiana-Cinema")] },
   { id: "persianaseries", name: "Persiana Series", fa: "پرشیانا سریال", cat: "movies", badge: "PERSIANA SERIES", color: "#c62828", streams: [PERSIANA("onehls")] },
@@ -120,8 +119,8 @@ window.SAT_CHANNELS = [
   { id: "goldstar", name: "Gold Star", fa: "گلد استار", cat: "movies", badge: "GOLD STAR", color: "#b8860b", streams: [WNS("moviethls")] },
   { id: "metafilm", name: "Meta Film", fa: "متا فیلم", cat: "movies", badge: "META FILM", color: "#4527a0", streams: [WNS("metafilmhls")] },
   { id: "newflix", name: "Newflix", fa: "نیوفلیکس", cat: "movies", badge: "NEWFLIX", color: "#b71c1c", streams: [WNS("newfhls")] },
-  { id: "ekranmovies", name: "Ekran Movies", fa: "اکران مووی", cat: "movies", badge: "EKRAN", color: "#37474f", streams: [GEM("EkranMovies")] },
-  { id: "t2movies", name: "T2 Movies", fa: "تی۲ مووی", cat: "movies", badge: "T2 MOVIES", color: "#00838f", streams: [GEM("T2Movies")] },
+  { id: "ekranmovies", name: "Ekran Movies", fa: "اکران مووی", cat: "movies", badge: "EKRAN", color: "#37474f", streams: [], urls: [P("Ekran-Movies")] },
+  { id: "t2movies", name: "T2 Movies", fa: "تی۲ مووی", cat: "movies", badge: "T2 MOVIES", color: "#00838f", streams: [], urls: [P("T2-Movies")] },
   { id: "classictv", name: "Classic TV", fa: "کلاسیک تی‌وی", cat: "iranfilm", badge: "CLASSIC TV", color: "#4e342e", streams: [WNS("clshls")] },
   { id: "khatereh", name: "Khatereh TV", fa: "خاطره", cat: "iranfilm", badge: "خاطره", color: "#6d4c41", urls: [P("Khatereh-TV")] },
   { id: "ifilm", name: "iFilm", fa: "آی‌فیلم", cat: "iranfilm", badge: "iFILM", color: "#c77800",
@@ -139,7 +138,7 @@ window.SAT_CHANNELS = [
   { id: "persianadocs", name: "Persiana Docs", fa: "پرشیانا مستند", cat: "docs", badge: "PERSIANA DOCS", color: "#33691e", streams: [PERSIANA("scihls")] },
   { id: "persianatravel", name: "Persiana Travel", fa: "پرشیانا سفر", cat: "docs", badge: "TRAVEL", color: "#0277bd", streams: [PERSIANA("ptravelhls"), WNS("mardomhls")] },
   { id: "persianamedical", name: "Persiana Medical", fa: "پرشیانا پزشکی", cat: "docs", badge: "MEDICAL", color: "#00838f", streams: [PERSIANA("phd2hls"), WNS("tfnhls")] },
-  { id: "gemnature", name: "GEM Nature", fa: "جم نیچر", cat: "docs", badge: "GEM NATURE", color: "#2e7d32", streams: [GEM("gemnature")] },
+  { id: "gemnature", name: "GEM Nature", fa: "جم نیچر", cat: "docs", badge: "GEM NATURE", color: "#2e7d32", streams: [], urls: [P("GEM-Nature")] },
   { id: "manotodocs", name: "Manoto Documentaries", fa: "مستندهای منوتو", cat: "docs", badge: "manoto", color: "#37474f",
     embed: "https://www.youtube.com/embed/videoseries?list=PLK_tIl1mumy8EHJtlHd0H_omDgqKGsrwu", urls: ["https://www.youtube.com/playlist?list=PLK_tIl1mumy8EHJtlHd0H_omDgqKGsrwu"] },
   { id: "historyhit", name: "History Hit", fa: "History Hit (تاریخی)", cat: "docs", badge: "HISTORY HIT", color: "#7f1d1d", streams: ["https://lds-timeline-rakuten.amagi.tv/playlist.m3u8"] },
@@ -175,7 +174,7 @@ window.SAT_CHANNELS = [
   { id: "varzesh", name: "IRIB Varzesh", fa: "شبکه ورزش", cat: "sports", badge: "ورزش", color: "#1b5e20", streams: [TWB("varzesh")], urls: [TWB_SITE("varzesh")] },
   { id: "tv3", name: "IRIB TV3", fa: "شبکه سه", cat: "sports", badge: "۳", color: "#0d47a1", streams: [TWB("tv3")], urls: [TWB_SITE("tv3")] },
   { id: "persianafight", name: "Persiana Fight", fa: "پرشیانا فایت (رزمی)", cat: "sports", badge: "FIGHT", color: "#b71c1c", streams: [PERSIANA("fighthls")] },
-  { id: "gemfit", name: "GEM Fit", fa: "جم فیت (ورزش و تناسب)", cat: "sports", badge: "GEM FIT", color: "#00897b", streams: [GEM("gemfit")] },
+  { id: "gemfit", name: "GEM Fit", fa: "جم فیت (ورزش و تناسب)", cat: "sports", badge: "GEM FIT", color: "#00897b", streams: [], urls: [P("GEM-Fit")] },
 
   /* ── موسیقی ── */
   { id: "nava", name: "IRIB Nava", fa: "نوا", cat: "music", badge: "نوا", color: "#00796b", streams: [TWB("nava")], urls: [TWB_SITE("nava")] },
@@ -186,18 +185,18 @@ window.SAT_CHANNELS = [
   { id: "persianafolk", name: "Persiana Folk", fa: "پرشیانا موسیقی محلی", cat: "music", badge: "FOLK", color: "#8d6e63", streams: [PERSIANA("sonhls")] },
   { id: "persianavibe", name: "Persiana Vibe", fa: "پرشیانا وایب", cat: "music", badge: "VIBE", color: "#4a148c", streams: [PERSIANA("raphls")] },
   { id: "navahang", name: "Navahang TV", fa: "نواهنگ", cat: "music", badge: "NAVAHANG", color: "#00695c", streams: [WNS("simahls")] },
-  { id: "gemmifa", name: "GEM Mifa", fa: "جم میفا", cat: "music", badge: "MIFA", color: "#d81b60", streams: [GEM("gemmifa"), GEM("gemmifaplus")] },
+  { id: "gemmifa", name: "GEM Mifa", fa: "جم میفا", cat: "music", badge: "MIFA", color: "#d81b60", streams: [], urls: [P("GEM-Mifa-Plus")] },
 
   /* ── کودک و نوجوان ── */
   { id: "pooya", name: "IRIB Pooya", fa: "پویا و نهال", cat: "kids", badge: "پویا", color: "#f9a825", streams: [TWB("pooya")] },
-  { id: "gemjunior", name: "GEM Junior", fa: "جم جونیور", cat: "kids", badge: "JUNIOR", color: "#fb8c00", streams: [GEM("gemjunior")] },
-  { id: "gemkids", name: "GEM Kids", fa: "جم کیدز", cat: "kids", badge: "GEM KIDS", color: "#43a047", streams: [GEM("gemkids")] },
+  { id: "gemjunior", name: "GEM Junior", fa: "جم جونیور", cat: "kids", badge: "JUNIOR", color: "#fb8c00", streams: [], urls: [P("GEM-Junior")] },
+  { id: "gemkids", name: "GEM Kids", fa: "جم کیدز", cat: "kids", badge: "GEM KIDS", color: "#43a047", streams: [], urls: [P("GEM-Kids")] },
   { id: "persianajunior", name: "Persiana Junior", fa: "پرشیانا جونیور", cat: "kids", badge: "JUNIOR", color: "#039be5", streams: [PERSIANA("junhls")] },
   { id: "persianateen", name: "Persiana Teen", fa: "پرشیانا تین", cat: "kids", badge: "TEEN", color: "#8e24aa", streams: [PERSIANA("kphls")] },
 
   /* ── سرگرمی و عمومی ── */
   { id: "manoto", name: "Manoto", fa: "منوتو", cat: "general", badge: "manoto", color: "#263238",
-    streams: [GEM("manototv")], urls: ["https://www.youtube.com/@manototv/videos"] },
+    streams: [], urls: [P("Manoto"), "https://www.youtube.com/@manototv/videos"] },
   { id: "tapesh", name: "Tapesh TV", fa: "تپش", cat: "general", badge: "TAPESH", color: "#b71c1c",
     streams: ["https://iptv.tapesh.tv/tapesh/playlist.m3u8"], urls: [P("Tapesh"), P("Tapesh-Iran")] },
   { id: "tapesh2", name: "Tapesh 2", fa: "تپش ۲", cat: "general", badge: "TAPESH 2", color: "#c62828", streams: [WNS("maxtvhls")] },
@@ -206,8 +205,8 @@ window.SAT_CHANNELS = [
   { id: "persianafamily", name: "Persiana Family", fa: "پرشیانا فمیلی", cat: "general", badge: "FAMILY", color: "#ad1457", streams: [PERSIANA("familyhls")] },
   { id: "persianacomedy", name: "Persiana Comedy", fa: "پرشیانا کمدی", cat: "general", badge: "COMEDY", color: "#f57f17", streams: [PERSIANA("comedyhls")] },
   { id: "persianareality", name: "Persiana Reality", fa: "پرشیانا ریالیتی", cat: "general", badge: "REALITY", color: "#5e35b1", streams: [PERSIANA("twohls")] },
-  { id: "gemlife", name: "GEM Life", fa: "جم لایف", cat: "general", badge: "GEM LIFE", color: "#00897b", streams: [GEM("gemlife")] },
-  { id: "gemfood", name: "GEM Food", fa: "جم فود (آشپزی)", cat: "general", badge: "GEM FOOD", color: "#ef6c00", streams: [GEM("gemfood")] },
+  { id: "gemlife", name: "GEM Life", fa: "جم لایف", cat: "general", badge: "GEM LIFE", color: "#00897b", streams: [], urls: [P("GEM-Life")] },
+  { id: "gemfood", name: "GEM Food", fa: "جم فود (آشپزی)", cat: "general", badge: "GEM FOOD", color: "#ef6c00", streams: [], urls: [P("GEM-Food")] },
   { id: "parstv", name: "Pars TV", fa: "پارس تی‌وی", cat: "general", badge: "PARS", color: "#1565c0", streams: [WNS("parshls")], urls: [P("Pars-TV")] },
   { id: "itn", name: "ITN TV", fa: "ITN", cat: "general", badge: "ITN", color: "#0d47a1", streams: [WNS("itnhls")], urls: [P("ITN-TV")] },
   { id: "omideiran", name: "Omid-e-Iran", fa: "امید ایران", cat: "general", badge: "OITN", color: "#2e7d32", streams: [WNS("oitnhls")] },
