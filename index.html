@@ -130,6 +130,7 @@
   .player{position:fixed;inset:0;z-index:60;background:#000}
   .player video{width:100%;height:100%;object-fit:contain;background:#000}
   .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .p-shield{position:absolute;inset:0;z-index:1;cursor:pointer}
   .p-info,.p-msg,.p-bar{z-index:1}
   .p-info{position:absolute;top:1.4rem;left:1.6rem;display:flex;align-items:center;gap:1rem;background:#000c;border:3px solid var(--frame);border-radius:.3rem;padding:.5rem 1.1rem;transition:opacity .3s;font-family:var(--rx);direction:ltr}
   .p-info .pnum{font-size:1.8rem;font-weight:700}
@@ -220,6 +221,7 @@
   <div id="pInfo" class="p-info"></div>
   <div id="pMsg" class="p-msg" hidden></div>
   <div id="pPause" class="p-pause" hidden>❚❚</div>
+  <div id="pShield" class="p-shield" hidden title="دابل‌کلیک = تمام‌صفحه · یه کلیک = کار با خود پخش‌کننده"></div>
   <div id="pMute" class="p-mute" hidden>🔇 برای پخش صدا، یه جای صفحه کلیک کن</div>
   <div class="p-bar">
     <button class="btn ghost" type="button" data-pact="next" title="شبکه‌ی بعدی (↑)">▲ بعدی</button>
@@ -320,7 +322,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=9"></script>
+<script src="channels.js?v=10"></script>
 <script>
 (() => {
 'use strict';
@@ -343,6 +345,8 @@ function hostOf(u){ try { return new URL(u).hostname.toLowerCase().replace(/^www
 function normUrl(u){ return String(u || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/#.*$/, '').replace(/\/+$/, ''); }
 function fixUrl(v){ v = String(v || '').trim(); return v && !/^[a-z][a-z0-9+.-]*:/i.test(v) ? 'https://' + v : v; }
 const httpList = v => (Array.isArray(v) ? v : []).map(u => String(u || '').trim()).filter(isHttpUrl);
+// صفحه‌ی پارسا تی‌وی (نسخه‌ی موبایل) رو می‌شه داخل کادر نشون داد، پس شبکه از صفحه بیرون نمی‌ره
+const parsaEmbed = urls => { const u = urls.find(x => /^https:\/\/www\.parsatv\.com\/name=/.test(x)); return u ? u.replace('/name=', '/m/name=') : ''; };
 
 // سایت‌های داخلی بدون VPN باز می‌شن؛ بقیه به VPN نیاز دارن
 const DOMESTIC_HOSTS = ['telewebion.com', 'aparat.com', 'filimo.com'];
@@ -363,7 +367,7 @@ const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
 const FALLBACK_CAT = CAT.general ? 'general' : CATS[0].id;
 const BUILTIN = (Array.isArray(window.SAT_CHANNELS) ? window.SAT_CHANNELS : [])
   .filter(c => c && c.id && c.name && (httpList(c.urls).length || httpList(c.streams).length))
-  .map(c => ({ ...c, urls: httpList(c.urls), streams: httpList(c.streams), embed: httpList([c.embed])[0] || '', cat: CAT[c.cat] ? c.cat : FALLBACK_CAT, builtin: true }));
+  .map(c => ({ ...c, urls: httpList(c.urls), streams: httpList(c.streams), embed: httpList([c.embed])[0] || parsaEmbed(httpList(c.urls)), cat: CAT[c.cat] ? c.cat : FALLBACK_CAT, builtin: true }));
 const BUILTIN_IDS = new Set(BUILTIN.map(c => c.id));
 
 const PALETTE = ['#1565c0', '#6a1b9a', '#00796b', '#c62828', '#e65100', '#2e7d32', '#ad1457', '#37474f', '#4527a0', '#00838f'];
@@ -393,7 +397,7 @@ function cleanChannel(raw){
   if (!name || !(urls.length || streams.length)) return null;
   return {
     id: typeof raw.id === 'string' && /^[\w-]{1,40}$/.test(raw.id) ? raw.id : newId(),
-    name, urls, streams, embed: '',
+    name, urls, streams, embed: parsaEmbed(urls),
     cat: CAT[raw.cat] ? raw.cat : FALLBACK_CAT,
     badge: String(raw.badge || '').trim().slice(0, 12),
     color: isHex(raw.color) ? raw.color : '',
@@ -978,7 +982,20 @@ function placePlayer(){
   player.classList.toggle('pv', mode === 'preview');
   if (mode !== 'full') player.classList.remove('idle');
   player.hidden = mode === 'off';
+  updShield();
 }
+// روی پیش‌نمایش سایت‌ها (پارسا تی‌وی و یوتیوب) کلیک‌ها به خود سایت می‌رسه و صفحه نمی‌فهمه؛
+// برای همین یه لایه‌ی شفاف روشه: دابل‌کلیک = تمام‌صفحه، یه کلیک = لایه کنار می‌ره تا بشه با پخش‌کننده کار کرد
+const shield = $('pShield');
+let shieldOff = false, shieldTimer = 0;
+function updShield(){ shield.hidden = !(mode === 'preview' && $('pFrame') && !shieldOff); }
+shield.addEventListener('click', e => {
+  e.stopPropagation();
+  if (shieldTimer) { clearTimeout(shieldTimer); shieldTimer = 0; if (playing) goFull(playing); return; }
+  shieldTimer = setTimeout(() => { shieldTimer = 0; shieldOff = true; updShield(); }, 320);
+});
+// موس که از کادر بیرون رفت، لایه برمی‌گرده (داخل iframe حرکت موس به صفحه نمی‌رسه، پس هر حرکتی بیرون از پخش‌کننده یعنی بیرون رفته)
+document.addEventListener('mousemove', e => { if (shieldOff && !player.contains(e.target)) { shieldOff = false; updShield(); } });
 window.addEventListener('resize', placePlayer);
 if (window.ResizeObserver) new ResizeObserver(placePlayer).observe(previewBox);
 // جای پیش‌نمایش ممکنه با تغییر نوشته‌های بالای صفحه کمی جابه‌جا بشه؛ مرتب هم‌ترازش می‌کنیم
@@ -1066,6 +1083,8 @@ function showEmbed(ch){
   }
   video.hidden = true;
   player.insertBefore(f, pInfo);
+  shieldOff = false;
+  updShield();
   player.classList.remove('idle');
   clearTimeout(idleTimer);
 }
@@ -1074,6 +1093,7 @@ function stopStream(){
   $('pPause').hidden = true;
   const f = $('pFrame');
   if (f) f.remove();
+  updShield();
   video.hidden = false;
   if (hls) { hls.destroy(); hls = null; }
   video.removeAttribute('src');
