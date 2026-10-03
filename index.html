@@ -42,7 +42,11 @@
   .topbar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;opacity:.8}
   .topbar:hover,.topbar:focus-within{opacity:1}
   .brand{font-weight:800;color:#ddd;white-space:nowrap}
-  .search{flex:1 1 10rem;max-width:20rem;background:#0d0d0d;border:1px solid #333;border-radius:.4rem;padding:.4rem .7rem;outline:none}
+  .sbar{display:flex;align-items:center;gap:.5rem;margin:.45rem .55rem .1rem;padding:.1rem .7rem;background:#0d0d0d;border:1.5px solid #444;border-radius:.4rem;direction:rtl;cursor:text}
+  .sbar:focus-within{border-color:var(--frame);background:#141414}
+  .sicon{font-size:1rem;opacity:.8}
+  .search{flex:1;min-width:0;background:transparent;border:0;padding:.5rem 0;outline:none;font-size:1.05rem;color:inherit;font-family:var(--font)}
+  .skey{font-size:.75rem;color:#888;border:1px solid #444;border-radius:.25rem;padding:0 .35rem}
   .search::placeholder{color:#777}
   .search:focus{border-color:var(--frame)}
   .pill{display:flex;align-items:center;gap:.45rem;background:#0d0d0d;border:1px solid #333;border-radius:999px;padding:.3rem .8rem;font-weight:700;white-space:nowrap;font-size:.9rem}
@@ -131,6 +135,8 @@
   .player video{width:100%;height:100%;object-fit:contain;background:#000}
   .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   .p-shield{position:absolute;inset:0;z-index:1;cursor:pointer}
+  .p-open{position:absolute;left:.5rem;bottom:.5rem;z-index:2;font-size:.8rem;padding:.25rem .6rem;background:#000c;color:#ddd;border:1px solid #555;border-radius:.3rem;cursor:pointer;opacity:.75}
+  .p-open:hover{opacity:1;border-color:var(--frame)}
   .p-info,.p-msg,.p-bar{z-index:1}
   .p-info{position:absolute;top:1.4rem;left:1.6rem;display:flex;align-items:center;gap:1rem;background:#000c;border:3px solid var(--frame);border-radius:.3rem;padding:.5rem 1.1rem;transition:opacity .3s;font-family:var(--rx);direction:ltr}
   .p-info .pnum{font-size:1.8rem;font-weight:700}
@@ -188,6 +194,7 @@
       <h1 id="catTitle">همه‌ی شبکه‌ها</h1>
       <button class="arrow" id="catNext" type="button" aria-label="دسته‌ی بعدی">&gt;</button>
     </div>
+    <label class="sbar"><span class="sicon">🔍</span><input id="search" class="search" type="search" placeholder="جستجوی شبکه… (اسم فارسی یا انگلیسی)" autocomplete="off" aria-label="جستجوی شبکه"><kbd class="skey" title="کلید / برای رفتن به جستجو">/</kbd></label>
     <div class="list" id="list" role="listbox" aria-labelledby="catTitle"></div>
     <div class="keys">
       <button class="ckey red" type="button" id="kRed" title="کلید R"><i></i><span id="kRedText">سالم/داخلی/VPN</span></button>
@@ -200,7 +207,6 @@
 
   <div class="side">
     <div class="topbar">
-      <input id="search" class="search" type="search" placeholder="جستجوی شبکه…" autocomplete="off" aria-label="جستجوی شبکه">
       <button id="signal" class="pill" type="button" data-state="checking" title="وضعیت VPN؛ برای جزئیات کلیک کن"><span class="dot"></span><span id="sigText">در حال بررسی VPN…</span></button>
       <button id="scanText" class="scan" type="button" title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
  <button id="pvBtn" class="icon-btn" type="button" title="پیش‌نمایش شبکه‌ی انتخاب‌شده">📺 پیش‌نمایش روشن</button>
@@ -221,6 +227,7 @@
   <div id="pInfo" class="p-info"></div>
   <div id="pMsg" class="p-msg" hidden></div>
   <div id="pPause" class="p-pause" hidden>❚❚</div>
+  <button id="pOpen" class="p-open" type="button" data-pact="site" hidden>🌐 چیزی نیومد؟ باز کردن در تب</button>
   <div id="pShield" class="p-shield" hidden title="دابل‌کلیک = تمام‌صفحه · یه کلیک = کار با خود پخش‌کننده"></div>
   <div id="pMute" class="p-mute" hidden>🔇 برای پخش صدا، یه جای صفحه کلیک کن</div>
   <div class="p-bar">
@@ -322,7 +329,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=12"></script>
+<script src="channels.js?v=13"></script>
 <script>
 (() => {
 'use strict';
@@ -346,6 +353,18 @@ function normUrl(u){ return String(u || '').trim().toLowerCase().replace(/^https
 function fixUrl(v){ v = String(v || '').trim(); return v && !/^[a-z][a-z0-9+.-]*:/i.test(v) ? 'https://' + v : v; }
 const httpList = v => (Array.isArray(v) ? v : []).map(u => String(u || '').trim()).filter(isHttpUrl);
 // صفحه‌ی پارسا تی‌وی (نسخه‌ی موبایل) رو می‌شه داخل کادر نشون داد، پس شبکه از صفحه بیرون نمی‌ره
+// لینک‌هایی که خودت اضافه می‌کنی: یوتیوب، پارسا تی‌وی یا هر سایتی، داخل کادر باز می‌شه
+function siteEmbed(urls){
+  const u = urls[0];
+  if (!u) return '';
+  let m;
+  if ((m = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|live\/|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/))) return `https://www.youtube.com/embed/${m[1]}`;
+  if ((m = u.match(/youtube\.com\/channel\/(UC[\w-]{22})/))) return `https://www.youtube.com/embed/live_stream?channel=${m[1]}`;
+  if ((m = u.match(/youtube\.com\/.*[?&]list=([\w-]+)/))) return `https://www.youtube.com/embed/videoseries?list=${m[1]}`;
+  return parsaEmbed(urls) || u;
+}
+// صفحه‌ی زنده‌ی تلوبیون → لینک پخش مستقیمش
+const twbStream = u => { const m = u.match(/^https:\/\/(?:www\.)?telewebion\.com\/live\/([\w-]+)/); return m ? `https://ncdn.telewebion.ir/${m[1]}/live/playlist.m3u8` : ''; };
 const parsaEmbed = urls => { const u = urls.find(x => /^https:\/\/www\.parsatv\.com\/name=/.test(x)); return u ? u.replace('/name=', '/m/name=') : ''; };
 
 // سایت‌های داخلی بدون VPN باز می‌شن؛ بقیه به VPN نیاز دارن
@@ -393,11 +412,12 @@ function cleanChannel(raw){
   if (!raw || typeof raw !== 'object') return null;
   const name = String(raw.name || '').trim().slice(0, 60);
   const all = [...httpList(Array.isArray(raw.urls) ? raw.urls : [raw.url]), ...httpList(raw.streams)];
-  const streams = all.filter(isStream).slice(0, 3), urls = all.filter(u => !isStream(u)).slice(0, 3);
+  const urls = all.filter(u => !isStream(u)).slice(0, 3);
+  const streams = [...all.filter(isStream), ...urls.map(twbStream).filter(Boolean)].slice(0, 3);
   if (!name || !(urls.length || streams.length)) return null;
   return {
     id: typeof raw.id === 'string' && /^[\w-]{1,40}$/.test(raw.id) ? raw.id : newId(),
-    name, urls, streams, embed: parsaEmbed(urls),
+    name, urls, streams, embed: siteEmbed(urls),
     cat: CAT[raw.cat] ? raw.cat : FALLBACK_CAT,
     badge: String(raw.badge || '').trim().slice(0, 12),
     color: isHex(raw.color) ? raw.color : '',
@@ -988,7 +1008,11 @@ function placePlayer(){
 // برای همین یه لایه‌ی شفاف روشه: دابل‌کلیک = تمام‌صفحه، یه کلیک = لایه کنار می‌ره تا بشه با پخش‌کننده کار کرد
 const shield = $('pShield');
 let shieldOff = false, shieldTimer = 0;
-function updShield(){ shield.hidden = !(mode === 'preview' && $('pFrame') && !shieldOff); }
+function updShield(){
+  const f = $('pFrame');
+  shield.hidden = !(mode === 'preview' && f && !shieldOff);
+  $('pOpen').hidden = !(f && playing && playing.urls.length && !isYT(f.src));
+}
 shield.addEventListener('click', e => {
   e.stopPropagation();
   if (shieldTimer) { clearTimeout(shieldTimer); shieldTimer = 0; if (playing) goFull(playing); return; }
@@ -1266,7 +1290,7 @@ function openEditor(ch){
 function updateVpnHint(){
   const u = fixUrl(fUrl.value);
   $('fVpnHint').textContent = !isHttpUrl(u) ? ''
-    : (isStream(u) ? '▶ لینک پخش مستقیمه و داخل همین صفحه پخش می‌شه. ' : '🌐 سایت شبکه توی یه تب جدا باز می‌شه. ')
+    : (isStream(u) ? '▶ لینک پخش مستقیمه و داخل همین صفحه پخش می‌شه. ' : '📺 صفحه‌ی سایت داخل کادر پیش‌نمایش باز می‌شه (اگه سایت اجازه نده، دکمه‌ی «باز کردن در تب» هست). ')
       + (needsVpn(u) ? '🔒 لینک خارجیه و به VPN نیاز داره.' : '🏠 لینک داخلیه و بدون VPN باز می‌شه.');
 }
 editForm.addEventListener('submit', e => {
