@@ -102,7 +102,16 @@
   .ist{font-size:.9rem;margin-top:.3rem;color:#ccc}
   .iwarn{color:#ff8a80;font-weight:700;margin-top:.25rem;font-size:.9rem}
   .iedit{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.45rem}
-  .help{color:#777;font-size:.8rem;margin:auto 0 0;line-height:2;text-align:right}
+  .help{color:#777;font-size:.8rem;margin:0;line-height:2;text-align:right}
+  .preview{flex:1;min-height:0;margin:1rem 0;border:3px solid #1d1d1d;border-radius:.3rem;display:grid;place-items:center;background:#030303}
+  .pv-note{color:#666;text-align:center;padding:1rem;font-size:1rem}
+  .icon-btn.on{border-color:var(--frame);color:var(--frame)}
+  .player.pv{right:auto;bottom:auto;border:3px solid var(--frame);border-radius:.3rem;overflow:hidden}
+  .player.pv .p-info,.player.pv .p-bar{display:none}
+  .player.pv .p-msg{font-size:.95rem;padding:.8rem 1rem}
+  .player.pv .p-msg .dlg-actions{display:none}
+  .p-msg .pm-title{display:block;border-bottom:3px solid var(--frame);margin:-.6rem -1rem .6rem;padding-bottom:.3rem}
+  .p-mute{position:absolute;top:.6rem;right:.6rem;z-index:2;background:#000c;border:1px solid #555;border-radius:.3rem;padding:.2rem .6rem;font-size:.85rem}
 
   /* پیام‌ها مثل پنجره‌ی «توجه» رسیور، وسط قسمت سیاه صفحه */
   .toast{position:fixed;top:45%;right:calc((100vw - min(44rem,48vw) - 4.4rem) / 2);transform:translate(50%,-50%);z-index:70;min-width:16rem;max-width:min(28rem,40vw);background:#000;border:3px solid var(--frame);border-radius:.3rem;text-align:center;font-weight:700}
@@ -187,8 +196,10 @@
       <input id="search" class="search" type="search" placeholder="جستجوی شبکه…" autocomplete="off" aria-label="جستجوی شبکه">
       <button id="signal" class="pill" type="button" data-state="checking" title="وضعیت VPN؛ برای جزئیات کلیک کن"><span class="dot"></span><span id="sigText">در حال بررسی VPN…</span></button>
       <button id="scanText" class="scan" type="button" title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
+ <button id="pvBtn" class="icon-btn" type="button" title="پیش‌نمایش شبکه‌ی انتخاب‌شده">📺 پیش‌نمایش روشن</button>
       <button id="menuBtn" class="icon-btn" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙</button>
     </div>
+    <div class="preview" id="preview"><p class="pv-note" id="pvNote">نوار زرد رو یک ثانیه روی یه شبکه نگه دار تا اینجا پخش بشه.</p></div>
     <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · <kbd>Enter</kbd> یا کلیک = پخش · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب</p>
   </div>
 </div>
@@ -200,6 +211,7 @@
   <video id="video" playsinline></video>
   <div id="pInfo" class="p-info"></div>
   <div id="pMsg" class="p-msg" hidden></div>
+  <div id="pMute" class="p-mute" hidden>🔇 برای پخش صدا، یه جای صفحه کلیک کن</div>
   <div class="p-bar">
     <button class="btn ghost" type="button" data-pact="next" title="شبکه‌ی بعدی (↑)">▲ بعدی</button>
     <button class="btn ghost" type="button" data-pact="prev" title="شبکه‌ی قبلی (↓)">▼ قبلی</button>
@@ -543,20 +555,21 @@ function render(){
     listEl.innerHTML = shown.map(rowHTML).join('');
   }
   renderInfo();
-  scrollToSel();
+  schedulePreview();
 }
 function scrollToSel(){
   const el = selId && listEl.querySelector(`.row[data-id="${CSS.escape(selId)}"]`);
   if (el) el.scrollIntoView({ block: 'nearest' });
 }
-function select(id){
+function select(id, noScroll){
   if (!id || id === selId) return;
   const prev = listEl.querySelector('.row.sel');
   if (prev) { prev.classList.remove('sel'); prev.setAttribute('aria-selected', 'false'); }
   selId = id;
   const el = listEl.querySelector(`.row[data-id="${CSS.escape(id)}"]`);
-  if (el) { el.classList.add('sel'); el.setAttribute('aria-selected', 'true'); el.scrollIntoView({ block: 'nearest' }); }
+  if (el) { el.classList.add('sel'); el.setAttribute('aria-selected', 'true'); if (!noScroll) el.scrollIntoView({ block: 'nearest' }); }
   renderInfo();
+  schedulePreview();
 }
 function moveSel(step){
   if (!shown.length) return;
@@ -858,7 +871,7 @@ function openSite(ch){
 }
 // شبکه‌هایی که پخش مستقیم دارن داخل صفحه پخش می‌شن، بقیه سایتشون باز می‌شه
 function startChannel(ch){
-  if (inPage(ch)) guard(ch, primaryUrl(ch), () => playChannel(ch));
+  if (inPage(ch)) goFull(ch);
   else openSite(ch);
 }
 
@@ -883,8 +896,8 @@ function commitNumber(play){
     return;
   }
   numEl.hidden = true;
-  if (!player.hidden) {
-    if (ch.streams.length) playChannel(ch);
+  if (mode === 'full') {
+    if (inPage(ch)) playChannel(ch);
     else toast(`«${ch.name}» پخش مستقیم نداره.`);
     return;
   }
@@ -925,25 +938,99 @@ function setMsg(html){ pMsg.innerHTML = html; pMsg.hidden = !html; }
 function wakePlayer(){
   player.classList.remove('idle');
   clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => { if (pMsg.hidden && !$('pFrame')) player.classList.add('idle'); }, 3500);
+  idleTimer = setTimeout(() => { if (mode === 'full' && pMsg.hidden && !$('pFrame')) player.classList.add('idle'); }, 3500);
 }
+/* حالت‌ها: off = چیزی پخش نمی‌شه، preview = پیش‌نمایش سمت راست فهرست، full = تمام‌صفحه */
+let mode = 'off', previewOn = store.get('sat.preview.v1', true) !== false, previewTimer, previewFor = null, autoMuted = false;
+const previewBox = $('preview'), pvNote = $('pvNote');
+function placePlayer(){
+  if (mode === 'preview') {
+    const r = previewBox.getBoundingClientRect();
+    Object.assign(player.style, { top: r.top + 'px', left: r.left + 'px', width: r.width + 'px', height: r.height + 'px' });
+  } else {
+    player.style.cssText = '';
+  }
+  player.classList.toggle('pv', mode === 'preview');
+  if (mode !== 'full') player.classList.remove('idle');
+  player.hidden = mode === 'off';
+}
+window.addEventListener('resize', placePlayer);
+if (window.ResizeObserver) new ResizeObserver(placePlayer).observe(previewBox);
+// جای پیش‌نمایش ممکنه با تغییر نوشته‌های بالای صفحه کمی جابه‌جا بشه؛ مرتب هم‌ترازش می‌کنیم
+setInterval(() => { if (mode === 'preview') placePlayer(); }, 400);
+function setNote(text){ pvNote.textContent = text; }
+function paintPreviewBtn(){
+  const b = $('pvBtn');
+  b.classList.toggle('on', previewOn);
+  b.textContent = previewOn ? '📺 پیش‌نمایش روشن' : '📺 پیش‌نمایش خاموش';
+}
+// نوار زرد یک ثانیه روی یه شبکه بمونه، همون شبکه سمت راست پخش می‌شه
+function schedulePreview(){
+  if (!previewOn || mode === 'full' || !selId) return;
+  if ((playing && playing.id === selId) || previewFor === selId) return;
+  clearTimeout(previewTimer);
+  previewFor = selId;
+  previewTimer = setTimeout(() => {
+    previewFor = null;
+    const c = selId && byId(selId);
+    if (c && mode !== 'full') previewChannel(c);
+  }, 1000);
+}
+function previewChannel(ch){
+  if (!inPage(ch)) {
+    stopPlayback();
+    setNote(`«${ch.name}» پخش مستقیم نداره؛ با کلیک، سایتش باز می‌شه.`);
+    return;
+  }
+  mode = 'preview';
+  placePlayer();
+  playChannel(ch);
+}
+function stopPlayback(){
+  clearTimeout(previewTimer);
+  previewFor = null;
+  playToken++;
+  stopStream();
+  setMsg('');
+  playing = null;
+  mode = 'off';
+  placePlayer();
+}
+function goFull(ch){
+  clearTimeout(previewTimer);
+  previewFor = null;
+  zapList = shown.filter(inPage);
+  mode = 'full';
+  placePlayer();
+  enterFullscreen();
+  if (!playing || playing.id !== ch.id) playChannel(ch);
+  else { pInfo.hidden = false; wakePlayer(); }
+}
+// برگشت از تمام‌صفحه به فهرست؛ اگه پیش‌نمایش روشنه همون شبکه کنارش ادامه پیدا می‌کنه
+function leaveFull(){
+  if (mode !== 'full') return;
+  if (weFullscreened) exitFullscreen();
+  weFullscreened = false;
+  const ch = playing;
+  if (previewOn && ch) { mode = 'preview'; placePlayer(); } else stopPlayback();
+  if (ch) {
+    if (!shown.some(c => c.id === ch.id)) setView('all');
+    select(ch.id);
+  }
+}
+document.addEventListener('fullscreenchange', () => { if (!fsElement() && mode === 'full' && weFullscreened) { weFullscreened = false; leaveFull(); } });
+
 function playChannel(ch){
   const numberedCh = numbered().find(c => c.id === ch.id) || ch;
-  if (player.hidden) {
-    // کانال بعدی/قبلی از همون فهرستی که الان روی صفحه‌ست
-    zapList = shown.filter(inPage);
-    player.hidden = false;
-    enterFullscreen();
-  }
   if (!zapList.some(c => c.id === ch.id)) zapList = numbered().filter(inPage);
   playing = numberedCh;
   streamIdx = 0;
   // لینکی که توی بررسی سلامت جواب داده، اول امتحان می‌شه
   const best = health.res[ch.id] ? health.res[ch.id].i | 0 : 0;
   attempts = [...new Set([best, ...ch.streams.keys()])].filter(i => i < ch.streams.length);
-  selId = ch.id;
-  pInfo.innerHTML = `<span class="pnum">${pad4(numberedCh.num || 0)}</span>${logoHTML(ch)}<div><div class="iname">${esc(ch.name)}</div><div class="imeta">${esc(CAT[ch.cat] ? CAT[ch.cat].name : '')}</div></div>`;
+  pInfo.innerHTML = `<span class="pnum">${pad4(numberedCh.num || 0)}</span><div><div class="iname">${esc(ch.name)}</div><div class="imeta">${esc(ch.fa || '')}</div></div>`;
   $('pSite').hidden = !ch.urls.length;
+  if (mode === 'full' && selId !== ch.id) { selId = ch.id; }
   wakePlayer();
   if (ch.streams.length) playStream(); else showEmbed(ch);
 }
@@ -971,6 +1058,26 @@ function stopStream(){
   video.removeAttribute('src');
   video.load();
 }
+// مرورگر تا قبل از اولین کلیک یا کلید، پخش با صدا رو اجازه نمی‌ده؛ تا اون موقع بی‌صدا پخش می‌شه
+function startVideo(token){
+  if (!autoMuted) video.muted = false;
+  video.play().catch(err => {
+    if (token !== playToken || !err || err.name !== 'NotAllowedError') return;
+    autoMuted = true;
+    video.muted = true;
+    $('pMute').hidden = false;
+    video.play().catch(() => {});
+  });
+}
+function unmuteOnGesture(){
+  if (!autoMuted) return;
+  autoMuted = false;
+  video.muted = false;
+  $('pMute').hidden = true;
+}
+document.addEventListener('pointerdown', unmuteOnGesture, true);
+document.addEventListener('keydown', unmuteOnGesture, true);
+
 async function playStream(){
   const ch = playing, token = ++playToken, url = ch.streams[attempts[streamIdx]];
   stopStream();
@@ -988,12 +1095,19 @@ async function playStream(){
       hls.loadSource(url);
       hls.attachMedia(video);
     }
-    video.play().catch(err => {
-      if (token === playToken && err && err.name === 'NotAllowedError') setMsg('▶ برای شروع پخش، روی صفحه کلیک کن');
-    });
+    startVideo(token);
   } catch {
     streamFailed(token);
   }
+}
+// نقطه‌ی رنگی کنار شبکه همون لحظه به‌روز می‌شه
+function refreshDot(id){
+  const row = listEl.querySelector(`.row[data-id="${CSS.escape(id)}"]`), c = byId(id);
+  if (!row || !c) return;
+  const st = healthOf(c);
+  row.querySelector('.st').className = 'st st-' + st;
+  row.classList.toggle('st-row-bad', st === 'bad');
+  if (id === selId) renderInfo();
 }
 // اگه یه منبع کار نکرد، بعدی امتحان می‌شه؛ آخر سر پیشنهاد باز کردن سایت شبکه
 function streamFailed(token){
@@ -1002,6 +1116,7 @@ function streamFailed(token){
   if (++streamIdx < attempts.length) return playStream();
   health.res[ch.id] = { s: healthOf(ch) === 'cors' ? 'cors' : 'bad', i: 0 };
   store.set(HEALTH_KEY, health);
+  refreshDot(ch.id);
   if (ch.embed) return showEmbed(ch);
   playToken++;
   stopStream();
@@ -1010,23 +1125,13 @@ function streamFailed(token){
     : needsVpn(url) && s !== 'vpn' && s !== 'weak' ? 'احتمالاً VPN لازمه.'
     : !needsVpn(url) && (s === 'vpn' || s === 'weak') ? 'شبکه‌های داخلی معمولاً با VPN پخش نمی‌شن؛ VPN رو خاموش کن.'
     : 'ممکنه لینک پخش عوض شده باشه یا شبکه موقتاً قطع باشه.';
-  setMsg(`پخش مستقیم «${esc(ch.name)}» الان کار نمی‌کنه.<br><span class="hint">${why}</span>
+  setMsg(`<b class="pm-title">توجه</b><span class="pm-body">سیگنال ضعیف است<br><span class="hint">${why}</span></span>
     <div class="dlg-actions">
       <button class="btn" type="button" data-pact="retry">↻ دوباره</button>
-      ${ch.urls.length ? '<button class="btn ghost" type="button" data-pact="site">🌐 باز کردن سایت شبکه</button>' : ''}
+      ${ch.urls.length ? '<button class="btn ghost" type="button" data-pact="site">🌐 سایت شبکه</button>' : ''}
       <button class="btn ghost" type="button" data-pact="next">▲ شبکه‌ی بعدی</button>
     </div>`);
   wakePlayer();
-}
-function closePlayer(){
-  playToken++;
-  stopStream();
-  setMsg('');
-  playing = null;
-  player.hidden = true;
-  if (weFullscreened) exitFullscreen();
-  weFullscreened = false;
-  render();
 }
 function zap(step){
   if (!playing || !zapList.length) return;
@@ -1036,7 +1141,7 @@ function zap(step){
 function playerAction(act){
   if (act === 'next') zap(1);
   else if (act === 'prev') zap(-1);
-  else if (act === 'close') closePlayer();
+  else if (act === 'close') leaveFull();
   else if (act === 'retry' && playing) { streamIdx = 0; if (playing.streams.length) playStream(); else showEmbed(playing); }
   else if (act === 'site' && playing) openSite(playing);
   else if (act === 'full') { if (fsElement()) exitFullscreen(); else enterFullscreen(); }
@@ -1046,7 +1151,7 @@ function playerKey(e){
   wakePlayer();
   if (digit && !e.shiftKey) pushDigit(digit[1]);
   else if (numBuf && (e.key === 'Enter' || e.code === 'NumpadEnter')) commitNumber(true);
-  else if (e.key === 'Escape' || e.key === 'Backspace') closePlayer();
+  else if (e.key === 'Escape' || e.key === 'Backspace') leaveFull();
   else if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'ArrowLeft') zap(1);
   else if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'ArrowRight') zap(-1);
   else if (e.key === ' ') { if (video.paused) video.play().catch(() => {}); else video.pause(); }
@@ -1061,16 +1166,30 @@ video.addEventListener('playing', () => {
   setMsg('');
   wakePlayer();
   // پخش واقعاً شروع شد: همین لینک برای دفعه‌ی بعد علامت سالم می‌گیره
-  if (playing && playing.streams.length) { health.res[playing.id] = { s: 'ok', i: attempts[streamIdx] | 0 }; store.set(HEALTH_KEY, health); }
+  if (playing && playing.streams.length) {
+    health.res[playing.id] = { s: 'ok', i: attempts[streamIdx] | 0 };
+    store.set(HEALTH_KEY, health);
+    refreshDot(playing.id);
+  }
 });
 video.addEventListener('waiting', () => { if (pMsg.hidden) setMsg('⏳'); });
 video.addEventListener('error', () => { if (nativeHls && playing) streamFailed(playToken); });
 video.addEventListener('dblclick', () => playerAction('full'));
-video.addEventListener('click', () => { if (video.paused && playing) video.play().catch(() => {}); });
 player.addEventListener('mousemove', wakePlayer);
 player.addEventListener('click', e => {
   const b = e.target.closest('[data-pact]');
-  if (b) playerAction(b.dataset.pact);
+  if (b) return playerAction(b.dataset.pact);
+  // کلیک روی پیش‌نمایش = تمام‌صفحه
+  if (mode === 'preview' && playing) goFull(playing);
+  else if (video.paused && playing) video.play().catch(() => {});
+});
+$('pvBtn').addEventListener('click', () => {
+  previewOn = !previewOn;
+  store.set('sat.preview.v1', previewOn);
+  paintPreviewBtn();
+  if (!previewOn && mode === 'preview') stopPlayback();
+  setNote(previewOn ? 'نوار زرد رو یک ثانیه روی یه شبکه نگه دار تا اینجا پخش بشه.' : 'پیش‌نمایش خاموشه؛ با کلیک روی هر شبکه، تمام‌صفحه پخش می‌شه.');
+  if (previewOn) schedulePreview();
 });
 
 /* ---------- افزودن / ویرایش ---------- */
@@ -1213,7 +1332,7 @@ listEl.addEventListener('click', e => {
 });
 listEl.addEventListener('mouseover', e => {
   const row = e.target.closest('.row');
-  if (row && !dragId) select(row.dataset.id);
+  if (row && !dragId) select(row.dataset.id, true);
 });
 listEl.addEventListener('dblclick', e => {
   const row = e.target.closest('.row');
@@ -1327,7 +1446,7 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => {
   if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
   if (document.querySelector('dialog[open]')) return;
-  if (!player.hidden) { playerKey(e); return; }
+  if (mode === 'full') { playerKey(e); return; }
   const t = e.target;
   if (t === searchEl) {
     if (e.key === 'Escape') { searchEl.value = ''; render(); searchEl.blur(); }
@@ -1366,6 +1485,8 @@ document.addEventListener('keydown', e => {
 render();
 paintSignal();
 paintScan();
+paintPreviewBtn();
+schedulePreview();
 maybeCheck();
 setInterval(() => maybeCheck(50000), 60000);
 document.addEventListener('visibilitychange', () => maybeCheck(10000));
