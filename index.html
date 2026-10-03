@@ -40,7 +40,7 @@
   [hidden]{display:none !important}
   kbd{font-family:var(--mono);background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.25);border-radius:.3rem;padding:0 .35rem;direction:ltr;display:inline-block;font-size:.85em}
 
-  .app{max-width:1300px;margin:0 auto;padding:.9rem 1.2rem 1.2rem;display:flex;flex-direction:column;height:100vh}
+  .app{max-width:1150px;margin:0 auto;padding:.9rem 1.2rem 1.2rem;display:flex;flex-direction:column;height:100vh}
   .topbar{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:.8rem}
   .brand{font-weight:800;font-size:1.2rem;white-space:nowrap}
   .search{flex:1 1 12rem;max-width:26rem;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.25);border-radius:.6rem;padding:.45rem .8rem;outline:none}
@@ -51,6 +51,7 @@
   [data-state="vpn"] .dot{background:var(--ok);box-shadow:0 0 8px var(--ok)}
   [data-state="weak"] .dot{background:var(--yellow)}
   [data-state="novpn"] .dot,[data-state="intranet"] .dot,[data-state="offline"] .dot{background:var(--bad)}
+  .scan{background:none;border:0;color:var(--muted);font-size:.85rem;white-space:nowrap;padding:0}
   .icon-btn{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.25);border-radius:.6rem;padding:.35rem .7rem}
   .btn{background:var(--frame);color:#2a1a00;border:0;border-radius:.6rem;padding:.5rem 1rem;font-weight:800;white-space:nowrap}
   .btn.ghost{background:rgba(0,0,0,.3);color:var(--text);border:1px solid rgba(255,255,255,.3);font-weight:600}
@@ -59,23 +60,32 @@
   :focus-visible{outline:3px solid var(--frame);outline-offset:2px}
 
   /* ---------- قاب اصلی شبیه لیست کانال رسیور ---------- */
-  .panel{flex:1;min-height:0;display:flex;flex-direction:column;border:3px solid var(--frame);border-radius:.5rem;background:linear-gradient(180deg,var(--panel),var(--panel-2));box-shadow:0 20px 60px rgba(0,0,0,.45)}
+  .panel{flex:1;min-height:0;display:flex;flex-direction:column;border:3px solid var(--frame);border-radius:.3rem;background:linear-gradient(180deg,#1c3196,#142679);box-shadow:0 20px 60px rgba(0,0,0,.45)}
   .phead{display:flex;align-items:center;justify-content:space-between;padding:.35rem .8rem;border-bottom:3px solid var(--frame)}
   .phead h1{margin:0;font-size:1.45rem;font-weight:800;text-align:center;flex:1}
   .phead h1 small{font-size:.9rem;color:var(--muted);font-weight:600;margin-inline-start:.5rem}
   .arrow{background:none;border:0;font-size:1.6rem;font-weight:800;padding:0 .8rem;color:var(--text);line-height:1}
-  .list{flex:1;min-height:0;overflow-y:auto;padding:.35rem .4rem;scrollbar-color:var(--frame) rgba(0,0,0,.25)}
-  .row{display:flex;align-items:center;gap:.9rem;padding:.32rem .8rem;border-radius:.35rem;font-size:1.3rem;cursor:pointer;user-select:none;border:2px solid transparent;scroll-margin:2.5rem}
+  .list{flex:1;min-height:0;overflow-y:scroll;padding:.3rem .35rem .3rem .2rem}
+  .list::-webkit-scrollbar{width:1rem}
+  .list::-webkit-scrollbar-track{border:2px solid #fff;border-radius:1rem;margin:.3rem 0;background:#0e1f66}
+  .list::-webkit-scrollbar-thumb{background:#fff;border-radius:1rem;border:3px solid #0e1f66}
+  .row{display:flex;align-items:center;gap:1rem;padding:.12rem .7rem;border-radius:.15rem;font-size:1.45rem;line-height:1.75;cursor:pointer;user-select:none;border:2px solid transparent;scroll-margin:2.5rem;text-shadow:0 1px 1px rgba(0,0,0,.5)}
   .row:hover{background:var(--row-hover)}
-  .row.sel{background:linear-gradient(180deg,var(--sel-1),var(--sel-2));color:var(--sel-text);box-shadow:0 0 0 2px #fff6 inset}
-  .row.sel .tag{border-color:rgba(42,26,0,.55);color:var(--sel-text);background:rgba(255,255,255,.35)}
-  .row.sel .rnum{color:#5a3d00}
+  .row.sel{background:linear-gradient(180deg,#fffbe8 0%,#f9e08a 40%,#eeb030 75%,#e39a12 100%);color:#3b2a00;text-shadow:none}
+  .row.sel .rnum{color:#5a4410}
+  .row.sel .box{border-color:#5a4410;color:#3b2a00}
   .row.dragging{opacity:.4}
   .row.drop-before{border-top-color:var(--frame)}
   .row.drop-after{border-bottom-color:var(--frame)}
-  .rnum{font-family:var(--mono);color:#dfe7ff;min-width:3.4rem;direction:ltr;text-align:right}
+  .rnum{font-family:"Arial","Vazirmatn",sans-serif;color:#e7ecff;min-width:3.6rem;direction:ltr;text-align:right;letter-spacing:.03em}
+  .box{font-family:"Arial",sans-serif;font-size:.8rem;font-weight:800;border:2px solid #fff;border-radius:.3rem;padding:0 .3rem;line-height:1.35;min-width:1.7rem;text-align:center}
+  .box.site{font-family:var(--font);font-weight:600;font-size:.72rem;opacity:.75}
+  .st{width:.7rem;height:.7rem;border-radius:50%;background:#7d88b3;box-shadow:0 0 0 1.5px rgba(255,255,255,.5)}
+  .st-ok{background:#4cff7a}.st-cors{background:#ffa726}.st-bad{background:#ff5252}
+  .st-site,.st-embed{visibility:hidden}
   .rlogo{flex:0 0 auto;width:4.2rem;height:1.75rem;border-radius:.3rem;display:grid;place-items:center;font-size:.62rem;font-weight:800;line-height:1;text-align:center;padding:0 .2rem;background:var(--c);color:var(--t);overflow:hidden;unicode-bidi:plaintext;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
   .rname{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+  .row.st-row-bad:not(.sel) .rname{opacity:.55}
   .rtags{display:flex;align-items:center;gap:.4rem;flex:0 0 auto}
   .tag{font-size:.72rem;font-weight:800;border:1.5px solid rgba(255,255,255,.75);border-radius:.3rem;padding:.02rem .4rem;line-height:1.5;white-space:nowrap}
   .tag.live{background:#e53935;border-color:#ffcdd2;color:#fff}
@@ -102,7 +112,8 @@
   .ckey.on{background:rgba(255,255,255,.12);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
 
   /* ---------- اطلاعات شبکه‌ی انتخاب‌شده ---------- */
-  .info{padding:.6rem 1rem .75rem;min-height:5.6rem}
+  .info{padding:.55rem 1rem .7rem;min-height:6.2rem;font-family:"Arial","Vazirmatn",sans-serif}
+  .ist{font-size:.95rem;margin-top:.3rem}
   .irow{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:baseline}
   .iname{font-size:1.35rem;font-weight:800}
   .imeta{color:var(--muted);font-size:.95rem;margin-top:.2rem}
@@ -117,6 +128,8 @@
   /* ---------- پخش‌کننده‌ی داخل صفحه ---------- */
   .player{position:fixed;inset:0;z-index:60;background:#000}
   .player video{width:100%;height:100%;object-fit:contain;background:#000}
+  .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .p-info,.p-msg,.p-bar{z-index:1}
   .p-info{position:absolute;top:1.4rem;right:1.6rem;display:flex;align-items:center;gap:1rem;background:rgba(10,31,94,.9);border:3px solid var(--frame);border-radius:.6rem;padding:.6rem 1.1rem;transition:opacity .3s}
   .p-info .pnum{font-family:var(--mono);font-size:1.9rem;direction:ltr}
   .p-info .rlogo{width:5rem;height:2.2rem;font-size:.75rem}
@@ -172,6 +185,7 @@
     <div class="brand">📺 فهرست شبکه‌ها</div>
     <input id="search" class="search" type="search" placeholder="جستجوی اسم یا شماره‌ی شبکه…" autocomplete="off" aria-label="جستجوی شبکه">
     <button id="signal" class="pill" type="button" data-state="checking" title="وضعیت VPN؛ برای جزئیات کلیک کن"><span class="dot"></span><span id="sigText">در حال بررسی VPN…</span></button>
+ <button id="scanText" class="scan" type="button" title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
     <button id="menuBtn" class="icon-btn" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙</button>
   </div>
 
@@ -191,7 +205,7 @@
     <div class="info" id="info"></div>
   </section>
 
-  <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · <kbd>Enter</kbd> پخش · <kbd>←</kbd> <kbd>→</kbd> عوض کردن دسته · عدد = رفتن به شماره · <kbd>F</kbd> علاقه‌مندی · دکمه‌های رنگی: <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> · <span style="color:#ff8a80">▶ پخش</span> = داخل همین صفحه پخش می‌شه</p>
+  <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · <kbd>Enter</kbd> پخش · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی · <span style="color:#4cff7a">●</span> سالم <span style="color:#ffa726">●</span> فقط Safari <span style="color:#ff5252">●</span> قطع</p>
 </div>
 
 <div id="numEntry" class="num-entry" hidden></div>
@@ -278,7 +292,7 @@
     <ul class="keylist">
       <li><kbd>↑</kbd> <kbd>↓</kbd> انتخاب شبکه · <kbd>Enter</kbd> پخش · <kbd>PgUp</kbd> <kbd>PgDn</kbd> صفحه‌ی بعد و قبل</li>
       <li><kbd>←</kbd> <kbd>→</kbd> عوض کردن دسته · عدد + <kbd>Enter</kbd> پخش مستقیم همون شماره</li>
-      <li><kbd>R</kbd> فیلتر · <kbd>G</kbd> علاقه‌مندی‌ها · <kbd>Y</kbd> مرتب‌سازی A-Z · <kbd>B</kbd> حالت ویرایش · <kbd>F</kbd> ستاره</li>
+      <li><kbd>R</kbd> فیلتر (سالم/داخلی/VPN) · <kbd>G</kbd> علاقه‌مندی‌ها · <kbd>Y</kbd> مرتب‌سازی A-Z · <kbd>B</kbd> حالت ویرایش · <kbd>F</kbd> ستاره</li>
       <li>در حالت ویرایش: کشیدن با موس یا <kbd>Shift</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> برای جابه‌جایی</li>
       <li>موقع پخش: <kbd>↑</kbd> <kbd>↓</kbd> کانال بعدی/قبلی · <kbd>F</kbd> تمام‌صفحه · <kbd>M</kbd> بی‌صدا · <kbd>Esc</kbd> برگشت</li>
     </ul>
@@ -300,7 +314,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=3"></script>
+<script src="channels.js?v=4"></script>
 <script>
 (() => {
 'use strict';
@@ -343,7 +357,7 @@ const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
 const FALLBACK_CAT = CAT.general ? 'general' : CATS[0].id;
 const BUILTIN = (Array.isArray(window.SAT_CHANNELS) ? window.SAT_CHANNELS : [])
   .filter(c => c && c.id && c.name && (httpList(c.urls).length || httpList(c.streams).length))
-  .map(c => ({ ...c, urls: httpList(c.urls), streams: httpList(c.streams), cat: CAT[c.cat] ? c.cat : FALLBACK_CAT, builtin: true }));
+  .map(c => ({ ...c, urls: httpList(c.urls), streams: httpList(c.streams), embed: httpList([c.embed])[0] || '', cat: CAT[c.cat] ? c.cat : FALLBACK_CAT, builtin: true }));
 const BUILTIN_IDS = new Set(BUILTIN.map(c => c.id));
 
 const PALETTE = ['#1565c0', '#6a1b9a', '#00796b', '#c62828', '#e65100', '#2e7d32', '#ad1457', '#37474f', '#4527a0', '#00838f'];
@@ -373,7 +387,7 @@ function cleanChannel(raw){
   if (!name || !(urls.length || streams.length)) return null;
   return {
     id: typeof raw.id === 'string' && /^[\w-]{1,40}$/.test(raw.id) ? raw.id : newId(),
-    name, urls, streams,
+    name, urls, streams, embed: '',
     cat: CAT[raw.cat] ? raw.cat : FALLBACK_CAT,
     badge: String(raw.badge || '').trim().slice(0, 12),
     color: isHex(raw.color) ? raw.color : '',
@@ -469,7 +483,7 @@ function numbered(){
   return list;
 }
 if (view !== 'all' && view !== 'fav' && !CAT[view]) view = 'all';
-if (!['all', 'live', 'ir', 'vpn'].includes(filter)) filter = 'all';
+if (!['all', 'ok', 'ir', 'vpn'].includes(filter)) filter = 'all';
 
 /* ---------- عناصر صفحه ---------- */
 const listEl = $('list'), searchEl = $('search'), infoEl = $('info'), panel = $('panel');
@@ -481,8 +495,10 @@ const importFile = $('importFile');
 
 const VIEWS = () => ['all', 'fav', ...CATS.map(c => c.id)];
 const viewName = v => v === 'all' ? 'همه‌ی شبکه‌ها' : v === 'fav' ? '★ علاقه‌مندی‌ها' : CAT[v] ? CAT[v].name : '';
-const FILTERS = { all: 'همه', live: '▶ پخش مستقیم', ir: 'داخلی', vpn: 'VPN' };
-const primaryUrl = c => c.streams[0] || c.urls[0];
+const FILTERS = { all: 'همه', ok: 'فقط سالم‌ها', ir: 'داخلی', vpn: 'VPN' };
+const primaryUrl = c => c.streams[0] || c.embed || c.urls[0];
+// داخل خود صفحه پخش می‌شه (لینک مستقیم یا یوتیوب)، نه با باز کردن سایت
+const inPage = c => c.streams.length > 0 || !!c.embed;
 
 let shown = [];       // شبکه‌هایی که الان در فهرست دیده می‌شن
 let selId = null;
@@ -499,23 +515,23 @@ function currentList(){
   } else {
     list = view === 'all' ? all : all.filter(c => c.cat === view);
   }
-  if (filter === 'live') list = list.filter(c => c.streams.length);
+  if (filter === 'ok') list = list.filter(c => { const st = healthOf(c); return st === 'ok' || st === 'embed' || (st === 'cors' && nativeHls); });
   else if (filter === 'ir') list = list.filter(c => !needsVpn(primaryUrl(c)));
   else if (filter === 'vpn') list = list.filter(c => needsVpn(primaryUrl(c)));
   if (sortAZ) list = [...list].sort((a, b) => collator.compare(a.name, b.name));
   return list;
 }
 
+const ST_TEXT = { ok: 'سالم؛ داخل صفحه پخش می‌شه', cors: 'سرورش فقط توی Safari پخش رو اجازه می‌ده', bad: 'الان جواب نمی‌ده', unk: 'هنوز بررسی نشده', embed: 'از یوتیوب داخل صفحه پخش می‌شه', site: 'فقط سایت شبکه باز می‌شه' };
 function rowHTML(c){
-  const vpn = needsVpn(primaryUrl(c)), fav = favList.includes(c.id);
-  return `<div class="row${c.id === selId ? ' sel' : ''}${vpn ? ' need-vpn' : ''}" role="option" aria-selected="${c.id === selId}" data-id="${esc(c.id)}"${editMode ? ' draggable="true"' : ''}>
+  const vpn = needsVpn(primaryUrl(c)), fav = favList.includes(c.id), st = healthOf(c);
+  return `<div class="row${c.id === selId ? ' sel' : ''}${vpn ? ' need-vpn' : ''}${st === 'bad' ? ' st-row-bad' : ''}" role="option" aria-selected="${c.id === selId}" data-id="${esc(c.id)}"${editMode ? ' draggable="true"' : ''}>
     <span class="grip" aria-hidden="true">☰</span>
     <span class="rnum">${pad4(c.num)}</span>
-    ${logoHTML(c)}
     <span class="rname">${esc(c.name)}</span>
     <span class="rtags">
-      ${c.streams.length ? '<b class="tag live" title="داخل همین صفحه پخش می‌شه">▶ پخش</b>' : '<b class="tag" title="سایت شبکه باز می‌شه">سایت</b>'}
-      ${vpn ? '<b class="tag vpn">VPN</b>' : '<b class="tag ir">داخلی</b>'}
+      <i class="st st-${st}" title="${ST_TEXT[st]}"></i>
+      ${inPage(c) ? '<b class="box" title="داخل همین صفحه پخش می‌شه">▶</b>' : '<b class="box site" title="سایت شبکه باز می‌شه">سایت</b>'}
       <button class="rfav${fav ? ' on' : ''}" type="button" data-act="fav" tabindex="-1" aria-pressed="${fav}" title="${fav ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}">${fav ? '★' : '☆'}</button>
     </span>
   </div>`;
@@ -526,7 +542,7 @@ function render(){
   if (!shown.some(c => c.id === selId)) selId = shown.length ? shown[0].id : null;
   const q = searchEl.value.trim();
   $('catTitle').innerHTML = `${esc(q ? `جستجو: «${q}»` : viewName(view))}<small>${fa(shown.length)} شبکه</small>`;
-  $('kRedText').textContent = filter === 'all' ? 'همه: پخش/داخلی/VPN' : 'فیلتر: ' + FILTERS[filter];
+  $('kRedText').textContent = filter === 'all' ? 'سالم / داخلی / VPN' : FILTERS[filter];
   $('kRed').classList.toggle('on', filter !== 'all');
   $('kGreen').classList.toggle('on', view === 'fav');
   $('kYellow').classList.toggle('on', sortAZ);
@@ -567,13 +583,14 @@ function moveSel(step){
 function renderInfo(){
   const c = shown.find(x => x.id === selId);
   if (!c) { infoEl.innerHTML = editMode ? editHelpHTML(null) : ''; return; }
-  const url = primaryUrl(c), vpn = needsVpn(url), warn = vpnWarning(url);
+  const url = primaryUrl(c), vpn = needsVpn(url), warn = vpnWarning(url), st = healthOf(c);
+  const how = c.streams.length ? `▶ پخش مستقیم داخل همین صفحه${c.streams.length > 1 ? ` (${fa(c.streams.length)} منبع)` : ''}`
+    : c.embed ? '▶ پخش از یوتیوب داخل همین صفحه'
+    : `🌐 سایت شبکه (<span dir="ltr">${esc(hostOf(url))}</span>) باز می‌شه؛ اونجا باید روی دکمه‌ی پخش بزنی`;
   infoEl.innerHTML = `
-    <div class="irow"><span class="iname">${esc(c.name)}</span><span class="imeta">${esc(CAT[c.cat] ? CAT[c.cat].name : '')} · شماره‌ی ${fa(c.num)}</span></div>
-    <div class="irow imeta">
-      <span>${c.streams.length ? `▶ پخش مستقیم در همین صفحه${c.streams.length > 1 ? ` (${fa(c.streams.length)} منبع)` : ''}` : `🌐 باز شدن سایت شبکه: <span dir="ltr">${esc(hostOf(url))}</span>`}${c.streams.length && c.urls.length ? ' · سایت پشتیبان هم داره' : ''}</span>
-      <span>${vpn ? '🔒 نیاز به VPN' : '🏠 داخلی، بدون VPN'}</span>
-    </div>
+    <div class="irow"><span class="iname">${esc(c.name)}</span><span class="iname" style="font-weight:600">${pad4(c.num)}</span></div>
+    <div class="irow imeta"><span>${esc(CAT[c.cat] ? CAT[c.cat].name : '')} · ${how}</span><span>${vpn ? '🔒 نیاز به VPN' : '🏠 داخلی، بدون VPN'}</span></div>
+    ${c.streams.length ? `<div class="ist"><i class="st st-${st}" style="display:inline-block;vertical-align:middle"></i> ${ST_TEXT[st]}${st === 'cors' && !nativeHls ? ' — این صفحه رو توی Safari باز کن.' : ''}</div>` : ''}
     ${warn ? `<div class="iwarn">⚠️ ${esc(warn)}</div>` : ''}
     ${editMode ? editHelpHTML(c) : ''}`;
 }
@@ -685,6 +702,7 @@ async function checkSignal(){
   }
   Object.assign(signal, next, { at: new Date(), busy: false });
   paintSignal();
+  scanAll(false);
 }
 function paintSignal(){
   sigBtn.dataset.state = signal.state;
@@ -712,6 +730,76 @@ function maybeCheck(minGap = 0){
   if (document.visibilityState !== 'visible' || Date.now() - lastCheck < minGap) return;
   lastCheck = Date.now();
   checkSignal();
+}
+
+/* ---------- بررسی سلامت شبکه‌ها ----------
+   لینک‌های پخش مستقیم توی همین مرورگر و با همین اینترنت امتحان می‌شن (هر چند ساعت یک بار
+   و هر بار که VPN وصل یا قطع بشه): ok = پخش می‌شه، cors = سرورش فقط پخش توی Safari رو
+   اجازه می‌ده، bad = الان جواب نمی‌ده. لینکی که جواب داده اولِ پخش امتحان می‌شه. */
+const HEALTH_KEY = 'sat.health.v1';
+let health = store.get(HEALTH_KEY, null);
+if (!health || typeof health !== 'object' || !health.res || typeof health.res !== 'object') health = { at: 0, sig: '', res: {} };
+let scan = null;
+function healthOf(c){
+  if (!c.streams.length) return c.embed ? 'embed' : 'site';
+  const r = health.res[c.id];
+  return r && ['ok', 'cors', 'bad'].includes(r.s) ? r.s : 'unk';
+}
+async function fetchOk(url, mode, ms = 8000){
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(url, { mode, cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer', signal: ctrl.signal });
+    if (mode === 'no-cors') return true;
+    if (!r.ok) return false;
+    return (await r.text()).trimStart().startsWith('#EXTM3U');
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function checkChannel(c){
+  let reachable = false;
+  for (let i = 0; i < c.streams.length; i++) {
+    const u = c.streams[i];
+    // سافاری خودش HLS پخش می‌کنه و محدودیت CORS براش مهم نیست
+    if (nativeHls) { if (await fetchOk(u, 'no-cors')) return { s: 'ok', i }; continue; }
+    if (await fetchOk(u, 'cors')) return { s: 'ok', i };
+    if (!reachable && await fetchOk(u, 'no-cors', 6000)) reachable = true;
+  }
+  return { s: reachable ? 'cors' : 'bad', i: 0 };
+}
+async function scanAll(force){
+  if (scan || signal.state === 'checking') return;
+  const sigNow = signal.state === 'weak' ? 'vpn' : signal.state;
+  if (!force && health.sig === sigNow && Date.now() - health.at < 3 * 3600e3) return;
+  const list = [...BUILTIN, ...custom].filter(c => c.streams.length);
+  scan = { done: 0, total: list.length };
+  paintScan();
+  const res = {};
+  let k = 0;
+  const worker = async () => {
+    while (k < list.length) {
+      const c = list[k++];
+      res[c.id] = health.res[c.id] = await checkChannel(c);
+      scan.done++;
+      if (scan.done % 8 === 0) { paintScan(); render(); }
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
+  health = { at: Date.now(), sig: sigNow, res };
+  store.set(HEALTH_KEY, health);
+  scan = null;
+  paintScan();
+  render();
+}
+function paintScan(){
+  const el = $('scanText');
+  if (scan) { el.textContent = `در حال بررسی شبکه‌ها… ${fa(scan.done)} از ${fa(scan.total)}`; return; }
+  const all = [...BUILTIN, ...custom].filter(c => c.streams.length && !hidden.has(c.id));
+  const ok = all.filter(c => healthOf(c) === 'ok').length, cors = all.filter(c => healthOf(c) === 'cors').length;
+  el.textContent = health.at ? `✓ ${fa(ok)} شبکه سالم${cors && !nativeHls ? ` · ${fa(cors)} فقط در Safari` : ''}` : '';
 }
 
 /* ---------- باز کردن و پخش ---------- */
@@ -749,7 +837,7 @@ function openSite(ch){
 }
 // شبکه‌هایی که پخش مستقیم دارن داخل صفحه پخش می‌شن، بقیه سایتشون باز می‌شه
 function startChannel(ch){
-  if (ch.streams.length) guard(ch, ch.streams[0], () => playChannel(ch));
+  if (inPage(ch)) guard(ch, primaryUrl(ch), () => playChannel(ch));
   else openSite(ch);
 }
 
@@ -789,7 +877,7 @@ function cancelNumber(){ clearTimeout(numTimer); numBuf = ''; numEl.hidden = tru
    سافاری خودش HLS پخش می‌کنه؛ برای کروم کتابخونه‌ی hls.js فقط موقع نیاز بار می‌شه. */
 const player = $('player'), video = $('video'), pInfo = $('pInfo'), pMsg = $('pMsg');
 const nativeHls = !!video.canPlayType('application/vnd.apple.mpegurl');
-let hls = null, hlsLoading = null, playing = null, zapList = [], streamIdx = 0, playToken = 0, stallTimer, idleTimer, weFullscreened = false;
+let hls = null, hlsLoading = null, playing = null, zapList = [], streamIdx = 0, attempts = [], playToken = 0, stallTimer, idleTimer, weFullscreened = false;
 
 function loadHls(){
   if (window.Hls) return Promise.resolve(window.Hls);
@@ -816,33 +904,54 @@ function setMsg(html){ pMsg.innerHTML = html; pMsg.hidden = !html; }
 function wakePlayer(){
   player.classList.remove('idle');
   clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => { if (pMsg.hidden) player.classList.add('idle'); }, 3500);
+  idleTimer = setTimeout(() => { if (pMsg.hidden && !$('pFrame')) player.classList.add('idle'); }, 3500);
 }
 function playChannel(ch){
   const numberedCh = numbered().find(c => c.id === ch.id) || ch;
   if (player.hidden) {
     // کانال بعدی/قبلی از همون فهرستی که الان روی صفحه‌ست
-    zapList = shown.filter(c => c.streams.length);
+    zapList = shown.filter(inPage);
     player.hidden = false;
     enterFullscreen();
   }
-  if (!zapList.some(c => c.id === ch.id)) zapList = numbered().filter(c => c.streams.length);
+  if (!zapList.some(c => c.id === ch.id)) zapList = numbered().filter(inPage);
   playing = numberedCh;
   streamIdx = 0;
+  // لینکی که توی بررسی سلامت جواب داده، اول امتحان می‌شه
+  const best = health.res[ch.id] ? health.res[ch.id].i | 0 : 0;
+  attempts = [...new Set([best, ...ch.streams.keys()])].filter(i => i < ch.streams.length);
   selId = ch.id;
   pInfo.innerHTML = `<span class="pnum">${pad4(numberedCh.num || 0)}</span>${logoHTML(ch)}<div><div class="iname">${esc(ch.name)}</div><div class="imeta">${esc(CAT[ch.cat] ? CAT[ch.cat].name : '')}</div></div>`;
   $('pSite').hidden = !ch.urls.length;
   wakePlayer();
-  playStream();
+  if (ch.streams.length) playStream(); else showEmbed(ch);
+}
+function showEmbed(ch){
+  playToken++;
+  stopStream();
+  setMsg('');
+  const f = document.createElement('iframe');
+  f.id = 'pFrame';
+  f.allow = 'autoplay; fullscreen; encrypted-media; picture-in-picture';
+  f.allowFullscreen = true;
+  f.referrerPolicy = 'strict-origin-when-cross-origin';
+  f.src = ch.embed + (ch.embed.includes('?') ? '&' : '?') + 'autoplay=1&rel=0';
+  video.hidden = true;
+  player.insertBefore(f, pInfo);
+  player.classList.remove('idle');
+  clearTimeout(idleTimer);
 }
 function stopStream(){
   clearTimeout(stallTimer);
+  const f = $('pFrame');
+  if (f) f.remove();
+  video.hidden = false;
   if (hls) { hls.destroy(); hls = null; }
   video.removeAttribute('src');
   video.load();
 }
 async function playStream(){
-  const ch = playing, token = ++playToken, url = ch.streams[streamIdx];
+  const ch = playing, token = ++playToken, url = ch.streams[attempts[streamIdx]];
   stopStream();
   setMsg('⏳ در حال اتصال…' + (ch.streams.length > 1 ? ` <span class="hint">(منبع ${fa(streamIdx + 1)} از ${fa(ch.streams.length)})</span>` : ''));
   stallTimer = setTimeout(() => streamFailed(token), 15000);
@@ -869,11 +978,13 @@ async function playStream(){
 function streamFailed(token){
   if (token !== playToken || !playing) return;
   const ch = playing;
-  if (++streamIdx < ch.streams.length) return playStream();
+  if (++streamIdx < attempts.length) return playStream();
+  if (ch.embed) return showEmbed(ch);
   playToken++;
   stopStream();
   const url = ch.streams[0], s = signal.state;
-  const why = needsVpn(url) && s !== 'vpn' && s !== 'weak' ? 'احتمالاً VPN لازمه.'
+  const why = healthOf(ch) === 'cors' && !nativeHls ? 'سرور این شبکه پخش توی Chrome رو اجازه نمی‌ده؛ همین صفحه رو توی Safari باز کن، اونجا پخش می‌شه.'
+    : needsVpn(url) && s !== 'vpn' && s !== 'weak' ? 'احتمالاً VPN لازمه.'
     : !needsVpn(url) && (s === 'vpn' || s === 'weak') ? 'شبکه‌های داخلی معمولاً با VPN پخش نمی‌شن؛ VPN رو خاموش کن.'
     : 'ممکنه لینک پخش عوض شده باشه یا شبکه موقتاً قطع باشه.';
   setMsg(`پخش مستقیم «${esc(ch.name)}» الان کار نمی‌کنه.<br><span class="hint">${why}</span>
@@ -903,7 +1014,7 @@ function playerAction(act){
   if (act === 'next') zap(1);
   else if (act === 'prev') zap(-1);
   else if (act === 'close') closePlayer();
-  else if (act === 'retry') { streamIdx = 0; playStream(); }
+  else if (act === 'retry' && playing) { streamIdx = 0; if (playing.streams.length) playStream(); else showEmbed(playing); }
   else if (act === 'site' && playing) openSite(playing);
   else if (act === 'full') { if (fsElement()) exitFullscreen(); else enterFullscreen(); }
 }
@@ -1165,6 +1276,7 @@ $('mResetOrder').addEventListener('click', () => {
   toast('ترتیب شبکه‌ها برگشت به حالت اول.');
 });
 sigBtn.addEventListener('click', () => { renderSignalDlg(); signalDlg.showModal(); });
+$('scanText').addEventListener('click', () => scanAll(true));
 $('recheckBtn').addEventListener('click', () => { lastCheck = Date.now(); checkSignal(); });
 $('warnOpen').addEventListener('click', () => {
   if ($('warnSkip').checked) skipWarn = true;
@@ -1220,6 +1332,7 @@ document.addEventListener('keydown', e => {
 /* ---------- شروع ---------- */
 render();
 paintSignal();
+paintScan();
 maybeCheck();
 setInterval(() => maybeCheck(50000), 60000);
 document.addEventListener('visibilitychange', () => maybeCheck(10000));
