@@ -95,6 +95,8 @@
   .ckey{display:flex;align-items:center;gap:.4rem;background:none;border:0;font-weight:800;font-size:1rem;padding:.15rem .35rem;border-radius:.25rem;font-family:var(--font)}
   .ckey i{width:1.15rem;height:1.15rem;border-radius:.15rem;box-shadow:inset 0 -3px 0 rgba(0,0,0,.3),inset 0 2px 0 rgba(255,255,255,.35)}
   .ckey.red{color:#ff5a4f}.ckey.red i{background:var(--red)}
+  .ckey.red.on{background:#ff3b3b26;outline:1.5px solid #ff5a4f}
+  .fchip{margin-inline-start:.6rem;font-size:.8rem;font-weight:700;color:#fff;background:#c62828;border:0;border-radius:.3rem;padding:.1rem .5rem;cursor:pointer;vertical-align:middle;font-family:var(--font)}
   .ckey.green{color:#38e07b}.ckey.green i{background:var(--green)}
   .ckey.yellow{color:#f7dc6f}.ckey.yellow i{background:var(--yellow)}
   .ckey.blue{color:#4fc3f7}.ckey.blue i{background:var(--blue)}
@@ -120,7 +122,7 @@
   .player.pv .p-msg .dlg-actions{display:none}
   .p-msg .pm-title{display:block;border-bottom:3px solid var(--frame);margin:-.6rem -1rem .6rem;padding-bottom:.3rem}
   .p-pause{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;font-size:4rem;color:#fff;background:#000a;border:3px solid var(--frame);border-radius:.4rem;padding:.2rem 1.4rem;pointer-events:none}
-  .player.pv .p-pause{display:none}
+  .player.pv .p-pause{font-size:2.5rem}
   .p-mute{position:absolute;top:.6rem;right:.6rem;z-index:2;background:#000c;border:1px solid #555;border-radius:.3rem;padding:.2rem .6rem;font-size:.85rem}
 
   /* پیام‌ها مثل پنجره‌ی «توجه» رسیور، وسط قسمت سیاه صفحه */
@@ -212,8 +214,8 @@
  <button id="pvBtn" class="icon-btn" type="button" title="پیش‌نمایش شبکه‌ی انتخاب‌شده">📺 پیش‌نمایش روشن</button>
       <button id="menuBtn" class="icon-btn" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙</button>
     </div>
-    <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ کلیک دوباره = تمام‌صفحه.</p></div>
-    <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش، دوباره = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب</p>
+    <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
+    <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب</p>
   </div>
 </div>
 
@@ -329,7 +331,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=13"></script>
+<script src="channels.js?v=14"></script>
 <script>
 (() => {
 'use strict';
@@ -439,7 +441,8 @@ const strArr = v => Array.isArray(v) ? v.filter(x => typeof x === 'string') : []
 let favList = [...new Set(strArr(store.get(K.fav, [])))];   // ترتیب فهرست علاقه‌مندی‌ها مهمه
 const hidden = new Set(strArr(store.get(K.hidden, [])));
 let view = store.get(K.view, 'all');
-let filter = store.get(K.filter, 'all');
+// فیلتر دکمه‌ی قرمز موقتیه و با باز کردن دوباره‌ی صفحه برمی‌گرده روی «همه»
+let filter = 'all';
 let sortAZ = store.get(K.sort, false) === true;
 let editMode = false;
 
@@ -546,7 +549,9 @@ function currentList(){
   } else {
     list = view === 'all' ? all : all.filter(c => c.cat === view);
   }
-  if (filter === 'ok') list = list.filter(c => { const st = healthOf(c); return st === 'live' || st === 'ok' || st === 'embed' || (st === 'cors' && nativeHls); });
+  // جستجو همیشه توی همه‌ی شبکه‌ها می‌گرده، فیلتر قرمز روش اثر نداره
+  if (q) {}
+  else if (filter === 'ok') list = list.filter(c => { const st = healthOf(c); return st === 'live' || st === 'ok' || st === 'embed' || (st === 'cors' && nativeHls); });
   else if (filter === 'ir') list = list.filter(c => !needsVpn(primaryUrl(c)));
   else if (filter === 'vpn') list = list.filter(c => needsVpn(primaryUrl(c)));
   if (sortAZ) list = [...list].sort((a, b) => collator.compare(a.name, b.name));
@@ -572,7 +577,10 @@ function render(){
   // اگه شبکه‌ی انتخاب‌شده توی فهرست جدید نیست، نوار زرد می‌ره روی شبکه‌ای که داره پخش می‌شه (یا اولی)؛ این فقط انتخابه و چیزی پخش نمی‌کنه
   if (!shown.some(c => c.id === selId)) selId = playing && shown.some(c => c.id === playing.id) ? playing.id : shown.length ? shown[0].id : null;
   const q = searchEl.value.trim();
-  $('catTitle').innerHTML = `${esc(q ? `جستجو: «${q}»` : viewName(view))}<small>${fa(shown.length)} شبکه</small>`;
+  const filtered = filter !== 'all' && !q;
+  $('catTitle').innerHTML = `${esc(q ? `جستجو: «${q}»` : viewName(view))}<small>${fa(shown.length)} شبکه</small>`
+    + (filtered ? `<button class="fchip" type="button" id="fClear" title="برداشتن فیلتر (کلید R)">فیلتر: ${esc(FILTERS[filter])} ✕</button>` : '');
+  $('kRed').classList.toggle('on', filtered);
   $('kRedText').textContent = filter === 'all' ? 'سالم/داخلی/VPN' : FILTERS[filter];
   $('kRed').classList.toggle('on', filter !== 'all');
   $('kGreen').classList.toggle('on', view === 'fav');
@@ -949,7 +957,7 @@ function commitNumber(play){
     else toast(`«${ch.name}» پخش مستقیم نداره.`);
     return;
   }
-  if (!shown.some(c => c.id === ch.id)) { filter = 'all'; store.set(K.filter, filter); setView('all'); }
+  if (!shown.some(c => c.id === ch.id)) { filter = 'all'; setView('all'); }
   select(ch.id);
   if (play) startChannel(ch);
 }
@@ -1240,27 +1248,35 @@ video.addEventListener('playing', () => {
 });
 video.addEventListener('waiting', () => { if (pMsg.hidden) setMsg('⏳'); });
 video.addEventListener('error', () => { if (nativeHls && playing) streamFailed(playToken); });
-video.addEventListener('dblclick', () => playerAction('full'));
+let pvClickTimer = 0;
+player.addEventListener('dblclick', e => {
+  if (e.target.closest('[data-pact], #pShield')) return;
+  clearTimeout(pvClickTimer);
+  if (mode === 'preview' && playing) goFull(playing); else playerAction('full');
+});
 player.addEventListener('mousemove', wakePlayer);
 player.addEventListener('click', e => {
   const b = e.target.closest('[data-pact]');
   if (b) return playerAction(b.dataset.pact);
-  // کلیک روی پیش‌نمایش = تمام‌صفحه؛ در حالت تمام‌صفحه کلیک = مکث / ادامه
-  if (mode === 'preview' && playing) goFull(playing);
+  // پیش‌نمایش: کلیک = مکث / ادامه، دابل‌کلیک = تمام‌صفحه؛ تمام‌صفحه: کلیک = مکث / ادامه
+  if (mode === 'preview' && playing) {
+    clearTimeout(pvClickTimer);
+    pvClickTimer = setTimeout(togglePause, 260);
+  }
   else if (mode === 'full' && playing) togglePause();
 });
 function togglePause(){
   if (!playing || $('pFrame')) return;
   if (video.paused) video.play().catch(() => {}); else video.pause();
 }
-video.addEventListener('pause', () => { if (mode === 'full' && playing && video.src) $('pPause').hidden = false; });
+video.addEventListener('pause', () => { if (mode !== 'off' && playing && video.src) $('pPause').hidden = false; });
 video.addEventListener('play', () => { $('pPause').hidden = true; });
 $('pvBtn').addEventListener('click', () => {
   previewOn = !previewOn;
   store.set('sat.preview.v1', previewOn);
   paintPreviewBtn();
   if (!previewOn && mode === 'preview') stopPlayback();
-  setNote(previewOn ? 'روی یه شبکه کلیک کن تا اینجا پخش بشه؛ کلیک دوباره = تمام‌صفحه.' : 'پیش‌نمایش خاموشه؛ با کلیک روی هر شبکه، تمام‌صفحه پخش می‌شه.');
+  setNote(previewOn ? 'روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.' : 'پیش‌نمایش خاموشه؛ با کلیک روی هر شبکه، تمام‌صفحه پخش می‌شه.');
 });
 
 /* ---------- افزودن / ویرایش ---------- */
@@ -1451,12 +1467,12 @@ infoEl.addEventListener('click', e => {
   else if (act === 'edit' && ch) openEditor(ch);
 });
 
+$('catTitle').addEventListener('click', e => { if (e.target.closest('#fClear')) { filter = 'all'; render(); } });
 $('catPrev').addEventListener('click', () => stepView(-1));
 $('catNext').addEventListener('click', () => stepView(1));
 function pressRed(){
   const ids = Object.keys(FILTERS);
   filter = ids[(ids.indexOf(filter) + 1) % ids.length];
-  store.set(K.filter, filter);
   render();
 }
 function pressGreen(){ setView(view === 'fav' ? 'all' : 'fav'); }
