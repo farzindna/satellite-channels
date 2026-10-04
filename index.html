@@ -212,6 +212,7 @@
       <button id="signal" class="pill" type="button" data-state="checking" title="وضعیت VPN؛ برای جزئیات کلیک کن"><span class="dot"></span><span id="sigText">در حال بررسی VPN…</span></button>
       <button id="scanText" class="scan" type="button" title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
  <button id="pvBtn" class="icon-btn" type="button" title="پیش‌نمایش شبکه‌ی انتخاب‌شده">📺 پیش‌نمایش روشن</button>
+      <button id="audioBtn" class="icon-btn" type="button" title="جابه‌جایی صدا بین اسپیکرها (میانبر «سوییچ صدا» توی اپ Shortcuts مک اجرا می‌شه)">🔊 سوییچ صدا</button>
       <button id="menuBtn" class="icon-btn" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙</button>
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
@@ -331,7 +332,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=14"></script>
+<script src="channels.js?v=15"></script>
 <script>
 (() => {
 'use strict';
@@ -1273,6 +1274,12 @@ function togglePause(){
 }
 video.addEventListener('pause', () => { if (mode !== 'off' && playing && video.src) $('pPause').hidden = false; });
 video.addEventListener('play', () => { $('pPause').hidden = true; });
+// صفحه‌ی وب نمی‌تونه خروجی صدای مک رو عوض کنه؛ برای همین میانبری که توی اپ Shortcuts ساخته شده رو صدا می‌زنیم
+const AUDIO_SHORTCUT = 'سوییچ صدا';
+$('audioBtn').addEventListener('click', () => {
+  location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(AUDIO_SHORTCUT);
+  toast('میانبر «' + AUDIO_SHORTCUT + '» اجرا شد. اگه مرورگر اجازه خواست، «Open» رو بزن.');
+});
 $('pvBtn').addEventListener('click', () => {
   previewOn = !previewOn;
   store.set('sat.preview.v1', previewOn);
