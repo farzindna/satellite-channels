@@ -55,7 +55,7 @@
   [data-state="weak"] .dot{background:var(--yellow)}
   [data-state="novpn"] .dot,[data-state="intranet"] .dot,[data-state="offline"] .dot{background:var(--bad)}
   .scan{align-self:flex-start;background:none;border:0;color:var(--muted);font-size:.8rem;white-space:nowrap;padding:0 .2rem;min-height:1.2rem}
-  .scan:empty{display:none}
+  .scan[hidden]{display:none}
   .tools{margin-inline-start:auto;display:flex;gap:.4rem}
   .icon-btn{display:grid;place-items:center;width:2.75rem;height:2.75rem;padding:0;color:#d8d8d8;background:#0d0d0d;border:1px solid #333;border-radius:.45rem;cursor:pointer;transition:border-color .15s,color .15s,background .15s}
   .icon-btn[hidden]{display:none}
@@ -230,7 +230,7 @@
       </span>
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
-    <button id="scanText" class="scan" type="button" title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
+    <button id="scanText" class="scan" type="button" hidden title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
     <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)</p>
   </div>
 </div>
@@ -352,7 +352,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=26"></script>
+<script src="channels.js?v=27"></script>
 <script>
 (() => {
 'use strict';
