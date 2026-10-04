@@ -59,6 +59,7 @@
   .tools{margin-inline-start:auto;display:flex;gap:.4rem}
   .icon-btn{display:grid;place-items:center;width:2.5rem;height:2.5rem;padding:0;font-size:1.15rem;line-height:1;background:#0d0d0d;border:1px solid #333;border-radius:.4rem;cursor:pointer}
   .icon-btn:hover,.icon-btn:focus-visible{border-color:var(--frame)}
+  .icon-btn.gear{font-size:1.5rem}
   .btn{background:var(--frame);color:#2a1a00;border:0;border-radius:.35rem;padding:.45rem .95rem;font-weight:800;white-space:nowrap}
   .btn.ghost{background:#111;color:var(--text);border:1px solid #555;font-weight:600}
   .btn.danger{background:#7f1d1d;color:#fecaca}
@@ -174,6 +175,10 @@
   .dlg-actions{display:flex;gap:.6rem;margin-top:1.1rem;flex-wrap:wrap;align-items:center}
   .dlg-actions .spacer{flex:1}
   .menu-list{display:grid;gap:.6rem}
+  .catlist{list-style:none;margin:0;padding:0;display:grid;gap:.4rem}
+  .catlist li{display:flex;align-items:center;gap:.6rem;background:#111;border:1px solid #333;border-radius:.35rem;padding:.3rem .6rem}
+  .catlist li span{flex:1}
+  .catlist button{background:none;border:0;color:#ff7b72;cursor:pointer;font-size:.85rem;font-family:var(--font)}
   .menu-list .btn{text-align:start}
   .keylist{margin:0;padding:0;list-style:none;display:grid;gap:.35rem;color:var(--muted);font-size:.9rem}
   .check{display:flex;gap:.5rem;align-items:center;color:var(--muted);margin-top:.6rem}
@@ -218,8 +223,8 @@
       <span class="tools">
         <button id="pvBtn" class="icon-btn" type="button" aria-label="پیش‌نمایش">📺</button>
         <button id="audioBtn" class="icon-btn" type="button" title="سوییچ صدا · فقط برای Mac: میانبر «سوییچ صدا» رو اجرا می‌کنه تا خروجی صدا بین اسپیکرها عوض بشه" aria-label="سوییچ صدا">🔊</button>
+        <button id="menuBtn" class="icon-btn gear" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙️</button>
         <button id="helpBtn" class="icon-btn" type="button" title="راهنما (کلید H)" aria-label="راهنما" aria-controls="help">؟</button>
-        <button id="menuBtn" class="icon-btn" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙</button>
       </span>
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
@@ -282,6 +287,7 @@
       <div class="field" style="flex:2">
         <label for="fCat">دسته</label>
         <select id="fCat"></select>
+        <input id="fNewCat" maxlength="30" placeholder="اسم گروه جدید، مثلاً «شبکه‌های مورد علاقه‌ی من»" autocomplete="off" hidden>
       </div>
       <div class="field" style="flex:2">
         <label for="fBadge">متن لوگو (اختیاری)</label>
@@ -313,6 +319,10 @@
       <button class="btn ghost" type="button" id="mUnhide">↺ برگردوندن شبکه‌های پنهان‌شده <b id="mHiddenCount"></b></button>
       <button class="btn ghost" type="button" id="mResetOrder">↺ برگردوندن ترتیب پیش‌فرض شبکه‌ها</button>
     </div>
+    <div id="mCats" hidden>
+      <h4>گروه‌های من</h4>
+      <ul class="catlist" id="mCatList"></ul>
+    </div>
     <p class="hint">ترتیب، علاقه‌مندی‌ها و شبکه‌هایی که خودت اضافه می‌کنی فقط توی همین مرورگر ذخیره می‌شن؛ هر چند وقت یک بار پشتیبان بگیر.</p>
     <h4>کلیدهای میان‌بر</h4>
     <ul class="keylist">
@@ -340,7 +350,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=21"></script>
+<script src="channels.js?v=22"></script>
 <script>
 (() => {
 'use strict';
@@ -395,6 +405,22 @@ const K = { custom: 'sat.custom.v1', fav: 'sat.fav.v1', hidden: 'sat.hidden.v1',
 const CATS = Array.isArray(window.SAT_CATEGORIES) && window.SAT_CATEGORIES.length ? window.SAT_CATEGORIES : [{ id: 'general', name: 'شبکه‌ها' }];
 const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
 const FALLBACK_CAT = CAT.general ? 'general' : CATS[0].id;
+// گروه‌هایی که خود کاربر می‌سازه؛ آخر فهرست دسته‌ها اضافه می‌شن
+const CUSTOM_CATS_KEY = 'sat.cats.v1';
+const BUILTIN_CAT_IDS = new Set(CATS.map(c => c.id));
+let customCats = [];
+function addCustomCat(c){
+  if (!c || typeof c.id !== 'string' || !/^[\w-]{1,40}$/.test(c.id) || CAT[c.id]) return false;
+  const name = String(c.name || '').trim().slice(0, 30);
+  if (!name) return false;
+  const cat = { id: c.id, name, custom: true };
+  CATS.push(cat);
+  CAT[cat.id] = cat;
+  customCats.push(cat);
+  return true;
+}
+function saveCustomCats(){ store.set(CUSTOM_CATS_KEY, customCats.map(c => ({ id: c.id, name: c.name }))); }
+for (const c of store.get(CUSTOM_CATS_KEY, [])) addCustomCat(c);
 const BUILTIN = (Array.isArray(window.SAT_CHANNELS) ? window.SAT_CHANNELS : [])
   .filter(c => c && c.id && c.name && (httpList(c.urls).length || httpList(c.streams).length))
   .map(c => ({ ...c, urls: httpList(c.urls), streams: httpList(c.streams), embed: httpList([c.embed])[0] || parsaEmbed(httpList(c.urls)), cat: CAT[c.cat] ? c.cat : FALLBACK_CAT, builtin: true }));
@@ -450,6 +476,7 @@ const strArr = v => Array.isArray(v) ? v.filter(x => typeof x === 'string') : []
 let favList = [...new Set(strArr(store.get(K.fav, [])))];   // ترتیب فهرست علاقه‌مندی‌ها مهمه
 const hidden = new Set(strArr(store.get(K.hidden, [])));
 let view = store.get(K.view, 'all');
+if (view !== 'all' && view !== 'fav' && !CAT[view]) view = 'all';
 // فیلتر دکمه‌ی قرمز موقتیه و با باز کردن دوباره‌ی صفحه برمی‌گرده روی «همه»
 let filter = 'all';
 let sortAZ = store.get(K.sort, false) === true;
@@ -711,7 +738,7 @@ const PROBES = {
   domestic: 'https://telewebion.com/favicon.ico',
 };
 const signal = { state: 'checking', intl: null, domestic: null, okCount: 0, at: null, busy: false };
-const SIG_TEXT = { checking: 'در حال بررسی VPN…', vpn: 'VPN وصله', weak: 'VPN ضعیفه', novpn: 'VPN وصل نیست', intranet: 'اینترنت بین‌الملل قطعه', offline: 'اینترنت قطعه' };
+const SIG_TEXT = { checking: 'در حال بررسی VPN…', vpn: 'VPN', weak: 'VPN ضعیفه', novpn: 'VPN وصل نیست', intranet: 'اینترنت بین‌الملل قطعه', offline: 'اینترنت قطعه' };
 const ADVICE = {
   checking: 'در حال بررسی اتصال…',
   vpn: 'VPN وصله و شبکه‌های خارجی (برچسب VPN) باز می‌شن. شبکه‌های داخلی گاهی با VPN پخش نمی‌شن؛ اگه پخش نشدن، VPN رو خاموش کن.',
@@ -1330,7 +1357,9 @@ function openEditor(ch){
   editing = ch ? byId(ch.id) : null;
   const builtin = !!(editing && editing.builtin);
   $('editTitle').textContent = !ch ? 'افزودن شبکه' : builtin ? ch.name : 'ویرایش شبکه';
-  fCat.innerHTML = CATS.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+  fCat.innerHTML = CATS.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('') + '<option value="__new">＋ گروه جدید…</option>';
+  $('fNewCat').value = '';
+  $('fNewCat').hidden = true;
   const links = editing ? [...editing.streams, ...editing.urls] : [];
   fName.value = editing ? editing.name : '';
   fUrl.value = links[0] || '';
@@ -1338,7 +1367,7 @@ function openEditor(ch){
   fCat.value = editing ? editing.cat : (CAT[view] ? view : FALLBACK_CAT);
   fBadge.value = editing ? (editing.badge || '') : '';
   fColor.value = editing ? (isHex(editing.color) ? editing.color : autoColor(editing.name)) : PALETTE[custom.length % PALETTE.length];
-  for (const el of [fName, fUrl, fUrl2, fCat, fBadge, fColor]) el.disabled = builtin;
+  for (const el of [fName, fUrl, fUrl2, fCat, $('fNewCat'), fBadge, fColor]) el.disabled = builtin;
   $('builtinNote').hidden = !builtin;
   $('fSave').hidden = builtin;
   $('fDelete').hidden = !editing || builtin;
@@ -1364,7 +1393,19 @@ function saveEditor(){
   if (!fName.value.trim()) return fail('اسم شبکه رو بنویس.');
   if (!isHttpUrl(url)) return fail('لینک پخش درست نیست؛ باید چیزی شبیه https://... باشه.');
   if (url2 && !isHttpUrl(url2)) return fail('لینک جایگزین درست نیست.');
-  const data = { name: fName.value, urls: url2 ? [url, url2] : [url], cat: fCat.value, badge: fBadge.value, color: fColor.value };
+  let catId = fCat.value;
+  if (catId === '__new') {
+    const nm = $('fNewCat').value.trim();
+    if (!nm) return fail('اسم گروه جدید رو بنویس.');
+    const same = CATS.find(c => c.name === nm);
+    if (same) catId = same.id;
+    else {
+      catId = 'g' + Date.now().toString(36);
+      addCustomCat({ id: catId, name: nm });
+      saveCustomCats();
+    }
+  }
+  const data = { name: fName.value, urls: url2 ? [url, url2] : [url], cat: catId, badge: fBadge.value, color: fColor.value };
   const wasEditing = editing;
   let ch;
   if (wasEditing) {
@@ -1382,6 +1423,11 @@ function saveEditor(){
   render();
   toast(wasEditing ? `«${ch.name}» ذخیره شد.` : `«${ch.name}» اضافه شد.`);
 }
+fCat.addEventListener('change', () => {
+  const nw = fCat.value === '__new';
+  $('fNewCat').hidden = !nw;
+  if (nw) $('fNewCat').focus();
+});
 fUrl.addEventListener('input', updateVpnHint);
 $('fDelete').addEventListener('click', () => {
   const ch = editing;
@@ -1409,7 +1455,7 @@ editDlg.addEventListener('close', () => { editing = null; });
 
 /* ---------- پشتیبان‌گیری ---------- */
 function exportBackup(){
-  const data = { app: 'satellite-remote', version: 2, exportedAt: new Date().toISOString(), custom, favorites: favList, hidden: [...hidden], order };
+  const data = { app: 'satellite-remote', version: 2, exportedAt: new Date().toISOString(), custom, categories: customCats.map(c => ({ id: c.id, name: c.name })), favorites: favList, hidden: [...hidden], order };
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
   a.download = 'satellite-backup.json';
@@ -1427,6 +1473,7 @@ importFile.addEventListener('change', async () => {
     const data = JSON.parse(await file.text());
     let added;
     if (data && Array.isArray(data.custom)) {
+      if (Array.isArray(data.categories)) { for (const c of data.categories) addCustomCat(c); saveCustomCats(); }
       added = mergeCustom(data.custom);
       for (const id of strArr(data.favorites)) if (!favList.includes(id)) favList.push(id);
       for (const id of strArr(data.hidden)) if (BUILTIN_IDS.has(id)) hidden.add(id);
@@ -1534,7 +1581,29 @@ $('kYellow').addEventListener('click', pressYellow);
 $('kBlue').addEventListener('click', pressBlue);
 
 searchEl.addEventListener('input', () => { if (playing) selId = playing.id; render(); });
+function paintMenuCats(){
+  $('mCats').hidden = !customCats.length;
+  $('mCatList').innerHTML = customCats.map(c => `<li><span>${esc(c.name)} <small>(${fa(custom.filter(x => x.cat === c.id).length)} شبکه)</small></span><button type="button" data-delcat="${esc(c.id)}">حذف گروه</button></li>`).join('');
+}
+$('mCatList').addEventListener('click', e => {
+  const id = e.target.dataset && e.target.dataset.delcat;
+  const cat = id && CAT[id];
+  if (!cat || !cat.custom) return;
+  const n = custom.filter(x => x.cat === id).length;
+  if (!confirm(`گروه «${cat.name}» حذف بشه؟${n ? ` ${fa(n)} شبکه‌ی داخلش به گروه «${CAT[FALLBACK_CAT].name}» می‌رن.` : ''}`)) return;
+  custom = custom.map(x => x.cat === id ? { ...x, cat: FALLBACK_CAT } : x);
+  CATS.splice(CATS.indexOf(cat), 1);
+  delete CAT[id];
+  customCats = customCats.filter(c => c !== cat);
+  saveCustom();
+  saveCustomCats();
+  if (view === id) setView('all');
+  syncOrder();
+  render();
+  paintMenuCats();
+});
 $('menuBtn').addEventListener('click', () => {
+  paintMenuCats();
   $('mHiddenCount').textContent = hidden.size ? `(${fa(hidden.size)})` : '';
   $('mUnhide').disabled = !hidden.size;
   menuDlg.showModal();
