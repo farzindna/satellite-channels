@@ -215,10 +215,11 @@
       <button id="scanText" class="scan" type="button" title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
  <button id="pvBtn" class="icon-btn" type="button" title="پیش‌نمایش شبکه‌ی انتخاب‌شده">📺 پیش‌نمایش روشن</button>
       <button id="audioBtn" class="icon-btn" type="button" title="فقط برای Mac: میانبر «سوییچ صدا» رو اجرا می‌کنه تا خروجی صدا بین اسپیکرها عوض بشه">🔊 سوییچ صدا</button>
+      <button id="helpBtn" class="icon-btn" type="button" title="نمایش / پنهان کردن راهنما (کلید H)" aria-label="راهنما" aria-controls="help">؟ راهنما</button>
       <button id="menuBtn" class="icon-btn" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙</button>
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
-    <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)</p>
+    <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)</p>
   </div>
 </div>
 
@@ -334,7 +335,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=18"></script>
+<script src="channels.js?v=19"></script>
 <script>
 (() => {
 'use strict';
@@ -383,7 +384,7 @@ const store = {
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* حالت خصوصی یا حافظه‌ی پر */ } },
 };
 const K = { custom: 'sat.custom.v1', fav: 'sat.fav.v1', hidden: 'sat.hidden.v1', view: 'sat.view.v2', order: 'sat.order.v1',
-  filter: 'sat.filter.v1', sort: 'sat.sort.v1', migrated: 'sat.migrated.v1' };
+  filter: 'sat.filter.v1', sort: 'sat.sort.v1', help: 'sat.help.v1', migrated: 'sat.migrated.v1' };
 
 /* ---------- داده‌ها ---------- */
 const CATS = Array.isArray(window.SAT_CATEGORIES) && window.SAT_CATEGORIES.length ? window.SAT_CATEGORIES : [{ id: 'general', name: 'شبکه‌ها' }];
@@ -1291,6 +1292,15 @@ function togglePause(){
 video.addEventListener('pause', () => { if (mode !== 'off' && playing && video.src) $('pPause').hidden = false; });
 video.addEventListener('play', () => { $('pPause').hidden = true; });
 // صفحه‌ی وب نمی‌تونه خروجی صدای مک رو عوض کنه؛ برای همین میانبری که توی اپ Shortcuts ساخته شده رو صدا می‌زنیم
+// راهنمای زیر پیش‌نمایش: پیش‌فرض بسته‌ست و انتخاب کاربر یادش می‌مونه
+let helpOn = store.get(K.help, false) === true;
+function paintHelp(){
+  $('help').hidden = !helpOn;
+  $('helpBtn').classList.toggle('on', helpOn);
+}
+function toggleHelp(){ helpOn = !helpOn; store.set(K.help, helpOn); paintHelp(); }
+$('helpBtn').addEventListener('click', toggleHelp);
+paintHelp();
 const AUDIO_SHORTCUT = 'سوییچ صدا';
 $('audioBtn').addEventListener('click', () => {
   location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(AUDIO_SHORTCUT);
@@ -1582,6 +1592,7 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowLeft') stepView(1);
   else if (e.key === 'ArrowRight') stepView(-1);
   else if (e.key === 'Escape') { cancelNumber(); if (editMode) pressBlue(); }
+  else if (e.code === 'KeyH') toggleHelp();
   else if (e.code === 'Slash') { searchEl.focus(); searchEl.select(); }
   else if (e.code === 'KeyF' && ch) toggleFav(ch.id);
   else if (e.code === 'KeyS' && ch) openSite(ch);
