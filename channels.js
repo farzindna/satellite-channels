@@ -94,6 +94,9 @@ window.SAT_CHANNELS = [
   { id: "classicarts", name: "Classic Arts Showcase", fa: "هنر کلاسیک", cat: "english", streams: ["https://classicarts.akamaized.net/hls/live/1024257/CAS/master.m3u8"] },
 
   /* ── فیلم و سریال ── */
+  { id: "4utv", name: "4U", fa: "فوریو", cat: "movies", badge: "4U", color: "#e91e63", streams: [], embed: PM("4U-TV"), urls: [P("4U-TV")] },
+  { id: "4ufamily", name: "4U Family", fa: "فوریو فمیلی", cat: "movies", badge: "4U FAMILY", color: "#ec407a", streams: [], embed: PM("4U-Family"), urls: [P("4U-Family")] },
+  { id: "romanticotv", name: "Romantico TV", fa: "رومانتیکو", cat: "movies", badge: "ROMANTICO", color: "#c2185b", streams: [], embed: PM("Romantico-TV"), urls: [P("Romantico-TV")] },
   { id: "gemtv", name: "GEM TV", fa: "جم تی‌وی", cat: "movies", badge: "GEM", color: "#7b1fa2", streams: [], embed: PM("GEM-TV"), urls: [P("GEM-TV")] },
   { id: "gemseries", name: "GEM Series", fa: "جم سریال", cat: "movies", badge: "GEM SERIES", color: "#8e24aa", streams: [], embed: PM("GEM-Series-TV"), urls: [P("GEM-Series-TV")] },
   { id: "gemfilm", name: "GEM Film", fa: "جم فیلم", cat: "movies", badge: "GEM FILM", color: "#6a1b9a", streams: [], embed: PM("GEM-Film"), urls: [P("GEM-Film")] },
@@ -216,7 +219,6 @@ window.SAT_CHANNELS = [
   { id: "omideiran", name: "Omid-e-Iran", fa: "امید ایران", cat: "general", badge: "OITN", color: "#2e7d32", streams: [WNS("oitnhls")] },
   { id: "iccplus", name: "ICC Plus", fa: "ICC Plus", cat: "general", badge: "ICC", color: "#283593", streams: [WNS("icchls")] },
   { id: "homeplus", name: "Home Plus", fa: "هوم پلاس", cat: "general", badge: "HOME PLUS", color: "#00838f", streams: [WNS("homeplushls")] },
-  { id: "tolotv", name: "TOLO TV", fa: "طلوع", cat: "general", badge: "TOLO", color: "#d32f2f", streams: ["https://tgn.bozztv.com/eshgtv-dvrfl05/gin-tolohd/tracks-v1a1/mono.m3u8"] },
   { id: "erfan", name: "Erfan Halgheh", fa: "عرفان حلقه", cat: "general", badge: "عرفان", color: "#4a148c",
     streams: ["https://hls.erfanhalgheh.live/hls/stream.m3u8"], urls: [P("Erfan-Halgheh")] },
 
