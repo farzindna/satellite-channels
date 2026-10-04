@@ -174,6 +174,19 @@
   .p-info .rlogo{display:none}
   .p-msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#000;border:3px solid var(--frame);border-radius:.3rem;padding:1.1rem 1.5rem;text-align:center;font-size:1.1rem;font-weight:600;max-width:min(36rem,90vw);line-height:1.9}
   .p-msg .dlg-actions{justify-content:center}
+  .p-load{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;background:#000e;border:3px solid var(--frame);border-radius:.3rem;padding:1rem 1.6rem 1.1rem;text-align:center;width:min(25rem,86%);font-family:var(--font);direction:rtl;pointer-events:none}
+  .p-load .pl-title{font-size:1.15rem;font-weight:700;margin-bottom:.55rem}
+  .p-load .pl-sig{display:flex;justify-content:center;align-items:flex-end;gap:.28rem;height:1.8rem;margin-bottom:.6rem;direction:ltr}
+  .p-load .pl-sig i{width:.45rem;background:#333;border-radius:1px;transition:background .25s}
+  .p-load .pl-sig i:nth-child(1){height:20%}.p-load .pl-sig i:nth-child(2){height:40%}.p-load .pl-sig i:nth-child(3){height:60%}.p-load .pl-sig i:nth-child(4){height:80%}.p-load .pl-sig i:nth-child(5){height:100%}
+  .p-load .pl-sig i.on{background:var(--frame)}
+  .p-load .pl-track{height:.7rem;border:2px solid #666;border-radius:.4rem;overflow:hidden;direction:ltr;background:#111}
+  .p-load .pl-fill{height:100%;width:0;background:linear-gradient(90deg,#eeaa1c,#fbe6a0);transition:width .18s linear}
+  .p-load .pl-info{display:flex;justify-content:space-between;gap:.8rem;font-size:.9rem;color:var(--muted);margin-top:.5rem;font-weight:400}
+  .player.pv .p-load{padding:.6rem .9rem .7rem;width:min(18rem,90%)}
+  .player.pv .p-load .pl-title{font-size:.95rem;margin-bottom:.35rem}
+  .player.pv .p-load .pl-sig{height:1.2rem;margin-bottom:.4rem}
+  .player.pv .p-load .pl-info{font-size:.78rem}
   .p-bar{position:absolute;bottom:1.4rem;left:50%;transform:translateX(-50%);display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;background:#000c;border:3px solid var(--frame);border-radius:.3rem;padding:.5rem .8rem;transition:opacity .3s}
   .player.idle{cursor:none}
   .player.idle .p-bar,.player.idle .p-info,.player.idle .p-fs{opacity:0;pointer-events:none}
@@ -281,6 +294,7 @@
   <video id="video" playsinline></video>
   <div id="pInfo" class="p-info"></div>
   <div id="pMsg" class="p-msg" hidden></div>
+  <div id="pLoad" class="p-load" hidden aria-live="polite"><div class="pl-title">در حال یافتن سیگنال…</div><div class="pl-sig"><i></i><i></i><i></i><i></i><i></i></div><div class="pl-track"><div class="pl-fill" id="plFill"></div></div><div class="pl-info"><span id="plPhase">اتصال</span><span id="plTime"></span></div></div>
   <div id="pPause" class="p-pause" hidden>❚❚</div>
   <button id="pOpen" class="p-open" type="button" data-pact="site" hidden>🌐 چیزی نیومد؟ باز کردن در تب</button>
   <div id="pShield" class="p-shield" hidden title="دابل‌کلیک = تمام‌صفحه · یه کلیک = کار با خود پخش‌کننده"></div>
@@ -449,7 +463,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=52"></script>
+<script src="channels.js?v=53"></script>
 <script>
 (() => {
 'use strict';
@@ -498,7 +512,7 @@ const store = {
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* حالت خصوصی یا حافظه‌ی پر */ } },
 };
 const K = { custom: 'sat.custom.v1', fav: 'sat.fav.v1', hidden: 'sat.hidden.v1', view: 'sat.view.v2', order: 'sat.order.v1',
-  filter: 'sat.filter.v1', sort: 'sat.sort.v1', help: 'sat.help.v1', subOn: 'sat.subs.on.v1', subEn: 'sat.subs.en.v1', subProv: 'sat.subs.prov.v1', subKey: 'sat.subs.key.v2', subModel: 'sat.subs.model.v2', subBoth: 'sat.subs.both.v1', subUsage: 'sat.subs.usage.v1', subCap: 'sat.subs.cap.v1', subDay: 'sat.subs.day.v1', migrated: 'sat.migrated.v1' };
+  filter: 'sat.filter.v1', sort: 'sat.sort.v1', help: 'sat.help.v1', subOn: 'sat.subs.on.v1', subEn: 'sat.subs.en.v1', subProv: 'sat.subs.prov.v1', subKey: 'sat.subs.key.v2', subModel: 'sat.subs.model.v2', subBoth: 'sat.subs.both.v1', subUsage: 'sat.subs.usage.v1', subCap: 'sat.subs.cap.v1', subDay: 'sat.subs.day.v1', migrated: 'sat.migrated.v1', loadAvg: 'sat.load.avg.v1' };
 
 /* ---------- داده‌ها ---------- */
 const CATS = Array.isArray(window.SAT_CATEGORIES) && window.SAT_CATEGORIES.length ? window.SAT_CATEGORIES : [{ id: 'general', name: 'شبکه‌ها' }];
@@ -1142,7 +1156,45 @@ function exitFullscreen(){
   const fn = document.exitFullscreen || document.webkitExitFullscreen;
   if (fn && fsElement()) { try { const r = fn.call(document); if (r && r.catch) r.catch(() => {}); } catch { /* */ } }
 }
-function setMsg(html){ pMsg.innerHTML = html; pMsg.hidden = !html; }
+function setMsg(html){ pMsg.innerHTML = html; pMsg.hidden = !html; if (html) hideLoad(); }
+/* ---------- نوار «یافتن سیگنال» (حس رسیور) ---------- */
+const pLoad = $('pLoad'), plFill = $('plFill'), plPhase = $('plPhase'), plTime = $('plTime');
+let loadT0 = 0, loadTimer = 0, loadFloor = 0;
+let loadAvg = Math.min(15, Math.max(2, Number(store.get(K.loadAvg, 5)) || 5)); // میانگین ثانیه‌ی دفعه‌های قبل
+function loadProgress(){
+  const t = (Date.now() - loadT0) / 1000;
+  const est = loadAvg;
+  // پیشروی آرام بر اساس زمان؛ مراحل واقعی (لیست پخش، تصویر) پایه‌اش رو بالا می‌برن
+  const byTime = 92 * (1 - Math.exp(-t / (est / 2.2)));
+  const p = Math.min(96, Math.max(byTime, loadFloor));
+  plFill.style.width = p.toFixed(1) + '%';
+  pLoad.querySelectorAll('.pl-sig i').forEach((b, i) => b.classList.toggle('on', p >= (i + 1) * 19));
+  plTime.textContent = t < est ? `${fa(Math.floor(t))} از حدود ${fa(Math.round(est))} ثانیه` : `${fa(Math.floor(t))} ثانیه (بیشتر از معمول)`;
+}
+function startLoad(phase){
+  clearInterval(loadTimer);
+  loadT0 = Date.now(); loadFloor = 0;
+  plPhase.textContent = phase || 'اتصال به سرور';
+  pMsg.hidden = true;
+  pLoad.hidden = false;
+  loadProgress();
+  loadTimer = setInterval(loadProgress, 150);
+}
+function loadStep(floor, phase){
+  if (pLoad.hidden) return;
+  if (floor > loadFloor) { loadFloor = floor; plPhase.textContent = phase; loadProgress(); }
+}
+function hideLoad(){ clearInterval(loadTimer); loadTimer = 0; pLoad.hidden = true; }
+function loadDone(){
+  if (pLoad.hidden) return;
+  const secs = (Date.now() - loadT0) / 1000;
+  clearInterval(loadTimer); loadTimer = 0;
+  plFill.style.width = '100%';
+  pLoad.querySelectorAll('.pl-sig i').forEach(b => b.classList.add('on'));
+  plPhase.textContent = 'سیگنال برقرار شد';
+  setTimeout(() => { if (!loadTimer) pLoad.hidden = true; }, 350);
+  if (secs > 0.3 && secs < 40) { loadAvg = Math.min(15, Math.max(2, loadAvg * 0.6 + secs * 0.4)); store.set(K.loadAvg, Math.round(loadAvg * 10) / 10); }
+}
 function wakePlayer(){
   player.classList.remove('idle');
   clearTimeout(idleTimer);
@@ -1293,6 +1345,8 @@ function showEmbed(ch){
   }
   video.hidden = true;
   player.insertBefore(f, pInfo);
+  startLoad('بارگذاری صفحه‌ی پخش');
+  f.addEventListener('load', () => { loadStep(90, 'بارگذاری صفحه‌ی پخش'); setTimeout(loadDone, 600); });
   keepAwakeOn();
   shieldOff = false;
   updShield();
@@ -1301,6 +1355,7 @@ function showEmbed(ch){
 }
 function stopStream(){
   clearTimeout(stallTimer);
+  hideLoad();
   $('pPause').hidden = true;
   const f = $('pFrame');
   if (f) f.remove();
@@ -1717,7 +1772,8 @@ function initSubs(){
 async function playStream(){
   const ch = playing, token = ++playToken, url = ch.streams[attempts[streamIdx]];
   stopStream();
-  setMsg('⏳ در حال اتصال…' + (ch.streams.length > 1 ? ` <span class="hint">(منبع ${fa(streamIdx + 1)} از ${fa(ch.streams.length)})</span>` : ''));
+  setMsg('');
+  startLoad(ch.streams.length > 1 ? `اتصال · منبع ${fa(streamIdx + 1)} از ${fa(ch.streams.length)}` : 'اتصال به سرور');
   stallTimer = setTimeout(() => streamFailed(token), 15000);
   try {
     if (nativeHls && !subWantsHls(ch)) {
@@ -1731,6 +1787,9 @@ async function playStream(){
         subUD.events++;
         for (const x of d.samples || []) { subUD.samples++; if (x.bytes) subUD.withBytes++; if (x.type != null) subUD.seiLike++; }
       });
+      hls.on(Hls.Events.MANIFEST_LOADED, () => loadStep(40, 'دریافت لیست پخش'));
+      hls.on(Hls.Events.LEVEL_LOADED, () => loadStep(62, 'انتخاب کیفیت'));
+      hls.on(Hls.Events.FRAG_LOADED, () => loadStep(84, 'بافر تصویر'));
       hls.on(Hls.Events.MANIFEST_LOADED, (_, d) => { subDeclaredCC = (d.captions || []).some(c => !SUB_OTHER_LANG.test(c.lang || '') && !SUB_OTHER_NAME.test(c.name || '')); });
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (!data.fatal || token !== playToken) return;
@@ -1824,7 +1883,11 @@ function playerKey(e){
   else return;
   e.preventDefault();
 }
+video.addEventListener('loadstart', () => loadStep(25, 'اتصال به سرور'));
+video.addEventListener('loadedmetadata', () => loadStep(60, 'دریافت لیست پخش'));
+video.addEventListener('loadeddata', () => loadStep(84, 'بافر تصویر'));
 video.addEventListener('playing', () => {
+  loadDone();
   clearTimeout(stallTimer);
   clearTimeout(waitTimer);
   connOk = true;
@@ -1841,7 +1904,7 @@ video.addEventListener('playing', () => {
   }
 });
 video.addEventListener('waiting', () => {
-  if (pMsg.hidden) setMsg('⏳');
+  if (pMsg.hidden && pLoad.hidden) setMsg('⏳');
   // اگه بیشتر از ۲۵ ثانیه بافر نشد، مثل قطع شدن حساب می‌شه
   clearTimeout(waitTimer);
   const tk = playToken;
