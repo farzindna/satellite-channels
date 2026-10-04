@@ -75,6 +75,19 @@
   .phead{display:flex;align-items:center;justify-content:space-between;padding:.15rem .9rem;border-bottom:3px solid var(--frame)}
   .phead h1{margin:0;font-size:1.3rem;font-weight:700;text-align:center;flex:1;font-family:var(--font);direction:rtl}
   .phead h1 small{font-size:.8rem;color:var(--muted);font-weight:400;margin-inline-start:.5rem}
+  .phead{position:relative}
+  .phead h1{cursor:pointer;border-radius:.3rem}
+  .phead h1:hover{background:#1c1c1c}
+  .phead h1 .caret{font-size:.7rem;color:var(--muted);margin-inline-start:.45rem;display:inline-block;transition:transform .15s}
+  .phead.open h1 .caret{transform:rotate(180deg)}
+  .catmenu{position:absolute;top:100%;inset-inline:0;z-index:30;background:#000;border:3px solid var(--frame);border-top:0;max-height:min(34rem,70vh);overflow-y:auto;padding:.25rem;box-shadow:0 .8rem 1.6rem #000c;font-family:var(--font);direction:rtl}
+  .catmenu[hidden]{display:none}
+  .catmenu button{display:flex;align-items:center;justify-content:space-between;gap:.8rem;width:100%;background:none;border:2px solid transparent;color:var(--text);font:700 1.15rem/1.65 var(--font);padding:0 .7rem;border-radius:.3rem;text-align:start;cursor:pointer}
+  .catmenu button small{font-size:.85rem;color:var(--muted);font-weight:400}
+  .catmenu button:hover,.catmenu button:focus-visible{background:#1c1c1c;outline:none;border-color:#555}
+  .catmenu button.cur{background:linear-gradient(180deg,#fff8dc 0%,#fbe6a0 35%,#f6c54d 70%,#eeaa1c 100%);color:var(--sel-text)}
+  .catmenu button.cur small{color:#5a4200}
+  .catmenu hr{border:0;border-top:1px solid #333;margin:.2rem .4rem}
   .arrow{background:none;border:0;font-size:1.4rem;font-weight:700;padding:0 .4rem;color:var(--text);line-height:1.2;font-family:var(--rx)}
   .list{flex:1;min-height:0;overflow-y:scroll;padding:.35rem .3rem .35rem .45rem}
   .list::-webkit-scrollbar{width:.9rem}
@@ -230,6 +243,7 @@
       <button class="arrow" id="catPrev" type="button" aria-label="دسته‌ی قبلی">&lt;</button>
       <h1 id="catTitle">همه‌ی شبکه‌ها</h1>
       <button class="arrow" id="catNext" type="button" aria-label="دسته‌ی بعدی">&gt;</button>
+      <div class="catmenu" id="catMenu" role="menu" aria-label="همه‌ی دسته‌ها" hidden></div>
     </div>
     <label class="sbar"><span class="sicon">🔍</span><input id="search" class="search" type="search" placeholder="جستجوی شبکه… (اسم فارسی یا انگلیسی)" autocomplete="off" aria-label="جستجوی شبکه"><kbd class="skey" title="کلید / برای رفتن به جستجو">/</kbd></label>
     <div class="list" id="list" role="listbox" aria-labelledby="catTitle"></div>
@@ -435,7 +449,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=43"></script>
+<script src="channels.js?v=44"></script>
 <script>
 (() => {
 'use strict';
@@ -703,7 +717,7 @@ function render(){
   if (!shown.some(c => c.id === selId)) selId = playing && shown.some(c => c.id === playing.id) ? playing.id : shown.length ? shown[0].id : null;
   const q = searchEl.value.trim();
   const filtered = filter !== 'all' && !q;
-  $('catTitle').innerHTML = `${esc(q ? `جستجو: «${q}»` : viewName(view))}<small>${fa(shown.length)} شبکه</small>`
+  $('catTitle').innerHTML = `${esc(q ? `جستجو: «${q}»` : viewName(view))}<span class="caret" aria-hidden="true">▼</span><small>${fa(shown.length)} شبکه</small>`
     + (filtered ? `<button class="fchip" type="button" id="fClear" title="برداشتن فیلتر (کلید R)">فیلتر: ${esc(FILTERS[filter])} ✕</button>` : '');
   $('kRed').classList.toggle('on', filtered);
   $('kRedText').textContent = filter === 'all' ? 'سالم/داخلی/VPN' : FILTERS[filter];
@@ -2088,7 +2102,58 @@ infoEl.addEventListener('click', e => {
   else if (act === 'edit' && ch) openEditor(ch);
 });
 
-$('catTitle').addEventListener('click', e => { if (e.target.closest('#fClear')) { filter = 'all'; render(); } });
+// منوی همه‌ی دسته‌ها: روی اسم دسته بزن تا همه باز بشن و مستقیم انتخاب کنی
+const catMenu = $('catMenu');
+const catMenuOpen = () => !catMenu.hidden;
+function closeCatMenu(refocus){
+  catMenu.hidden = true;
+  $('catTitle').closest('.phead').classList.remove('open');
+  $('catTitle').setAttribute('aria-expanded', 'false');
+  if (refocus) $('catTitle').focus();
+}
+function openCatMenu(){
+  const all = numbered();
+  const count = v => v === 'all' ? all.length : v === 'fav' ? all.filter(c => favList.includes(c.id)).length : all.filter(c => c.cat === v).length;
+  catMenu.innerHTML = VIEWS().map((v, i) =>
+    (i === 2 ? '<hr>' : '') + `<button type="button" role="menuitem" data-view="${esc(v)}"${v === view ? ' class="cur"' : ''}><span>${esc(viewName(v))}</span><small>${fa(count(v))} شبکه</small></button>`).join('');
+  catMenu.hidden = false;
+  $('catTitle').closest('.phead').classList.add('open');
+  $('catTitle').setAttribute('aria-expanded', 'true');
+  const cur = catMenu.querySelector('.cur');
+  if (cur) { cur.focus({ preventScroll: true }); cur.scrollIntoView({ block: 'nearest' }); }
+}
+$('catTitle').setAttribute('tabindex', '0');
+$('catTitle').setAttribute('role', 'button');
+$('catTitle').setAttribute('aria-haspopup', 'menu');
+$('catTitle').setAttribute('aria-expanded', 'false');
+$('catTitle').addEventListener('click', e => {
+  if (e.target.closest('#fClear')) { filter = 'all'; render(); return; }
+  if (catMenuOpen()) closeCatMenu(); else openCatMenu();
+});
+$('catTitle').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (!catMenuOpen()) openCatMenu(); }
+});
+catMenu.addEventListener('click', e => {
+  const b = e.target.closest('button[data-view]');
+  if (!b) return;
+  closeCatMenu();
+  setView(b.dataset.view);
+});
+catMenu.addEventListener('keydown', e => {
+  const items = [...catMenu.querySelectorAll('button')];
+  const i = items.indexOf(document.activeElement);
+  let handled = true;
+  if (e.key === 'ArrowDown') items[(i + 1) % items.length].focus();
+  else if (e.key === 'ArrowUp') items[(i - 1 + items.length) % items.length].focus();
+  else if (e.key === 'Home') items[0].focus();
+  else if (e.key === 'End') items[items.length - 1].focus();
+  else if (e.key === 'Escape' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') closeCatMenu(true);
+  else handled = false;
+  if (handled) { e.preventDefault(); e.stopPropagation(); }
+});
+// کلیک بیرون از منو یا گرفتن فوکوس: بسته می‌شه
+document.addEventListener('click', e => { if (catMenuOpen() && !e.target.closest('.phead')) closeCatMenu(); });
+
 $('catPrev').addEventListener('click', () => stepView(-1));
 $('catNext').addEventListener('click', () => stepView(1));
 function pressRed(){
@@ -2177,6 +2242,7 @@ document.addEventListener('keydown', e => {
   if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
   if (document.querySelector('dialog[open]')) return;
   if (mode === 'full') { playerKey(e); return; }
+  if (catMenuOpen()) { if (e.key === 'Escape') { e.preventDefault(); closeCatMenu(true); } return; }
   const t = e.target;
   if (t === searchEl) {
     if (e.key === 'Escape') { searchEl.value = ''; render(); searchEl.blur(); }
