@@ -237,7 +237,7 @@
     <button class="btn ghost" type="button" data-pact="next" title="شبکه‌ی بعدی (↑)">▲ بعدی</button>
     <button class="btn ghost" type="button" data-pact="prev" title="شبکه‌ی قبلی (↓)">▼ قبلی</button>
     <button class="btn ghost" type="button" data-pact="site" id="pSite" title="باز کردن سایت شبکه (S)">🌐 سایت شبکه</button>
-    <button class="btn ghost" type="button" data-pact="full" title="تمام‌صفحه (F)">⛶ تمام‌صفحه</button>
+    <button class="btn ghost" type="button" data-pact="full" id="pFull" title="تمام‌صفحه (F)" aria-label="تمام‌صفحه"></button>
     <button class="btn" type="button" data-pact="close" title="برگشت به فهرست (Esc)">✕ بستن</button>
   </div>
 </div>
@@ -332,7 +332,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=16"></script>
+<script src="channels.js?v=17"></script>
 <script>
 (() => {
 'use strict';
@@ -1085,6 +1085,20 @@ function leaveFull(){
     select(ch.id);
   }
 }
+// آیکون دکمه‌ی تمام‌صفحه: توی تمام‌صفحه «خروج» (فلش‌ها به مرکز)، بیرون از اون «ورود» (فلش‌ها به بیرون)
+const FS_ICON = {
+  enter: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/></svg>',
+  exit: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 9h-5V4M15 9l6-6M4 15h5v5M9 15l-6 6"/></svg>',
+};
+function paintFsBtn(){
+  const on = !!fsElement(), b = $('pFull');
+  b.innerHTML = FS_ICON[on ? 'exit' : 'enter'];
+  b.title = on ? 'خروج از تمام‌صفحه (F)' : 'تمام‌صفحه (F)';
+  b.setAttribute('aria-label', b.title);
+}
+paintFsBtn();
+document.addEventListener('fullscreenchange', paintFsBtn);
+document.addEventListener('webkitfullscreenchange', paintFsBtn);
 document.addEventListener('fullscreenchange', () => { if (!fsElement() && mode === 'full' && weFullscreened) { weFullscreened = false; leaveFull(); } });
 
 function playChannel(ch){
@@ -1221,7 +1235,7 @@ function playerAction(act){
   else if (act === 'close') leaveFull();
   else if (act === 'retry' && playing) { streamIdx = 0; if (playing.streams.length) playStream(); else showEmbed(playing); }
   else if (act === 'site' && playing) openSite(playing);
-  else if (act === 'full') { if (fsElement()) exitFullscreen(); else enterFullscreen(); }
+  else if (act === 'full') { if (fsElement()) exitFullscreen(); else enterFullscreen(); setTimeout(paintFsBtn, 150); }
 }
 function playerKey(e){
   const digit = /^(?:Digit|Numpad)(\d)$/.exec(e.code);
