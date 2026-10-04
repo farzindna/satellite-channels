@@ -212,11 +212,11 @@
       <button id="signal" class="pill" type="button" data-state="checking" title="وضعیت VPN؛ برای جزئیات کلیک کن"><span class="dot"></span><span id="sigText">در حال بررسی VPN…</span></button>
       <button id="scanText" class="scan" type="button" title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
  <button id="pvBtn" class="icon-btn" type="button" title="پیش‌نمایش شبکه‌ی انتخاب‌شده">📺 پیش‌نمایش روشن</button>
-      <button id="audioBtn" class="icon-btn" type="button" title="جابه‌جایی صدا بین اسپیکرها (میانبر «سوییچ صدا» توی اپ Shortcuts مک اجرا می‌شه)">🔊 سوییچ صدا</button>
+      <button id="audioBtn" class="icon-btn" type="button" title="فقط برای Mac: میانبر «سوییچ صدا» رو اجرا می‌کنه تا خروجی صدا بین اسپیکرها عوض بشه">🔊 سوییچ صدا</button>
       <button id="menuBtn" class="icon-btn" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙</button>
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
-    <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب</p>
+    <p class="help"><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)</p>
   </div>
 </div>
 
@@ -332,7 +332,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=15"></script>
+<script src="channels.js?v=16"></script>
 <script>
 (() => {
 'use strict';
@@ -1278,7 +1278,6 @@ video.addEventListener('play', () => { $('pPause').hidden = true; });
 const AUDIO_SHORTCUT = 'سوییچ صدا';
 $('audioBtn').addEventListener('click', () => {
   location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(AUDIO_SHORTCUT);
-  toast('میانبر «' + AUDIO_SHORTCUT + '» اجرا شد. اگه مرورگر اجازه خواست، «Open» رو بزن.');
 });
 $('pvBtn').addEventListener('click', () => {
   previewOn = !previewOn;
