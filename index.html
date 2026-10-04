@@ -370,6 +370,17 @@
         <option value="fa">فارسی · با ترجمه (هزینه دارد)</option>
       </select>
     </div>
+    <div class="field">
+      <label for="subCap">سقف مصرف روزانه‌ی ترجمه</label>
+      <select id="subCap">
+        <option value="30000">۳۰ هزار توکن (حدود یک سوم فیلم)</option>
+        <option value="60000">۶۰ هزار توکن</option>
+        <option value="100000">۱۰۰ هزار توکن (حدود یک فیلم)</option>
+        <option value="200000">۲۰۰ هزار توکن</option>
+        <option value="500000">۵۰۰ هزار توکن</option>
+        <option value="0">بدون سقف</option>
+      </select>
+    </div>
     <label class="chk"><input type="checkbox" id="subBoth"> زیرنویس انگلیسی هم زیر فارسی نشون داده بشه</label>
     <div class="menu-list">
       <button class="btn ghost" type="button" id="subTest">✓ آزمایش کلید</button>
@@ -424,7 +435,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=42"></script>
+<script src="channels.js?v=43"></script>
 <script>
 (() => {
 'use strict';
@@ -473,7 +484,7 @@ const store = {
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* حالت خصوصی یا حافظه‌ی پر */ } },
 };
 const K = { custom: 'sat.custom.v1', fav: 'sat.fav.v1', hidden: 'sat.hidden.v1', view: 'sat.view.v2', order: 'sat.order.v1',
-  filter: 'sat.filter.v1', sort: 'sat.sort.v1', help: 'sat.help.v1', subOn: 'sat.subs.on.v1', subEn: 'sat.subs.en.v1', subProv: 'sat.subs.prov.v1', subKey: 'sat.subs.key.v2', subModel: 'sat.subs.model.v2', subBoth: 'sat.subs.both.v1', subUsage: 'sat.subs.usage.v1', migrated: 'sat.migrated.v1' };
+  filter: 'sat.filter.v1', sort: 'sat.sort.v1', help: 'sat.help.v1', subOn: 'sat.subs.on.v1', subEn: 'sat.subs.en.v1', subProv: 'sat.subs.prov.v1', subKey: 'sat.subs.key.v2', subModel: 'sat.subs.model.v2', subBoth: 'sat.subs.both.v1', subUsage: 'sat.subs.usage.v1', subCap: 'sat.subs.cap.v1', subDay: 'sat.subs.day.v1', migrated: 'sat.migrated.v1' };
 
 /* ---------- داده‌ها ---------- */
 const CATS = Array.isArray(window.SAT_CATEGORIES) && window.SAT_CATEGORIES.length ? window.SAT_CATEGORIES : [{ id: 'general', name: 'شبکه‌ها' }];
@@ -1335,8 +1346,17 @@ const SUB = {
   models: (() => { const v = store.get(K.subModel, {}); return v && typeof v === 'object' ? v : {}; })(),
   both: store.get(K.subBoth, false) === true,
   usage: store.get(K.subUsage, {}) || {},
+  cap: (() => { const v = store.get(K.subCap, 100000); return typeof v === 'number' && v >= 0 ? v : 100000; })(),   // سقف توکن روزانه؛ ۰ = نامحدود
+  day: store.get(K.subDay, { d: '', t: 0 }) || { d: '', t: 0 },
 };
 if (!SUB_PROVIDERS[SUB.prov]) SUB.prov = 'avalai';
+const subToday = () => new Date().toLocaleDateString('en-CA');
+function subDayTokens(){
+  const d = subToday();
+  if (!SUB.day || SUB.day.d !== d) SUB.day = { d, t: 0 };
+  return SUB.day.t | 0;
+}
+const subCapReached = () => SUB.cap > 0 && subDayTokens() >= SUB.cap;
 const subKey = () => String(SUB.keys[SUB.prov] || '').trim();
 const subModelId = () => String(SUB.models[SUB.prov] || SUB_PROVIDERS[SUB.prov].def).trim();
 const subCache = new Map();      // متن انگلیسی ← فارسی
@@ -1353,6 +1373,9 @@ const subIsSdh = label => /sdh|hearing|forced/i.test(label || '');
 const SUB_OTHER_LANG = /^(es|spa|fr|fre|fra|de|ger|deu|sv|swe|nl|dut|nld|it|ita|pt|por|ru|rus|ar|ara|fa|per|fas|zh|chi|ja|jpn|ko|kor)/i;
 const SUB_OTHER_NAME = /spanish|french|german|swedish|dutch|italian|portug|russian|arabic|persian|chinese|japanese|korean/i;
 const subOkCaption = t => t.kind === 'captions' && !SUB_OTHER_LANG.test(t.language || '') && !SUB_OTHER_NAME.test(t.label || '');
+// خط‌هایی که ترجمه نمی‌خوان (فقط علامت/عدد) توکن مصرف نکنن
+const subWorth = x => /[A-Za-z]{2}/.test(x);
+const subNorm = x => x.toLowerCase().replace(/[^a-z0-9 ]+/g, '').replace(/\s+/g, ' ').trim();
 const subCuesOf = t => (t && t.cues ? t.cues.length : 0);
 function subTextTracks(){
   return [...video.textTracks].filter(t => t.kind === 'subtitles' || t.kind === 'captions');
@@ -1404,15 +1427,17 @@ function subTick(){
   }
   if (!subTrack) { el.hidden = true; return; }
   // کدوم خط‌ها تا ۶۰ ثانیه‌ی آینده هنوز ترجمه نشدن
-  const t = video.currentTime, cues = subTrack.cues, queue = [], seen = new Set();
+  const t = video.currentTime, cues = subTrack.cues, queue = [], seen = new Set(), windowNorm = [];
   if (cues) for (let i = 0; i < cues.length; i++) {
     const c = cues[i];
     if (c.endTime < t - 1) continue;
     if (c.startTime > t + 60) break;
     const x = subClean(c.text);
-    if (SUB.on && x && !subCache.has(x) && !subPending.has(x) && !seen.has(x) && (subMiss[x] | 0) < 3) { seen.add(x); queue.push(x); }
+    if (x) windowNorm.push(subNorm(x));
+    if (SUB.on && x && subWorth(x) && !subCache.has(x) && !subPending.has(x) && !seen.has(x) && (subMiss[x] | 0) < 3) { seen.add(x); queue.push(x); }
   }
-  subQueue = queue;
+  // زیرنویس‌های زنده‌ی CEA جمله رو کم‌کم کامل می‌کنن («THE» ← «THE MARKETS» ← …)؛ فقط نسخه‌ی کامل‌تر ترجمه می‌شه
+  subQueue = queue.filter(x => { const n = subNorm(x); return !windowNorm.some(y => y.length > n.length && y.startsWith(n)); });
   subRender();
   if (SUB.on) subPump();
 }
@@ -1436,7 +1461,7 @@ function subReport(kind, msg){
 }
 async function subTranslate(lines){
   const prov = SUB.prov, model = subModelId(), P = SUB_PROVIDERS[prov];
-  const system = 'You are a professional subtitle translator. Translate the English subtitle lines into natural, fluent, colloquial Persian (Farsi) as spoken in films and TV, not stiff or word-for-word. Keep each line short enough to read quickly. Keep names and numbers; translate bracketed sound cues such as [MUSIC] into Persian inside brackets. Lines may be in ALL CAPS or contain speaker markers like >>; translate them into normal Persian without the markers. The lines belong to one continuous program, so keep wording consistent. Reply with exactly one output line per input line in the form N|translation using the same numbers written as plain ASCII digits (1, 2, 3 ...) even though the translation is Persian, and nothing else (no commentary, no code fences).';
+  const system = 'Translate English subtitle lines into natural, colloquial Persian (Farsi) as spoken in films and TV. Keep names and numbers; put translated sound cues like [MUSIC] in brackets. Lines may be ALL CAPS or have >> speaker marks: ignore the marks and write normal Persian. Reply with exactly one line per input line as N|translation, N being the same number in plain ASCII digits. Nothing else.';
   const user = (playing ? `Program: ${playing.name}\n\n` : '') + lines.map((x, i) => `${i + 1}|${x}`).join('\n');
   let headers, body;
   if (prov === 'anthropic') {
@@ -1456,6 +1481,9 @@ async function subTranslate(lines){
   u.i += (us.input_tokens ?? us.prompt_tokens) | 0;
   u.o += (us.output_tokens ?? us.completion_tokens) | 0;
   store.set(K.subUsage, SUB.usage);
+  subDayTokens();
+  SUB.day.t += ((us.input_tokens ?? us.prompt_tokens) | 0) + ((us.output_tokens ?? us.completion_tokens) | 0);
+  store.set(K.subDay, SUB.day);
   const text = prov === 'anthropic'
     ? (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n')
     : String(j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content || '');
@@ -1477,7 +1505,14 @@ function subParse(text, n){
 }
 async function subPump(){
   if (subInflight || !subKey() || !subQueue.length || Date.now() < subBackoff) return;
-  const batch = subQueue.slice(0, 30);
+  // وقتی پخش مکث شده، صفحه پشت‌صحنه‌ست، یا تازه شبکه عوض شده (زپینگ) چیزی ترجمه نمی‌شه
+  if (video.paused || document.hidden || Date.now() - subStartedAt < 5000) return;
+  if (subCapReached()) {
+    subNote = 'سقف مصرف امروز برای ترجمه پر شد؛ زیرنویس انگلیسی نشون داده می‌شه.';
+    if (subErrShown !== 'cap') { subErrShown = 'cap'; toast('سقف مصرف روزانه‌ی ترجمه پر شد. از تنظیمات می‌تونی بالاترش ببری.'); }
+    return;
+  }
+  const batch = subQueue.slice(0, 40);
   subInflight = true;
   batch.forEach(x => subPending.add(x));
   try {
@@ -1566,8 +1601,11 @@ function subUsageText(){
     const [prov, ...rest] = k.split(':'), p = SUB_PRICE[rest.join(':')];
     if (prov === 'anthropic' && p) usd += (u.i * p[0] + u.o * p[1]) / 1e6;
   }
-  if (!tok) return 'هر فیلم دو ساعته تقریباً ۷۰ تا ۱۰۰ هزار توکن مصرف می‌کنه. هزینه‌ش رو از پنل سرویس‌دهنده ببین و بهتره یه سقف اعتبار بذاری.';
-  return `مصرف تا الان از این مرورگر: ${tok < 1000 ? fa(tok) + ' توکن' : 'حدود ' + fa(Math.round(tok / 1000)) + ' هزار توکن'}${usd > 0 ? ` (حدود ${fa(usd < 0.01 ? '<۰٫۰۱' : usd.toFixed(2))} دلار برای Anthropic)` : ''}. هر فیلم دو ساعته تقریباً ۷۰ تا ۱۰۰ هزار توکن می‌شه.`;
+  const k1 = n => n < 1000 ? fa(n) + ' توکن' : fa(Math.round(n / 1000)) + ' هزار توکن';
+  const today = subDayTokens();
+  let t = `امروز: ${k1(today)}${SUB.cap ? ' از سقف ' + k1(SUB.cap) : ''}.`;
+  if (tok) t += ` مجموع از اول: ${k1(tok)}${usd > 0 ? ` (حدود ${fa(usd < 0.01 ? '<۰٫۰۱' : usd.toFixed(2))} دلار برای Anthropic)` : ''}.`;
+  return t + ' هر فیلم دو ساعته با ترجمه‌ی کامل حدود ۵۰ تا ۱۰۰ هزار توکن می‌شه؛ قیمت دقیق رو از پنل سرویس‌دهنده ببین.';
 }
 function paintSubs(){
   const m = SUB.on ? 'fa' : SUB.en ? 'en' : 'off';
@@ -1585,6 +1623,7 @@ function paintSubMenu(){
   $('subModel').value = subModelId();
   $('subModels').innerHTML = P.models.map(m => `<option value="${m}">`).join('');
   $('subBoth').checked = SUB.both;
+  $('subCap').value = String(SUB.cap);
   $('subStatus').textContent = subUsageText();
 }
 function subErrText(e){
@@ -1611,6 +1650,13 @@ function initSubs(){
     SUB.models[SUB.prov] = $('subModel').value.trim() || SUB_PROVIDERS[SUB.prov].def;
     store.set(K.subModel, SUB.models);
     subCache.clear();
+  });
+  $('subCap').addEventListener('change', () => {
+    SUB.cap = +$('subCap').value;
+    store.set(K.subCap, SUB.cap);
+    subErrShown = '';
+    subNote = '';
+    $('subStatus').textContent = subUsageText();
   });
   $('subBoth').addEventListener('change', () => { SUB.both = $('subBoth').checked; store.set(K.subBoth, SUB.both); });
   $('subMode').addEventListener('change', () => {
