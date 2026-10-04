@@ -404,7 +404,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=40"></script>
+<script src="channels.js?v=41"></script>
 <script>
 (() => {
 'use strict';
@@ -1068,6 +1068,11 @@ function cancelNumber(){ clearTimeout(numTimer); numBuf = ''; numEl.hidden = tru
    سافاری خودش HLS پخش می‌کنه؛ برای کروم کتابخونه‌ی hls.js فقط موقع نیاز بار می‌شه. */
 const player = $('player'), video = $('video'), pInfo = $('pInfo'), pMsg = $('pMsg');
 const nativeHls = !!video.canPlayType('application/vnd.apple.mpegurl');
+// Chrome نسخه‌های جدید خودش HLS پخش می‌کنه ولی زیرنویس‌ها رو به صفحه نمی‌ده؛ فقط Safari این کار رو می‌کنه
+const isSafariBrowser = /^((?!chrome|chromium|crios|android|edg).)*safari/i.test(navigator.userAgent);
+let subForceNative = false;   // اگه پخش با hls.js نشد، همون شبکه با پخش داخلی مرورگر امتحان می‌شه
+// شبکه‌ای که زیرنویس داره و زیرنویس روشنه توی Chrome با hls.js پخش می‌شه تا متن زیرنویس در دسترس باشه
+const subWantsHls = ch => !!(ch && nativeHls && !isSafariBrowser && !subForceNative && (SUB.on || SUB.en) && hasSubs(ch));
 let hls = null, hlsLoading = null, playing = null, zapList = [], streamIdx = 0, attempts = [], playToken = 0, stallTimer, idleTimer, weFullscreened = false;
 
 function loadHls(){
@@ -1206,6 +1211,7 @@ document.addEventListener('webkitfullscreenchange', paintFsBtn);
 document.addEventListener('fullscreenchange', () => { if (!fsElement() && mode === 'full' && weFullscreened) { weFullscreened = false; leaveFull(); } });
 
 function playChannel(ch){
+  subForceNative = false;
   const numberedCh = numbered().find(c => c.id === ch.id) || ch;
   if (!zapList.some(c => c.id === ch.id)) zapList = numbered().filter(inPage);
   playing = numberedCh;
@@ -1490,12 +1496,15 @@ function subsReset(){
   if (cc) cc.hidden = true;
 }
 function setSubMode(m){
+  const was = SUB.on || SUB.en;
   SUB.on = m === 'fa';
   SUB.en = m === 'en';
   store.set(K.subOn, SUB.on);
   store.set(K.subEn, SUB.en);
   subErrShown = '';
   paintSubs();
+  // شبکه داره با پخش داخلی Chrome پخش می‌شه و زیرنویس تازه روشن شده؛ برای دسترسی به متن با hls.js دوباره شروع می‌کنیم
+  if (!was && (SUB.on || SUB.en) && playing && !hls && playing.streams.length && subWantsHls(playing)) { streamIdx = 0; playStream(); }
 }
 // دکمه‌ی CC و کلید C: خاموش ← انگلیسی (رایگان) ← فارسی ← خاموش
 function toggleSubs(){
@@ -1624,7 +1633,7 @@ async function playStream(){
   setMsg('⏳ در حال اتصال…' + (ch.streams.length > 1 ? ` <span class="hint">(منبع ${fa(streamIdx + 1)} از ${fa(ch.streams.length)})</span>` : ''));
   stallTimer = setTimeout(() => streamFailed(token), 15000);
   try {
-    if (nativeHls) {
+    if (nativeHls && !subWantsHls(ch)) {
       video.src = url;
     } else {
       const Hls = await loadHls();
@@ -1636,7 +1645,13 @@ async function playStream(){
         for (const x of d.samples || []) { subUD.samples++; if (x.bytes) subUD.withBytes++; if (x.type != null) subUD.seiLike++; }
       });
       hls.on(Hls.Events.MANIFEST_LOADED, (_, d) => { subDeclaredCC = (d.captions || []).some(c => !SUB_OTHER_LANG.test(c.lang || '') && !SUB_OTHER_NAME.test(c.name || '')); });
-      hls.on(Hls.Events.ERROR, (_, data) => { if (data.fatal) { lastErr = String(data.details || ''); streamFailed(token); } });
+      hls.on(Hls.Events.ERROR, (_, data) => {
+        if (!data.fatal || token !== playToken) return;
+        // hls.js به سرورهایی که CORS ندارن نمی‌رسه؛ پخش داخلی Chrome به CORS نیاز نداره
+        if (nativeHls && !isSafariBrowser && !subForceNative) { subForceNative = true; playStream(); return; }
+        lastErr = String(data.details || '');
+        streamFailed(token);
+      });
       hls.loadSource(url);
       hls.attachMedia(video);
     }
@@ -1722,7 +1737,7 @@ video.addEventListener('playing', () => {
   }
 });
 video.addEventListener('waiting', () => { if (pMsg.hidden) setMsg('⏳'); });
-video.addEventListener('error', () => { if (nativeHls && playing) streamFailed(playToken); });
+video.addEventListener('error', () => { if (nativeHls && playing && !hls) streamFailed(playToken); });
 let pvClickTimer = 0;
 player.addEventListener('dblclick', e => {
   if (e.target.closest('[data-pact], #pShield')) return;
