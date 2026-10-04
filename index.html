@@ -400,7 +400,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=34"></script>
+<script src="channels.js?v=35"></script>
 <script>
 (() => {
 'use strict';
@@ -1305,7 +1305,7 @@ const subCache = new Map();      // متن انگلیسی ← فارسی
 const subPending = new Set();    // متن‌هایی که الان داره ترجمه می‌شه
 const subMiss = {};        // چند بار ترجمه‌ی این خط جا افتاده
 let subNote = '';          // پیام وضعیت که زیر زیرنویس نشون داده می‌شه
-let subTrack = null, subTimer = 0, subQueue = [], subInflight = false, subBackoff = 0, subErrShown = '', subHlsSet = false;
+let subGotCues = false, subEmptyShown = false, subStartedAt = 0, subTrack = null, subTimer = 0, subQueue = [], subInflight = false, subBackoff = 0, subErrShown = '', subHlsSet = false;
 
 const subClean = t => String(t || '').replace(/<[^>]*>/g, '').replace(/\{\\an?\d\}/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/[♪♫]+/g, '').replace(/\s*\n\s*/g, ' ').trim();
 const subIsEn = (lang, label) => /^en/i.test(lang || '') || /english|انگلیسی/i.test(label || '');
@@ -1332,11 +1332,18 @@ function subActivate(){
 function subTick(){
   const avail = subHasEnglish();
   $('pCC').hidden = !avail;
-  if (avail && playing && !hasSubs(playing)) { subsSeen[playing.id] = true; store.set('sat.hassubs.v1', subsSeen); render(); }
   const el = $('pSub');
   if (!avail || (!SUB.on && !SUB.en)) { subTrack = null; el.hidden = true; return; }
   subActivate();
   if (!subTrack) { el.hidden = true; return; }
+  if (subTrack.cues && subTrack.cues.length) {
+    subGotCues = true;
+    if (playing && !hasSubs(playing)) { subsSeen[playing.id] = true; store.set('sat.hassubs.v1', subsSeen); render(); }
+  } else if (!subGotCues && !subEmptyShown && Date.now() - subStartedAt > 20000) {
+    // بعضی شبکه‌ها (مثل Rakuten) یه زیرنویس اعلام می‌کنن ولی فایلش خالیه
+    subEmptyShown = true;
+    toast('این شبکه الان متن زیرنویسی نمی‌فرسته؛ زیرنویسش خالیه.');
+  }
   // کدوم خط‌ها تا ۶۰ ثانیه‌ی آینده هنوز ترجمه نشدن
   const t = video.currentTime, cues = subTrack.cues, queue = [], seen = new Set();
   if (cues) for (let i = 0; i < cues.length; i++) {
@@ -1439,6 +1446,7 @@ async function subPump(){
 }
 function subsStart(){
   clearInterval(subTimer);
+  subGotCues = false; subEmptyShown = false; subStartedAt = Date.now();
   subHlsSet = false;
   subTimer = setInterval(subTick, 500);
 }
