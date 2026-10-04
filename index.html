@@ -168,6 +168,7 @@
   .p-sub .fa,.p-sub .en{display:inline-block;padding:.1em .6em;border-radius:.3em;background:#000b;text-shadow:0 1px 3px #000}
   .p-sub .fa{font-size:clamp(1.4rem,2.6vw,2.5rem);font-weight:700;line-height:1.75;color:#fff}
   .p-sub .en{font-size:clamp(1rem,1.7vw,1.5rem);line-height:1.5;color:#dcdcdc;margin-top:.25rem;direction:ltr}
+  .p-sub .sn{display:inline-block;margin-top:.25rem;font-size:clamp(.8rem,1.2vw,1rem);color:#ffcf6b;background:#000b;border-radius:.3rem;padding:0 .5rem}
   .chk{display:flex;align-items:center;gap:.5rem;margin:.2rem 0 .8rem;color:var(--text)}
   .chk input{width:1.1rem;height:1.1rem;accent-color:var(--frame)}
 
@@ -390,7 +391,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=32"></script>
+<script src="channels.js?v=33"></script>
 <script>
 (() => {
 'use strict';
@@ -1292,6 +1293,8 @@ const subKey = () => String(SUB.keys[SUB.prov] || '').trim();
 const subModelId = () => String(SUB.models[SUB.prov] || SUB_PROVIDERS[SUB.prov].def).trim();
 const subCache = new Map();      // متن انگلیسی ← فارسی
 const subPending = new Set();    // متن‌هایی که الان داره ترجمه می‌شه
+const subMiss = {};        // چند بار ترجمه‌ی این خط جا افتاده
+let subNote = '';          // پیام وضعیت که زیر زیرنویس نشون داده می‌شه
 let subTrack = null, subTimer = 0, subQueue = [], subInflight = false, subBackoff = 0, subErrShown = '', subHlsSet = false;
 
 const subClean = t => String(t || '').replace(/<[^>]*>/g, '').replace(/\{\\an?\d\}/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/[♪♫]+/g, '').replace(/\s*\n\s*/g, ' ').trim();
@@ -1331,7 +1334,7 @@ function subTick(){
     if (c.endTime < t - 1) continue;
     if (c.startTime > t + 60) break;
     const x = subClean(c.text);
-    if (x && !subCache.has(x) && !subPending.has(x) && !seen.has(x)) { seen.add(x); queue.push(x); }
+    if (x && !subCache.has(x) && !subPending.has(x) && !seen.has(x) && (subMiss[x] | 0) < 3) { seen.add(x); queue.push(x); }
   }
   subQueue = queue;
   subRender();
@@ -1343,9 +1346,10 @@ function subRender(){
   const texts = [...new Set(act.map(c => subClean(c.text)).filter(Boolean))];
   if (!texts.length) { el.hidden = true; return; }
   const ready = texts.every(x => subCache.has(x));
+  const note = !ready && subNote ? `<div class="sn">⚠ ${esc(subNote)}</div>` : '';
   const faText = ready ? texts.map(x => subCache.get(x)).join('\n') : '';
   const html = (faText ? `<div class="fa">${esc(faText).replace(/\n/g, '<br>')}</div>` : '')
-    + (!faText || SUB.both ? `<div class="en">${esc(texts.join(' '))}</div>` : '');
+    + (!faText || SUB.both ? `<div class="en">${esc(texts.join(' '))}</div>` : '') + note;
   if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; }
   el.hidden = false;
 }
@@ -1356,7 +1360,7 @@ function subReport(kind, msg){
 }
 async function subTranslate(lines){
   const prov = SUB.prov, model = subModelId(), P = SUB_PROVIDERS[prov];
-  const system = 'You are a professional subtitle translator. Translate the English subtitle lines into natural, fluent, colloquial Persian (Farsi) as spoken in films and TV, not stiff or word-for-word. Keep each line short enough to read quickly. Keep names and numbers; translate bracketed sound cues such as [MUSIC] into Persian inside brackets. The lines belong to one continuous program, so keep wording consistent. Reply with exactly one output line per input line in the form N|translation using the same numbers, and nothing else (no commentary, no code fences).';
+  const system = 'You are a professional subtitle translator. Translate the English subtitle lines into natural, fluent, colloquial Persian (Farsi) as spoken in films and TV, not stiff or word-for-word. Keep each line short enough to read quickly. Keep names and numbers; translate bracketed sound cues such as [MUSIC] into Persian inside brackets. The lines belong to one continuous program, so keep wording consistent. Reply with exactly one output line per input line in the form N|translation using the same numbers written as plain ASCII digits (1, 2, 3 ...) even though the translation is Persian, and nothing else (no commentary, no code fences).';
   const user = (playing ? `Program: ${playing.name}\n\n` : '') + lines.map((x, i) => `${i + 1}|${x}`).join('\n');
   let headers, body;
   if (prov === 'anthropic') {
@@ -1379,11 +1383,20 @@ async function subTranslate(lines){
   const text = prov === 'anthropic'
     ? (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n')
     : String(j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content || '');
+  return subParse(text, lines.length);
+}
+// مدل وقتی فارسی می‌نویسه ممکنه شماره‌ها رو هم فارسی/عربی بنویسه یا به‌جای | از : و . استفاده کنه؛ همه‌ش قبول می‌شه
+const subDigits = t => String(t).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+function subParse(text, n){
+  const rows = String(text).split('\n').map(l => l.trim()).filter(l => l && !/^```/.test(l));
   const out = [];
-  for (const line of text.split('\n')) {
-    const mm = /^\s*(\d+)\s*\|\s*(.+?)\s*$/.exec(line);
-    if (mm && +mm[1] >= 1 && +mm[1] <= lines.length) out[+mm[1] - 1] = mm[2];
+  for (const line of rows) {
+    const mm = /^\W{0,3}([0-9۰-۹٠-٩]+)\s*[|｜│¦:：.)\-–—]\s*(.+?)\s*$/.exec(line);
+    const k = mm && +subDigits(mm[1]);
+    if (mm && k >= 1 && k <= n) out[k - 1] = mm[2].replace(/^["«]|["»]$/g, '').trim();
   }
+  // اگه شماره‌ای پیدا نشد ولی تعداد خط‌ها درسته، به ترتیب می‌گیریم
+  if (!out.some(Boolean) && rows.length === n) rows.forEach((l, i) => { out[i] = l; });
   return out;
 }
 async function subPump(){
@@ -1393,11 +1406,18 @@ async function subPump(){
   batch.forEach(x => subPending.add(x));
   try {
     const out = await subTranslate(batch);
-    batch.forEach((x, i) => { if (out[i]) subCache.set(x, out[i]); });
+    let miss = 0;
+    batch.forEach((x, i) => {
+      if (out[i]) subCache.set(x, out[i]);
+      else { miss++; subMiss[x] = (subMiss[x] || 0) + 1; }
+    });
+    subNote = miss > batch.length / 2 ? 'ترجمه‌ی بعضی خط‌ها ناقص برگشت؛ مدل دیگه‌ای رو امتحان کن.' : '';
+    if (miss) console.warn('subtitle translation: missing', miss, 'of', batch.length);
     if (subCache.size > 4000) for (const k of [...subCache.keys()].slice(0, 1000)) subCache.delete(k);
     subErrShown = '';
   } catch (e) {
     const s = e && e.status;
+    subNote = subErrText(e).replace(/^✕\s*/, '');
     if (s === 401 || s === 403) { subBackoff = Date.now() + 60000; subReport('auth', 'کلید API قبول نشد؛ توی تنظیمات دوباره وارد کن.'); }
     else if (s === 429) { subBackoff = Date.now() + 15000; subReport('rate', 'تعداد درخواست‌ها زیاد شد؛ چند ثانیه بعد ادامه می‌ده.'); }
     else if (s === 400 || s === 404) { subBackoff = Date.now() + 60000; subReport('bad', 'درخواست ترجمه رد شد؛ مدل دیگه‌ای رو امتحان کن یا اعتبار حسابت رو ببین.'); }
