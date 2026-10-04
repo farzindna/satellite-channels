@@ -85,6 +85,8 @@
   .row.st-row-bad:not(.sel) .rname{opacity:.5}
   .rtags{display:flex;align-items:center;gap:.45rem;flex:0 0 auto}
   .st{width:.62rem;height:.62rem;border-radius:50%;background:#666}
+  .rcc{font-size:.62rem;font-weight:800;letter-spacing:.03em;color:#9ad;border:1px solid #5a7a99;border-radius:.25rem;padding:0 .3rem;line-height:1.4;font-family:var(--font)}
+  .row.sel .rcc{color:#2a1a00;border-color:#2a1a00aa}
   .st-live{background:#2ee66b}.st-ok{background:transparent;box-shadow:inset 0 0 0 2.5px #2ee66b}.st-cors{background:#ffa726}.st-bad,.st-codec{background:#ff3b3b}
   .st-site,.st-embed{background:transparent;box-shadow:inset 0 0 0 1.5px #888}
   .rfav{background:none;border:0;font-size:1.15rem;line-height:1;padding:0 .1rem;color:#555}
@@ -244,7 +246,7 @@
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
     <button id="scanText" class="scan" type="button" hidden title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
-    <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)<span class="credit">توسعه‌یافته توسط <b>فرزین</b></span></p>
+    <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب · <span class="rcc">CC</span> زیرنویس انگلیسی داره (می‌شه فارسیش کرد)<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)<span class="credit">توسعه‌یافته توسط <b>فرزین</b></span></p>
   </div>
 </div>
 
@@ -388,7 +390,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=31"></script>
+<script src="channels.js?v=32"></script>
 <script>
 (() => {
 'use strict';
@@ -633,6 +635,9 @@ function currentList(){
 }
 
 const ST_TEXT = { live: 'سالم؛ قبلاً توی همین مرورگر پخش شده', ok: 'احتمالاً سالم؛ بررسی شده ولی هنوز امتحانش نکردی', codec: 'فرمت تصویرش با این مرورگر پخش نمی‌شه', cors: 'سرورش فقط توی Safari پخش رو اجازه می‌ده', bad: 'الان جواب نمی‌ده', unk: 'هنوز بررسی نشده', embed: 'داخل صفحه پخش می‌شه (یوتیوب یا سایت پخش)', site: 'فقط سایت شبکه باز می‌شه' };
+// شبکه‌هایی که زیرنویس دارن: فهرست ثابت (subs توی channels.js) + چیزی که موقع پخش خودمون دیدیم
+const subsSeen = store.get('sat.hassubs.v1', {}) || {};
+const hasSubs = c => !!(c.subs || subsSeen[c.id]);
 function rowHTML(c){
   const vpn = needsVpn(primaryUrl(c)), fav = favList.includes(c.id), st = healthOf(c);
   return `<div class="row${c.id === selId ? ' sel' : ''}${vpn ? ' need-vpn' : ''}${st === 'bad' || st === 'codec' ? ' st-row-bad' : ''}" role="option" aria-selected="${c.id === selId}" data-id="${esc(c.id)}"${editMode ? ' draggable="true"' : ''}>
@@ -640,6 +645,7 @@ function rowHTML(c){
     <span class="rnum">${pad4(c.num)}</span>
     <span class="rname">${esc(c.name)}</span>
     <span class="rtags">
+      ${hasSubs(c) ? '<span class="rcc" title="زیرنویس انگلیسی داره؛ زیرنویس فارسی هم می‌شه روش روشن کرد">CC</span>' : ''}
       <i class="st st-${st}" title="${ST_TEXT[st]}"></i>
       <button class="rfav${fav ? ' on' : ''}" type="button" data-act="fav" tabindex="-1" aria-pressed="${fav}" title="${fav ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}">${fav ? '★' : '☆'}</button>
     </span>
@@ -1313,6 +1319,7 @@ function subActivate(){
 function subTick(){
   const avail = subHasEnglish();
   $('pCC').hidden = !avail;
+  if (avail && playing && !hasSubs(playing)) { subsSeen[playing.id] = true; store.set('sat.hassubs.v1', subsSeen); render(); }
   const el = $('pSub');
   if (!avail || !SUB.on) { subTrack = null; el.hidden = true; return; }
   subActivate();
