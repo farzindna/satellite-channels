@@ -123,6 +123,9 @@
   .icon-btn.on{border-color:var(--frame);color:var(--frame)}
   .player.pv{right:auto;bottom:auto;border:3px solid var(--frame);border-radius:.3rem;overflow:hidden}
   .player.pv .p-info,.player.pv .p-bar,.player.pv .p-fs{display:none}
+  .player.pv .p-sub{bottom:.6rem;max-width:94%}
+  .player.pv .p-sub .fa{font-size:1rem}
+  .player.pv .p-sub .en{font-size:.75rem}
   .player.pv .p-msg{font-size:.95rem;padding:.8rem 1rem}
   .player.pv .p-msg .dlg-actions{display:none}
   .p-msg .pm-title{display:block;border-bottom:3px solid var(--frame);margin:-.6rem -1rem .6rem;padding-bottom:.3rem}
@@ -155,6 +158,16 @@
   .player.idle .p-bar,.player.idle .p-info,.player.idle .p-fs{opacity:0;pointer-events:none}
   .p-fs{position:absolute;right:1.4rem;bottom:1.4rem;z-index:1;width:3.6rem;height:3.6rem;display:grid;place-items:center;padding:0;background:#000c;color:#fff;border:3px solid var(--frame);border-radius:.3rem;cursor:pointer;transition:opacity .3s,background .15s}
   .p-fs:hover,.p-fs:focus-visible{background:var(--frame);color:#000;outline:0}
+  .p-fs svg{width:2rem;height:2rem;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .p-cc{right:5.6rem}
+  .p-cc.on{background:var(--frame);color:#000}
+  .p-sub{position:absolute;left:50%;transform:translateX(-50%);bottom:7.4rem;width:max-content;max-width:82%;text-align:center;direction:rtl;z-index:1;pointer-events:none;transition:bottom .3s}
+  .player.idle .p-sub{bottom:2.4rem}
+  .p-sub .fa,.p-sub .en{display:inline-block;padding:.1em .6em;border-radius:.3em;background:#000b;text-shadow:0 1px 3px #000}
+  .p-sub .fa{font-size:clamp(1.4rem,2.6vw,2.5rem);font-weight:700;line-height:1.75;color:#fff}
+  .p-sub .en{font-size:clamp(1rem,1.7vw,1.5rem);line-height:1.5;color:#dcdcdc;margin-top:.25rem;direction:ltr}
+  .chk{display:flex;align-items:center;gap:.5rem;margin:.2rem 0 .8rem;color:var(--text)}
+  .chk input{width:1.1rem;height:1.1rem;accent-color:var(--frame)}
 
   /* ---------- پنجره‌ها ---------- */
   dialog{background:#000;color:var(--text);border:3px solid var(--frame);border-radius:.35rem;padding:0;width:min(36rem,92vw);box-shadow:0 30px 80px rgba(0,0,0,.8)}
@@ -246,7 +259,9 @@
   <div id="pPause" class="p-pause" hidden>❚❚</div>
   <button id="pOpen" class="p-open" type="button" data-pact="site" hidden>🌐 چیزی نیومد؟ باز کردن در تب</button>
   <div id="pShield" class="p-shield" hidden title="دابل‌کلیک = تمام‌صفحه · یه کلیک = کار با خود پخش‌کننده"></div>
+  <div id="pSub" class="p-sub" hidden></div>
   <div id="pMute" class="p-mute" hidden>🔇 برای پخش صدا، یه جای صفحه کلیک کن</div>
+  <button class="p-fs p-cc" type="button" data-pact="subs" id="pCC" title="زیرنویس فارسی (C)" aria-label="زیرنویس فارسی" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h4M7 14h2M13 10h4M12 14h5"/></svg></button>
   <button class="p-fs" type="button" data-pact="full" id="pFull" title="تمام‌صفحه (F)" aria-label="تمام‌صفحه"></button>
   <div class="p-bar">
     <button class="btn ghost" type="button" data-pact="next" title="شبکه‌ی بعدی (↑)">▲ بعدی</button>
@@ -320,6 +335,23 @@
       <button class="btn ghost" type="button" id="mUnhide">↺ برگردوندن شبکه‌های پنهان‌شده <b id="mHiddenCount"></b></button>
       <button class="btn ghost" type="button" id="mResetOrder">↺ برگردوندن ترتیب پیش‌فرض شبکه‌ها</button>
     </div>
+    <h4>زیرنویس فارسی (آزمایشی)</h4>
+    <p class="hint">برای شبکه‌هایی که خودشون زیرنویس انگلیسی دارن، متن به فارسی ترجمه و روی تصویر نشون داده می‌شه. ترجمه با Claude انجام می‌شه و به کلید API خودت نیاز داره؛ کلید فقط توی همین مرورگر می‌مونه و جز به خود Anthropic جایی فرستاده نمی‌شه.</p>
+    <div class="field" style="margin-top:.7rem">
+      <label for="subKey">کلید API (از console.anthropic.com)</label>
+      <input id="subKey" class="ltr" type="password" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="subModel">مدل ترجمه</label>
+      <select id="subModel"></select>
+    </div>
+    <label class="chk"><input type="checkbox" id="subOn"> زیرنویس فارسی روشن باشه (کلید <kbd>C</kbd> موقع پخش)</label>
+    <label class="chk"><input type="checkbox" id="subBoth"> زیرنویس انگلیسی هم زیر فارسی نشون داده بشه</label>
+    <div class="menu-list">
+      <button class="btn ghost" type="button" id="subTest">✓ آزمایش کلید</button>
+      <button class="btn ghost" type="button" id="subClear">✕ پاک کردن کلید از این مرورگر</button>
+    </div>
+    <p class="hint" id="subStatus"></p>
     <div id="mCats" hidden>
       <h4>گروه‌های من</h4>
       <ul class="catlist" id="mCatList"></ul>
@@ -351,7 +383,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=28"></script>
+<script src="channels.js?v=29"></script>
 <script>
 (() => {
 'use strict';
@@ -400,7 +432,7 @@ const store = {
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* حالت خصوصی یا حافظه‌ی پر */ } },
 };
 const K = { custom: 'sat.custom.v1', fav: 'sat.fav.v1', hidden: 'sat.hidden.v1', view: 'sat.view.v2', order: 'sat.order.v1',
-  filter: 'sat.filter.v1', sort: 'sat.sort.v1', help: 'sat.help.v1', migrated: 'sat.migrated.v1' };
+  filter: 'sat.filter.v1', sort: 'sat.sort.v1', help: 'sat.help.v1', subOn: 'sat.subs.on.v1', subKey: 'sat.subs.key.v1', subModel: 'sat.subs.model.v1', subBoth: 'sat.subs.both.v1', subUsage: 'sat.subs.usage.v1', migrated: 'sat.migrated.v1' };
 
 /* ---------- داده‌ها ---------- */
 const CATS = Array.isArray(window.SAT_CATEGORIES) && window.SAT_CATEGORIES.length ? window.SAT_CATEGORIES : [{ id: 'general', name: 'شبکه‌ها' }];
@@ -1015,7 +1047,7 @@ function loadHls(){
   if (window.Hls) return Promise.resolve(window.Hls);
   if (!hlsLoading) hlsLoading = new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = 'vendor/hls.light.min.js';
+    s.src = 'vendor/hls.min.js';
     s.onload = () => resolve(window.Hls);
     s.onerror = () => { hlsLoading = null; reject(new Error('hls.js')); };
     document.head.appendChild(s);
@@ -1189,6 +1221,7 @@ function stopStream(){
   if (f) f.remove();
   updShield();
   video.hidden = false;
+  subsReset();
   if (hls) { hls.destroy(); hls = null; }
   video.removeAttribute('src');
   video.load();
@@ -1213,6 +1246,221 @@ function unmuteOnGesture(){
 document.addEventListener('pointerdown', unmuteOnGesture, true);
 document.addEventListener('keydown', unmuteOnGesture, true);
 
+/* ---------- زیرنویس فارسی (آزمایشی) ----------
+   زیرنویس انگلیسیِ خودِ پخش (WebVTT) خونده می‌شه، با Claude ترجمه می‌شه و روی تصویر میاد.
+   زیرنویس‌ها چند ثانیه زودتر از نمایش به صفحه می‌رسن، برای همین ترجمه عقب نمی‌مونه. */
+const SUB_MODELS = [
+  { id: 'claude-opus-5-5', name: 'Claude Opus 5.5 · بهترین کیفیت (گران‌تر)', inP: 4, outP: 20, effort: true },
+  { id: 'claude-sonnet-5-5', name: 'Claude Sonnet 5.5 · متعادل', inP: 2, outP: 10, effort: true },
+  { id: 'claude-haiku-4-5', name: 'Claude Haiku 4.5 · ارزون‌ترین', inP: 1, outP: 5, effort: false },
+];
+const SUB = {
+  on: store.get(K.subOn, false) === true,
+  key: String(store.get(K.subKey, '') || ''),
+  model: String(store.get(K.subModel, SUB_MODELS[0].id)),
+  both: store.get(K.subBoth, false) === true,
+  usage: store.get(K.subUsage, {}) || {},
+};
+if (!SUB_MODELS.some(m => m.id === SUB.model)) SUB.model = SUB_MODELS[0].id;
+const subCache = new Map();      // متن انگلیسی ← فارسی
+const subPending = new Set();    // متن‌هایی که الان داره ترجمه می‌شه
+let subTrack = null, subTimer = 0, subQueue = [], subInflight = false, subBackoff = 0, subErrShown = '', subHlsSet = false;
+
+const subClean = t => String(t || '').replace(/<[^>]*>/g, '').replace(/\{\\an?\d\}/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/[♪♫]+/g, '').replace(/\s*\n\s*/g, ' ').trim();
+const subIsEn = (lang, label) => /^en/i.test(lang || '') || /english|انگلیسی/i.test(label || '');
+const subIsSdh = label => /sdh|hearing|forced/i.test(label || '');
+
+function subHasEnglish(){
+  if (hls) return (hls.subtitleTracks || []).some(t => subIsEn(t.lang, t.name));
+  return [...video.textTracks].some(t => (t.kind === 'subtitles' || t.kind === 'captions') && subIsEn(t.language, t.label));
+}
+function subActivate(){
+  // hls.js فقط وقتی یه زیرنویس انتخاب شده باشه دانلودش می‌کنه؛ نمایشش رو خودمون انجام می‌دیم (حالت hidden)
+  if (hls && !subHlsSet) {
+    const list = hls.subtitleTracks || [];
+    let i = list.findIndex(t => subIsEn(t.lang, t.name) && !subIsSdh(t.name));
+    if (i < 0) i = list.findIndex(t => subIsEn(t.lang, t.name));
+    if (i >= 0) { hls.subtitleTrack = i; hls.subtitleDisplay = true; subHlsSet = true; }
+  }
+  const tracks = [...video.textTracks].filter(t => t.kind === 'subtitles' || t.kind === 'captions');
+  const en = tracks.filter(t => subIsEn(t.language, t.label));
+  subTrack = en.find(t => !subIsSdh(t.label) && t.mode !== 'disabled') || en.find(t => t.mode !== 'disabled') || (hls ? null : (en.find(t => !subIsSdh(t.label)) || en[0])) || null;
+  if (subTrack && subTrack.mode !== 'hidden') subTrack.mode = 'hidden';
+  for (const t of tracks) if (t !== subTrack && t.mode === 'showing') t.mode = 'hidden';
+}
+function subTick(){
+  const avail = subHasEnglish();
+  $('pCC').hidden = !avail;
+  const el = $('pSub');
+  if (!avail || !SUB.on) { subTrack = null; el.hidden = true; return; }
+  subActivate();
+  if (!subTrack) { el.hidden = true; return; }
+  // کدوم خط‌ها تا ۶۰ ثانیه‌ی آینده هنوز ترجمه نشدن
+  const t = video.currentTime, cues = subTrack.cues, queue = [], seen = new Set();
+  if (cues) for (let i = 0; i < cues.length; i++) {
+    const c = cues[i];
+    if (c.endTime < t - 1) continue;
+    if (c.startTime > t + 60) break;
+    const x = subClean(c.text);
+    if (x && !subCache.has(x) && !subPending.has(x) && !seen.has(x)) { seen.add(x); queue.push(x); }
+  }
+  subQueue = queue;
+  subRender();
+  subPump();
+}
+function subRender(){
+  const el = $('pSub');
+  const act = subTrack && subTrack.activeCues ? [...subTrack.activeCues] : [];
+  const texts = [...new Set(act.map(c => subClean(c.text)).filter(Boolean))];
+  if (!texts.length) { el.hidden = true; return; }
+  const ready = texts.every(x => subCache.has(x));
+  const faText = ready ? texts.map(x => subCache.get(x)).join('\n') : '';
+  const html = (faText ? `<div class="fa">${esc(faText).replace(/\n/g, '<br>')}</div>` : '')
+    + (!faText || SUB.both ? `<div class="en">${esc(texts.join(' '))}</div>` : '');
+  if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; }
+  el.hidden = false;
+}
+function subReport(kind, msg){
+  if (subErrShown === kind) return;
+  subErrShown = kind;
+  toast(msg);
+}
+async function subTranslate(lines, model){
+  const m = SUB_MODELS.find(x => x.id === model) || SUB_MODELS[0];
+  const system = 'You are a professional subtitle translator. Translate the English subtitle lines into natural, fluent, colloquial Persian (Farsi) as spoken in films and TV, not stiff or word-for-word. Keep each line short enough to read quickly. Keep names and numbers; translate bracketed sound cues such as [MUSIC] into Persian inside brackets. The lines belong to one continuous program, so keep wording consistent. Reply with exactly one output line per input line in the form N|translation using the same numbers, and nothing else (no commentary, no code fences).';
+  const body = {
+    model: m.id,
+    max_tokens: 4000,
+    system,
+    messages: [{ role: 'user', content: (playing ? `Program: ${playing.name}\n\n` : '') + lines.map((x, i) => `${i + 1}|${x}`).join('\n') }],
+  };
+  if (m.effort) body.output_config = { effort: 'low' };
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': SUB.key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) { const e = new Error('http'); e.status = r.status; throw e; }
+  const j = await r.json();
+  const u = SUB.usage[m.id] || (SUB.usage[m.id] = { i: 0, o: 0 });
+  u.i += (j.usage && j.usage.input_tokens) | 0;
+  u.o += (j.usage && j.usage.output_tokens) | 0;
+  store.set(K.subUsage, SUB.usage);
+  const text = (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+  const out = [];
+  for (const line of text.split('\n')) {
+    const mm = /^\s*(\d+)\s*\|\s*(.+?)\s*$/.exec(line);
+    if (mm && +mm[1] >= 1 && +mm[1] <= lines.length) out[+mm[1] - 1] = mm[2];
+  }
+  return out;
+}
+async function subPump(){
+  if (subInflight || !SUB.key || !subQueue.length || Date.now() < subBackoff) return;
+  const batch = subQueue.slice(0, 30);
+  subInflight = true;
+  batch.forEach(x => subPending.add(x));
+  try {
+    const out = await subTranslate(batch, SUB.model);
+    batch.forEach((x, i) => { if (out[i]) subCache.set(x, out[i]); });
+    if (subCache.size > 4000) for (const k of [...subCache.keys()].slice(0, 1000)) subCache.delete(k);
+    subErrShown = '';
+  } catch (e) {
+    const s = e && e.status;
+    if (s === 401 || s === 403) { subBackoff = Date.now() + 60000; subReport('auth', 'کلید API قبول نشد؛ توی تنظیمات دوباره وارد کن.'); }
+    else if (s === 429) { subBackoff = Date.now() + 15000; subReport('rate', 'تعداد درخواست‌ها زیاد شد؛ چند ثانیه بعد ادامه می‌ده.'); }
+    else if (s === 400 || s === 404) { subBackoff = Date.now() + 60000; subReport('bad', 'درخواست ترجمه رد شد؛ مدل دیگه‌ای رو امتحان کن یا اعتبار حسابت رو ببین.'); }
+    else { subBackoff = Date.now() + 8000; subReport('net', 'اتصال به سرویس ترجمه برقرار نشد؛ دوباره امتحان می‌کنه.'); }
+  } finally {
+    batch.forEach(x => subPending.delete(x));
+    subInflight = false;
+  }
+}
+function subsStart(){
+  clearInterval(subTimer);
+  subHlsSet = false;
+  subTimer = setInterval(subTick, 500);
+}
+function subsReset(){
+  clearInterval(subTimer);
+  subTimer = 0;
+  subTrack = null;
+  subQueue = [];
+  subHlsSet = false;
+  const el = $('pSub'), cc = $('pCC');
+  if (el) { el.hidden = true; el.dataset.k = ''; }
+  if (cc) cc.hidden = true;
+}
+function toggleSubs(){
+  if (!SUB.key) { toast('اول توی تنظیمات کلید API رو وارد کن.'); $('menuBtn').click(); return; }
+  SUB.on = !SUB.on;
+  store.set(K.subOn, SUB.on);
+  paintSubs();
+  toast(SUB.on ? 'زیرنویس فارسی روشن شد.' : 'زیرنویس فارسی خاموش شد.');
+}
+function subCost(){
+  let usd = 0;
+  for (const m of SUB_MODELS) { const u = SUB.usage[m.id]; if (u) usd += (u.i * m.inP + u.o * m.outP) / 1e6; }
+  return usd;
+}
+function paintSubs(){
+  $('pCC').classList.toggle('on', SUB.on);
+  $('subOn').checked = SUB.on;
+}
+function paintSubMenu(){
+  $('subKey').value = SUB.key;
+  $('subModel').value = SUB.model;
+  $('subBoth').checked = SUB.both;
+  const usd = subCost();
+  $('subStatus').textContent = usd > 0 ? `خرج تقریبی تا الان از این مرورگر: حدود ${fa(usd < 0.01 ? '<۰٫۰۱' : usd.toFixed(2))} دلار. برای هر فیلم دو ساعته تقریباً با Opus حدود ۱ دلار، با Sonnet حدود نیم دلار و با Haiku حدود ۰٫۲ دلار.`
+    : 'برای هر فیلم دو ساعته تقریباً با Opus حدود ۱ دلار، با Sonnet حدود نیم دلار و با Haiku حدود ۰٫۲ دلار خرج می‌شه (تخمینی). بهتره روی کلیدت سقف خرج بذاری.';
+}
+function initSubs(){
+  $('subModel').innerHTML = SUB_MODELS.map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  $('subKey').addEventListener('change', () => {
+    SUB.key = $('subKey').value.trim();
+    store.set(K.subKey, SUB.key);
+    subBackoff = 0;
+    subErrShown = '';
+  });
+  $('subModel').addEventListener('change', () => { SUB.model = $('subModel').value; store.set(K.subModel, SUB.model); subCache.clear(); });
+  $('subBoth').addEventListener('change', () => { SUB.both = $('subBoth').checked; store.set(K.subBoth, SUB.both); });
+  $('subOn').addEventListener('change', () => {
+    if ($('subOn').checked && !SUB.key) { $('subOn').checked = false; $('subStatus').textContent = 'اول کلید API رو وارد کن.'; return; }
+    SUB.on = $('subOn').checked;
+    store.set(K.subOn, SUB.on);
+    paintSubs();
+  });
+  $('subClear').addEventListener('click', () => {
+    SUB.key = '';
+    SUB.on = false;
+    store.set(K.subKey, '');
+    store.set(K.subOn, false);
+    $('subKey').value = '';
+    paintSubs();
+    $('subStatus').textContent = 'کلید از این مرورگر پاک شد.';
+  });
+  $('subTest').addEventListener('click', async () => {
+    SUB.key = $('subKey').value.trim();
+    store.set(K.subKey, SUB.key);
+    const st = $('subStatus');
+    if (!SUB.key) { st.textContent = 'اول کلید API رو وارد کن.'; return; }
+    st.textContent = '⏳ در حال آزمایش…';
+    try {
+      const out = await subTranslate(['Hello, how are you?'], SUB.model);
+      st.textContent = out[0] ? `✓ کلید درسته. نمونه‌ی ترجمه: «${out[0]}»` : 'جواب اومد ولی ترجمه‌ای توش نبود؛ دوباره امتحان کن.';
+    } catch (e) {
+      const s = e && e.status;
+      st.textContent = s === 401 || s === 403 ? '✕ کلید قبول نشد.' : s === 429 ? '✕ تعداد درخواست‌ها زیاده؛ کمی بعد امتحان کن.' : s === 400 || s === 404 ? '✕ درخواست رد شد؛ مدل دیگه‌ای رو امتحان کن یا اعتبار حسابت رو ببین.' : '✕ اتصال به سرویس برقرار نشد.';
+    }
+  });
+  paintSubs();
+}
+
 async function playStream(){
   const ch = playing, token = ++playToken, url = ch.streams[attempts[streamIdx]];
   stopStream();
@@ -1230,6 +1478,7 @@ async function playStream(){
       hls.loadSource(url);
       hls.attachMedia(video);
     }
+    subsStart();
     startVideo(token);
   } catch {
     streamFailed(token);
@@ -1280,6 +1529,7 @@ function playerAction(act){
   else if (act === 'close') leaveFull();
   else if (act === 'retry' && playing) { streamIdx = 0; if (playing.streams.length) playStream(); else showEmbed(playing); }
   else if (act === 'site' && playing) openSite(playing);
+  else if (act === 'subs') toggleSubs();
   else if (act === 'full') { if (fsElement()) exitFullscreen(); else enterFullscreen(); setTimeout(paintFsBtn, 150); }
 }
 function playerKey(e){
@@ -1293,6 +1543,7 @@ function playerKey(e){
   else if (e.key === ' ') togglePause();
   else if (e.code === 'KeyF') playerAction('full');
   else if (e.code === 'KeyM') video.muted = !video.muted;
+  else if (e.code === 'KeyC') toggleSubs();
   else if (e.code === 'KeyS' && playing && playing.urls.length) openSite(playing);
   else return;
   e.preventDefault();
@@ -1609,6 +1860,7 @@ $('mCatList').addEventListener('click', e => {
 });
 $('menuBtn').addEventListener('click', () => {
   paintMenuCats();
+  paintSubMenu();
   $('mHiddenCount').textContent = hidden.size ? `(${fa(hidden.size)})` : '';
   $('mUnhide').disabled = !hidden.size;
   menuDlg.showModal();
@@ -1694,6 +1946,7 @@ render();
 paintSignal();
 paintScan();
 paintPreviewBtn();
+initSubs();
 maybeCheck();
 setInterval(() => maybeCheck(50000), 60000);
 document.addEventListener('visibilitychange', () => maybeCheck(10000));
