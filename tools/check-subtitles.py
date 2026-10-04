@@ -25,6 +25,7 @@ import re
 import ssl
 import subprocess
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -38,7 +39,10 @@ def get(url, limit=600_000):
     req = urllib.request.Request(url, headers={'User-Agent': UA, 'Accept': '*/*'})
     try:
         r = urllib.request.urlopen(req, timeout=TIMEOUT, context=CTX)
-    except ssl.SSLError:
+    except (ssl.SSLError, urllib.error.URLError) as e:
+        reason = getattr(e, 'reason', e)
+        if not isinstance(reason, ssl.SSLError):
+            raise
         # some Python builds ship without a CA bundle; manifests are public so retry unverified
         r = urllib.request.urlopen(req, timeout=TIMEOUT, context=ssl._create_unverified_context())
     with r:
