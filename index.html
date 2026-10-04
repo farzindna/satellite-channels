@@ -369,6 +369,10 @@
       <button class="btn ghost" type="button" id="subClear">✕ پاک کردن کلید از این مرورگر</button>
     </div>
     <p class="hint" id="subStatus"></p>
+    <div class="menu-list">
+      <button class="btn ghost" type="button" id="subDiag">🛠 گزارش عیب‌یابی زیرنویس (موقع پخش یه شبکه بزن)</button>
+    </div>
+    <textarea id="subDiagOut" class="ltr" rows="9" readonly hidden style="width:100%;margin-top:.5rem;background:#111;color:#ddd;border:1px solid #444;border-radius:.4rem;padding:.5rem;font-size:.75rem"></textarea>
     <div id="mCats" hidden>
       <h4>گروه‌های من</h4>
       <ul class="catlist" id="mCatList"></ul>
@@ -400,7 +404,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=39"></script>
+<script src="channels.js?v=40"></script>
 <script>
 (() => {
 'use strict';
@@ -1323,6 +1327,7 @@ function subTextTracks(){
 }
 // زیرنویس جاسازی‌شده تا اولین جمله نیومده هیچ track ای نداره؛ پس اعلام‌شدنش توی manifest و علامت CC خود شبکه هم حساب می‌شه
 let subDeclaredCC = false;
+const subUD = { events: 0, samples: 0, withBytes: 0, seiLike: 0 };   // چیزی که hls.js از داخل تصویر خونده (برای عیب‌یابی)
 function subHasEnglish(){
   const tracks = subTextTracks();
   if (subDeclaredCC || (playing && hasSubs(playing))) return true;
@@ -1469,6 +1474,7 @@ async function subPump(){
 function subsStart(){
   clearInterval(subTimer);
   subGotCues = false; subEmptyShown = false; subStartedAt = Date.now(); subDeclaredCC = false;
+  subUD.events = subUD.samples = subUD.withBytes = subUD.seiLike = 0;
   subHlsSet = false;
   subTimer = setInterval(subTick, 500);
 }
@@ -1498,6 +1504,25 @@ function toggleSubs(){
     if (!subKey()) { setSubMode('off'); toast('برای زیرنویس فارسی باید توی تنظیمات کلید API بذاری. زیرنویس خاموش شد.'); }
     else { setSubMode('fa'); toast('زیرنویس فارسی روشن شد.'); }
   } else { setSubMode('off'); toast('زیرنویس خاموش شد.'); }
+}
+function subReportText(){
+  const L = [];
+  const f = n => (typeof n === 'number' ? n.toFixed(1) : String(n));
+  L.push('channel: ' + (playing ? playing.name : '-') + ' | mode: ' + (SUB.on ? 'fa' : SUB.en ? 'en' : 'off') + ' | player: ' + (hls ? 'hls.js ' + (window.Hls && Hls.version) : nativeHls ? 'native' : 'none'));
+  L.push('browser: ' + navigator.userAgent.replace(/^Mozilla\/5.0 /, '').slice(0, 110));
+  L.push('time: ' + f(video.currentTime) + ' / duration ' + f(video.duration) + ' | paused: ' + video.paused + ' | readyState ' + video.readyState);
+  L.push('declared CC in manifest: ' + subDeclaredCC + ' | hls userdata events: ' + subUD.events + ', samples: ' + subUD.samples + ', with caption bytes: ' + subUD.withBytes);
+  if (hls) L.push('hls subtitle tracks: ' + JSON.stringify((hls.subtitleTracks || []).map(t => [t.lang, t.name])) + ' | CEA enabled: ' + hls.config.enableCEA708Captions);
+  const tr = [...video.textTracks];
+  L.push('text tracks: ' + tr.length);
+  tr.forEach((t, i) => {
+    const c = t.cues;
+    let line = `  #${i} kind=${t.kind} label="${t.label}" lang=${t.language} mode=${t.mode} cues=${c ? c.length : 'null'}`;
+    if (c && c.length) { const a = c[0], z = c[c.length - 1]; line += ` first=${f(a.startTime)}-${f(a.endTime)} last=${f(z.startTime)}-${f(z.endTime)} active=${t.activeCues ? t.activeCues.length : 0} sample="${String(z.text).replace(/\n/g, ' ').slice(0, 60)}"`; }
+    L.push(line);
+  });
+  L.push('chosen track: ' + (subTrack ? subTrack.kind + '/' + subTrack.label : 'none') + ' | got cues: ' + subGotCues + ' | cache lines: ' + subCache.size);
+  return L.join('\n');
 }
 function subUsageText(){
   let usd = 0, tok = 0;
@@ -1581,6 +1606,15 @@ function initSubs(){
       st.textContent = subErrText(e);
     }
   });
+  $('subDiag').addEventListener('click', async () => {
+    const txt = subReportText(), box = $('subDiagOut');
+    box.value = txt;
+    box.hidden = false;
+    box.select();
+    let ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; } catch { /* کاربر خودش کپی می‌کنه */ }
+    $('subStatus').textContent = ok ? 'گزارش کپی شد؛ توی چت بچسبون.' : 'گزارش پایینه؛ انتخابش کن و کپی کن.';
+  });
   paintSubs();
 }
 
@@ -1597,6 +1631,10 @@ async function playStream(){
       if (token !== playToken) return;
       if (!Hls || !Hls.isSupported()) throw new Error('unsupported');
       hls = new Hls({ manifestLoadingMaxRetry: 2, levelLoadingMaxRetry: 2, fragLoadingMaxRetry: 3 });
+      hls.on(Hls.Events.FRAG_PARSING_USERDATA, (_, d) => {
+        subUD.events++;
+        for (const x of d.samples || []) { subUD.samples++; if (x.bytes) subUD.withBytes++; if (x.type != null) subUD.seiLike++; }
+      });
       hls.on(Hls.Events.MANIFEST_LOADED, (_, d) => { subDeclaredCC = (d.captions || []).some(c => !SUB_OTHER_LANG.test(c.lang || '') && !SUB_OTHER_NAME.test(c.name || '')); });
       hls.on(Hls.Events.ERROR, (_, data) => { if (data.fatal) { lastErr = String(data.details || ''); streamFailed(token); } });
       hls.loadSource(url);
