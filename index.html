@@ -400,7 +400,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=37"></script>
+<script src="channels.js?v=38"></script>
 <script>
 (() => {
 'use strict';
@@ -1309,13 +1309,23 @@ const subMiss = {};        // چند بار ترجمه‌ی این خط جا ا�
 let subNote = '';          // پیام وضعیت که زیر زیرنویس نشون داده می‌شه
 let subGotCues = false, subEmptyShown = false, subStartedAt = 0, subTrack = null, subTimer = 0, subQueue = [], subInflight = false, subBackoff = 0, subErrShown = '', subHlsSet = false;
 
-const subClean = t => String(t || '').replace(/<[^>]*>/g, '').replace(/\{\\an?\d\}/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/[♪♫]+/g, '').replace(/\s*\n\s*/g, ' ').trim();
+const subClean = t => String(t || '').replace(/<[^>]*>/g, '').replace(/\{\\an?\d\}/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/[♪♫]+/g, '').replace(/\s*\n\s*/g, ' ').replace(/\s*>{2,}\s*/g, ' ').trim();
 const subIsEn = (lang, label) => /^en/i.test(lang || '') || /english|انگلیسی/i.test(label || '');
 const subIsSdh = label => /sdh|hearing|forced/i.test(label || '');
 
+// زیرنویس CEA-608/708 که داخل خود تصویر جاسازی شده (kind = captions) فقط اگه انگلیسی یا بدون زبان مشخص باشه قبول می‌شه
+const SUB_OTHER_LANG = /^(es|spa|fr|fre|fra|de|ger|deu|sv|swe|nl|dut|nld|it|ita|pt|por|ru|rus|ar|ara|fa|per|fas|zh|chi|ja|jpn|ko|kor)/i;
+const SUB_OTHER_NAME = /spanish|french|german|swedish|dutch|italian|portug|russian|arabic|persian|chinese|japanese|korean/i;
+const subOkCaption = t => t.kind === 'captions' && !SUB_OTHER_LANG.test(t.language || '') && !SUB_OTHER_NAME.test(t.label || '');
+const subCuesOf = t => (t && t.cues ? t.cues.length : 0);
+function subTextTracks(){
+  return [...video.textTracks].filter(t => t.kind === 'subtitles' || t.kind === 'captions');
+}
 function subHasEnglish(){
+  const tracks = subTextTracks();
+  if (tracks.some(subOkCaption)) return true;
   if (hls) return (hls.subtitleTracks || []).some(t => subIsEn(t.lang, t.name));
-  return [...video.textTracks].some(t => (t.kind === 'subtitles' || t.kind === 'captions') && subIsEn(t.language, t.label));
+  return tracks.some(t => subIsEn(t.language, t.label));
 }
 function subActivate(){
   // hls.js فقط وقتی یه زیرنویس انتخاب شده باشه دانلودش می‌کنه؛ نمایشش رو خودمون انجام می‌دیم (حالت hidden)
@@ -1325,9 +1335,16 @@ function subActivate(){
     if (i < 0) i = list.findIndex(t => subIsEn(t.lang, t.name));
     if (i >= 0) { hls.subtitleTrack = i; hls.subtitleDisplay = true; subHlsSet = true; }
   }
-  const tracks = [...video.textTracks].filter(t => t.kind === 'subtitles' || t.kind === 'captions');
-  const en = tracks.filter(t => subIsEn(t.language, t.label));
-  subTrack = en.find(t => !subIsSdh(t.label) && t.mode !== 'disabled') || en.find(t => t.mode !== 'disabled') || (hls ? null : (en.find(t => !subIsSdh(t.label)) || en[0])) || null;
+  const tracks = subTextTracks();
+  // زیرنویس جدا (WebVTT)
+  const vtts = tracks.filter(t => t.kind === 'subtitles' && subIsEn(t.language, t.label));
+  const vtt = vtts.find(t => !subIsSdh(t.label) && t.mode !== 'disabled') || vtts.find(t => t.mode !== 'disabled') || (hls ? null : (vtts.find(t => !subIsSdh(t.label)) || vtts[0])) || null;
+  // زیرنویس جاسازی‌شده توی تصویر (CEA-608/708)؛ باید hidden باشه تا متنش قابل خوندن بشه
+  const ceas = tracks.filter(subOkCaption);
+  for (const t of ceas) if (t.mode !== 'hidden') t.mode = 'hidden';
+  const cea = ceas.slice().sort((x, y) => subCuesOf(y) - subCuesOf(x))[0] || null;
+  // هر کدوم که متن واقعی داره؛ اولویت با WebVTT
+  subTrack = subCuesOf(vtt) ? vtt : subCuesOf(cea) ? cea : (vtt || cea);
   if (subTrack && subTrack.mode !== 'hidden') subTrack.mode = 'hidden';
   for (const t of tracks) if (t !== subTrack && t.mode === 'showing') t.mode = 'hidden';
 }
@@ -1344,7 +1361,7 @@ function subTick(){
   } else if (!subGotCues && !subEmptyShown && Date.now() - subStartedAt > 20000) {
     // بعضی شبکه‌ها (مثل Rakuten) یه زیرنویس اعلام می‌کنن ولی فایلش خالیه
     subEmptyShown = true;
-    toast('این شبکه الان متن زیرنویسی نمی‌فرسته؛ زیرنویسش خالیه.');
+    toast('تا الان متن زیرنویسی از این شبکه نرسیده؛ ممکنه الان برنامه‌ی بدون زیرنویس باشه.');
   }
   // کدوم خط‌ها تا ۶۰ ثانیه‌ی آینده هنوز ترجمه نشدن
   const t = video.currentTime, cues = subTrack.cues, queue = [], seen = new Set();
@@ -1379,7 +1396,7 @@ function subReport(kind, msg){
 }
 async function subTranslate(lines){
   const prov = SUB.prov, model = subModelId(), P = SUB_PROVIDERS[prov];
-  const system = 'You are a professional subtitle translator. Translate the English subtitle lines into natural, fluent, colloquial Persian (Farsi) as spoken in films and TV, not stiff or word-for-word. Keep each line short enough to read quickly. Keep names and numbers; translate bracketed sound cues such as [MUSIC] into Persian inside brackets. The lines belong to one continuous program, so keep wording consistent. Reply with exactly one output line per input line in the form N|translation using the same numbers written as plain ASCII digits (1, 2, 3 ...) even though the translation is Persian, and nothing else (no commentary, no code fences).';
+  const system = 'You are a professional subtitle translator. Translate the English subtitle lines into natural, fluent, colloquial Persian (Farsi) as spoken in films and TV, not stiff or word-for-word. Keep each line short enough to read quickly. Keep names and numbers; translate bracketed sound cues such as [MUSIC] into Persian inside brackets. Lines may be in ALL CAPS or contain speaker markers like >>; translate them into normal Persian without the markers. The lines belong to one continuous program, so keep wording consistent. Reply with exactly one output line per input line in the form N|translation using the same numbers written as plain ASCII digits (1, 2, 3 ...) even though the translation is Persian, and nothing else (no commentary, no code fences).';
   const user = (playing ? `Program: ${playing.name}\n\n` : '') + lines.map((x, i) => `${i + 1}|${x}`).join('\n');
   let headers, body;
   if (prov === 'anthropic') {
