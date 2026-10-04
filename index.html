@@ -115,7 +115,7 @@
   .ist{font-size:.9rem;margin-top:.3rem;color:#ccc}
   .iwarn{color:#ff8a80;font-weight:700;margin-top:.25rem;font-size:.9rem}
   .iedit{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.45rem}
-  .credit{position:fixed;bottom:.45rem;left:50%;transform:translateX(-50%);margin:0;color:#777;font-size:.72rem;white-space:nowrap;pointer-events:none}
+  .credit{display:block;margin-top:.5rem;font-size:.72rem;color:#777}
   .credit b{color:var(--frame)}
   .help{color:#777;font-size:.8rem;margin:0;line-height:2;text-align:right}
   .preview{flex:1;min-height:0;margin:1rem 0;border:3px solid #1d1d1d;border-radius:.3rem;display:grid;place-items:center;background:#030303}
@@ -231,11 +231,10 @@
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
     <button id="scanText" class="scan" type="button" hidden title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
-    <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)</p>
+    <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)<span class="credit">توسعه‌یافته توسط <b>فرزین</b></span></p>
   </div>
 </div>
 
-<p class="credit">توسعه‌یافته توسط <b>فرزین</b></p>
 
 <div id="numEntry" class="num-entry" hidden></div>
 <div id="toast" class="toast" role="status" hidden><span id="toastText"></span></div>
@@ -352,7 +351,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=27"></script>
+<script src="channels.js?v=28"></script>
 <script>
 (() => {
 'use strict';
