@@ -54,8 +54,11 @@
   [data-state="vpn"] .dot{background:var(--ok);box-shadow:0 0 8px var(--ok)}
   [data-state="weak"] .dot{background:var(--yellow)}
   [data-state="novpn"] .dot,[data-state="intranet"] .dot,[data-state="offline"] .dot{background:var(--bad)}
-  .scan{background:none;border:0;color:var(--muted);font-size:.85rem;white-space:nowrap;padding:0}
-  .icon-btn{background:#0d0d0d;border:1px solid #333;border-radius:.4rem;padding:.3rem .65rem}
+  .scan{align-self:flex-start;background:none;border:0;color:var(--muted);font-size:.8rem;white-space:nowrap;padding:0 .2rem;min-height:1.2rem}
+  .scan:empty{display:none}
+  .tools{margin-inline-start:auto;display:flex;gap:.4rem}
+  .icon-btn{display:grid;place-items:center;width:2.5rem;height:2.5rem;padding:0;font-size:1.15rem;line-height:1;background:#0d0d0d;border:1px solid #333;border-radius:.4rem;cursor:pointer}
+  .icon-btn:hover,.icon-btn:focus-visible{border-color:var(--frame)}
   .btn{background:var(--frame);color:#2a1a00;border:0;border-radius:.35rem;padding:.45rem .95rem;font-weight:800;white-space:nowrap}
   .btn.ghost{background:#111;color:var(--text);border:1px solid #555;font-weight:600}
   .btn.danger{background:#7f1d1d;color:#fecaca}
@@ -212,13 +215,15 @@
   <div class="side">
     <div class="topbar">
       <button id="signal" class="pill" type="button" data-state="checking" title="وضعیت VPN؛ برای جزئیات کلیک کن"><span class="dot"></span><span id="sigText">در حال بررسی VPN…</span></button>
-      <button id="scanText" class="scan" type="button" title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
- <button id="pvBtn" class="icon-btn" type="button" title="پیش‌نمایش شبکه‌ی انتخاب‌شده">📺 پیش‌نمایش روشن</button>
-      <button id="audioBtn" class="icon-btn" type="button" title="فقط برای Mac: میانبر «سوییچ صدا» رو اجرا می‌کنه تا خروجی صدا بین اسپیکرها عوض بشه">🔊 سوییچ صدا</button>
-      <button id="helpBtn" class="icon-btn" type="button" title="نمایش / پنهان کردن راهنما (کلید H)" aria-label="راهنما" aria-controls="help">؟ راهنما</button>
-      <button id="menuBtn" class="icon-btn" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙</button>
+      <span class="tools">
+        <button id="pvBtn" class="icon-btn" type="button" aria-label="پیش‌نمایش">📺</button>
+        <button id="audioBtn" class="icon-btn" type="button" title="سوییچ صدا · فقط برای Mac: میانبر «سوییچ صدا» رو اجرا می‌کنه تا خروجی صدا بین اسپیکرها عوض بشه" aria-label="سوییچ صدا">🔊</button>
+        <button id="helpBtn" class="icon-btn" type="button" title="راهنما (کلید H)" aria-label="راهنما" aria-controls="help">؟</button>
+        <button id="menuBtn" class="icon-btn" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات">⚙</button>
+      </span>
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
+    <button id="scanText" class="scan" type="button" title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
     <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)</p>
   </div>
 </div>
@@ -335,7 +340,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=20"></script>
+<script src="channels.js?v=21"></script>
 <script>
 (() => {
 'use strict';
@@ -1047,7 +1052,8 @@ function setNote(text){ pvNote.textContent = text; }
 function paintPreviewBtn(){
   const b = $('pvBtn');
   b.classList.toggle('on', previewOn);
-  b.textContent = previewOn ? '📺 پیش‌نمایش روشن' : '📺 پیش‌نمایش خاموش';
+  b.title = previewOn ? 'پیش‌نمایش روشنه (کلیک = خاموش)' : 'پیش‌نمایش خاموشه (کلیک = روشن)';
+  b.style.opacity = previewOn ? '' : '.55';
 }
 function previewChannel(ch){
   if (!inPage(ch)) {
