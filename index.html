@@ -449,7 +449,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=50"></script>
+<script src="channels.js?v=51"></script>
 <script>
 (() => {
 'use strict';
@@ -661,7 +661,8 @@ const signalDlg = $('signalDlg'), editDlg = $('editDlg'), menuDlg = $('menuDlg')
 const editForm = $('editForm'), fName = $('fName'), fUrl = $('fUrl'), fUrl2 = $('fUrl2'), fCat = $('fCat'), fBadge = $('fBadge'), fColor = $('fColor'), fErr = $('fErr');
 const importFile = $('importFile');
 
-const VIEWS = () => ['all', 'fav', ...CATS.map(c => c.id)];
+// دسته‌ها از اسم بلندتر به کوتاه‌تر مرتب می‌شن (برابرها به ترتیب اصلی می‌مونن)؛ «همه» و «علاقه‌مندی‌ها» اول می‌مونن
+const VIEWS = () => ['all', 'fav', ...CATS.map((c, i) => ({ id: c.id, i })).sort((x, y) => CAT[y.id].name.length - CAT[x.id].name.length || x.i - y.i).map(c => c.id)];
 const viewName = v => v === 'all' ? 'همه‌ی شبکه‌ها' : v === 'fav' ? '★ علاقه‌مندی‌ها' : CAT[v] ? CAT[v].name : '';
 const FILTERS = { all: 'همه', ok: 'فقط سالم‌ها', ir: 'داخلی', vpn: 'VPN' };
 const primaryUrl = c => c.streams[0] || c.embed || c.urls[0];
