@@ -335,7 +335,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=19"></script>
+<script src="channels.js?v=20"></script>
 <script>
 (() => {
 'use strict';
@@ -942,7 +942,7 @@ function pushDigit(d){
   numEl.innerHTML = esc(numBuf) + '<span>_</span>';
   numEl.hidden = false;
   clearTimeout(numTimer);
-  numTimer = setTimeout(() => commitNumber(false), 1600);
+  numTimer = setTimeout(() => commitNumber('auto'), 1000);
 }
 function commitNumber(play){
   clearTimeout(numTimer);
@@ -963,7 +963,12 @@ function commitNumber(play){
   }
   if (!shown.some(c => c.id === ch.id)) { filter = 'all'; setView('all'); }
   select(ch.id);
-  if (play) startChannel(ch);
+  if (play === 'auto') {
+    // شماره زدن یعنی «این شبکه رو بیار»؛ یه ثانیه بعد بدون کلیک پخش می‌شه
+    if (!inPage(ch)) return toast(`«${ch.name}» پخش مستقیم نداره؛ Enter بزن تا سایتش باز بشه.`);
+    if (playing && playing.id === ch.id && mode !== 'off') return;
+    if (previewOn) previewChannel(ch); else goFull(ch);
+  } else if (play) startChannel(ch);
 }
 function cancelNumber(){ clearTimeout(numTimer); numBuf = ''; numEl.hidden = true; }
 
