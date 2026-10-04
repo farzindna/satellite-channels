@@ -3,7 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0d2466">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="شبکه‌ها">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>فهرست شبکه‌ها · فرزین</title>
 <meta name="author" content="فرزین">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%BA%3C/text%3E%3C/svg%3E">
@@ -249,7 +255,7 @@
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
     <button id="scanText" class="scan" type="button" hidden title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
-    <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب · <span class="rcc">CC</span> زیرنویس انگلیسی داره (می‌شه فارسیش کرد)<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)<span class="credit">توسعه‌یافته توسط <b>فرزین</b></span></p>
+    <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>←</kbd> <kbd>→</kbd> دسته · عدد = شماره · <kbd>Backspace</kbd> شبکه‌ی قبلی · <kbd>T</kbd> تایمر خواب (موقع پخش) · دکمه‌های رسانه‌ی کیبورد = شبکه‌ی بعدی و قبلی · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب · <span class="rcc">CC</span> زیرنویس انگلیسی داره (می‌شه فارسیش کرد)<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)<span class="credit">توسعه‌یافته توسط <b>فرزین</b></span></p>
   </div>
 </div>
 
@@ -272,6 +278,7 @@
     <button class="btn ghost" type="button" data-pact="next" title="شبکه‌ی بعدی (↑)">▲ بعدی</button>
     <button class="btn ghost" type="button" data-pact="prev" title="شبکه‌ی قبلی (↓)">▼ قبلی</button>
     <button class="btn ghost" type="button" data-pact="site" id="pSite" title="باز کردن سایت شبکه (S)">🌐 سایت شبکه</button>
+    <button class="btn ghost" type="button" data-pact="sleep" id="pSleep" title="تایمر خواب (T)" aria-label="تایمر خواب"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-.2em"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg><span id="pSleepT"></span></button>
     <button class="btn" type="button" data-pact="close" title="برگشت به فهرست (Esc)">✕ بستن</button>
   </div>
 </div>
@@ -373,6 +380,19 @@
       <button class="btn ghost" type="button" id="subDiag">🛠 گزارش عیب‌یابی زیرنویس (موقع پخش یه شبکه بزن)</button>
     </div>
     <textarea id="subDiagOut" class="ltr" rows="9" readonly hidden style="width:100%;margin-top:.5rem;background:#111;color:#ddd;border:1px solid #444;border-radius:.4rem;padding:.5rem;font-size:.75rem"></textarea>
+    <h4>تایمر خواب</h4>
+    <div class="field">
+      <label for="sleepSel">بعد از این مدت پخش خودکار خاموش بشه</label>
+      <select id="sleepSel">
+        <option value="0">خاموش</option>
+        <option value="15">۱۵ دقیقه</option>
+        <option value="30">۳۰ دقیقه</option>
+        <option value="60">یک ساعت</option>
+        <option value="90">یک ساعت و نیم</option>
+        <option value="120">دو ساعت</option>
+      </select>
+      <p class="hint" id="sleepStatus"></p>
+    </div>
     <div id="mCats" hidden>
       <h4>گروه‌های من</h4>
       <ul class="catlist" id="mCatList"></ul>
@@ -404,7 +424,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=41"></script>
+<script src="channels.js?v=42"></script>
 <script>
 (() => {
 'use strict';
@@ -1161,6 +1181,7 @@ function previewChannel(ch){
   playChannel(ch);
 }
 function stopPlayback(){
+  keepAwakeOff();
   clearTimeout(previewTimer);
   previewFor = null;
   playToken++;
@@ -1212,6 +1233,9 @@ document.addEventListener('fullscreenchange', () => { if (!fsElement() && mode =
 
 function playChannel(ch){
   subForceNative = false;
+  connOk = false; reconnectTries = 0;
+  if (playing && playing.id !== ch.id) prevId = playing.id;
+  store.set('sat.last.v1', ch.id);
   const numberedCh = numbered().find(c => c.id === ch.id) || ch;
   if (!zapList.some(c => c.id === ch.id)) zapList = numbered().filter(inPage);
   playing = numberedCh;
@@ -1223,6 +1247,7 @@ function playChannel(ch){
   $('pSite').hidden = !ch.urls.length;
   if (mode === 'full' && selId !== ch.id) { selId = ch.id; }
   wakePlayer();
+  updateMediaSession(ch);
   if (ch.streams.length) playStream(); else showEmbed(ch);
 }
 function showEmbed(ch){
@@ -1242,6 +1267,7 @@ function showEmbed(ch){
   }
   video.hidden = true;
   player.insertBefore(f, pInfo);
+  keepAwakeOn();
   shieldOff = false;
   updShield();
   player.classList.remove('idle');
@@ -1674,6 +1700,15 @@ function refreshDot(id){
 function streamFailed(token){
   if (token !== playToken || !playing) return;
   const ch = playing;
+  // پخش قبلاً درست کار کرده و وسط راه قطع شده: چند بار با فاصله‌ی بیشتر خودکار دوباره وصل می‌شه
+  if (connOk && reconnectTries < RECONNECT_WAIT.length) {
+    const wait = RECONNECT_WAIT[reconnectTries++];
+    setMsg(`⏳ اتصال قطع شد؛ دوباره وصل می‌شه… <span class="hint">(${fa(reconnectTries)} از ${fa(RECONNECT_WAIT.length)})</span>`);
+    stopStream();
+    clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(() => { if (playing && playing.id === ch.id && mode !== 'off') { streamIdx = Math.min(streamIdx, attempts.length - 1); playStream(); } }, wait);
+    return;
+  }
   if (++streamIdx < attempts.length) return playStream();
   health.res[ch.id] = { s: healthOf(ch) === 'cors' ? 'cors' : /codec/i.test(lastErr) ? 'codec' : 'bad', i: 0 };
   lastErr = '';
@@ -1707,6 +1742,7 @@ function playerAction(act){
   else if (act === 'retry' && playing) { streamIdx = 0; if (playing.streams.length) playStream(); else showEmbed(playing); }
   else if (act === 'site' && playing) openSite(playing);
   else if (act === 'subs') toggleSubs();
+  else if (act === 'sleep') cycleSleep();
   else if (act === 'full') { if (fsElement()) exitFullscreen(); else enterFullscreen(); setTimeout(paintFsBtn, 150); }
 }
 function playerKey(e){
@@ -1714,7 +1750,9 @@ function playerKey(e){
   wakePlayer();
   if (digit && !e.shiftKey) pushDigit(digit[1]);
   else if (numBuf && (e.key === 'Enter' || e.code === 'NumpadEnter')) commitNumber(true);
-  else if (e.key === 'Escape' || e.key === 'Backspace') leaveFull();
+  else if (e.key === 'Backspace') { if (numBuf) popDigit(); else recallChannel(); }
+  else if (e.key === 'Escape') leaveFull();
+  else if (e.code === 'KeyT') cycleSleep();
   else if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'ArrowLeft') zap(1);
   else if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'ArrowRight') zap(-1);
   else if (e.key === ' ') togglePause();
@@ -1727,6 +1765,11 @@ function playerKey(e){
 }
 video.addEventListener('playing', () => {
   clearTimeout(stallTimer);
+  clearTimeout(waitTimer);
+  connOk = true;
+  reconnectTries = 0;
+  keepAwakeOn();
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
   setMsg('');
   wakePlayer();
   // پخش واقعاً شروع شد: همین لینک برای دفعه‌ی بعد علامت سالم می‌گیره
@@ -1736,7 +1779,14 @@ video.addEventListener('playing', () => {
     refreshDot(playing.id);
   }
 });
-video.addEventListener('waiting', () => { if (pMsg.hidden) setMsg('⏳'); });
+video.addEventListener('waiting', () => {
+  if (pMsg.hidden) setMsg('⏳');
+  // اگه بیشتر از ۲۵ ثانیه بافر نشد، مثل قطع شدن حساب می‌شه
+  clearTimeout(waitTimer);
+  const tk = playToken;
+  waitTimer = setTimeout(() => { if (tk === playToken && playing && video.readyState < 3) streamFailed(tk); }, 25000);
+});
+video.addEventListener('ended', () => { if (playing && mode !== 'off' && connOk && !video.loop) streamFailed(playToken); });
 video.addEventListener('error', () => { if (nativeHls && playing && !hls) streamFailed(playToken); });
 let pvClickTimer = 0;
 player.addEventListener('dblclick', e => {
@@ -2105,6 +2155,7 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'End') moveSel(1e6);
   else if (e.key === 'ArrowLeft') stepView(1);
   else if (e.key === 'ArrowRight') stepView(-1);
+  else if (e.key === 'Backspace') { if (numBuf) popDigit(); else recallChannel(); }
   else if (e.key === 'Escape') { cancelNumber(); if (editMode) pressBlue(); }
   else if (e.code === 'KeyH') toggleHelp();
   else if (e.code === 'Slash') { searchEl.focus(); searchEl.select(); }
@@ -2118,8 +2169,99 @@ document.addEventListener('keydown', e => {
   if (handled) e.preventDefault();
 });
 
+/* ---------- حس تلویزیون: شبکه‌ی قبلی، کلیدهای رسانه، بیدار موندن، تایمر خواب ---------- */
+let prevId = null, connOk = false, reconnectTries = 0, reconnectTimer = 0, waitTimer = 0;
+const RECONNECT_WAIT = [2000, 4000, 8000, 15000];
+function popDigit(){
+  numBuf = numBuf.slice(0, -1);
+  if (!numBuf) { cancelNumber(); return; }
+  numEl.innerHTML = esc(numBuf) + '<span>_</span>';
+  clearTimeout(numTimer);
+  numTimer = setTimeout(() => commitNumber('auto'), 1000);
+}
+// مثل دکمه‌ی «قبلی» کنترل تلویزیون: برگشت به شبکه‌ای که قبل از این بود
+function recallChannel(){
+  const c = prevId && byId(prevId);
+  if (!c || !inPage(c)) { toast('شبکه‌ی قبلی‌ای نیست.'); return; }
+  if (mode === 'full') playChannel(c);
+  else { if (!shown.some(x => x.id === c.id)) setView('all'); select(c.id); previewChannel(c); }
+}
+// صفحه‌ی خاموشی مانیتور موقع پخش
+let wakeLock = null;
+async function keepAwakeOn(){
+  try {
+    if (!('wakeLock' in navigator) || wakeLock) return;
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch { wakeLock = null; }
+}
+function keepAwakeOff(){ try { if (wakeLock) wakeLock.release(); } catch { /* */ } wakeLock = null; }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && playing && mode !== 'off') keepAwakeOn(); });
+// کلیدهای رسانه‌ی کیبورد و AirPods + اسم شبکه توی «Now Playing» مک
+function mediaZap(step){ zap(step); if (mode !== 'full' && playing) select(playing.id); }
+function updateMediaSession(ch){
+  if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: ch.name,
+      artist: ch.fa || 'فهرست شبکه‌ها',
+      album: CAT[ch.cat] ? CAT[ch.cat].name : 'شبکه‌ها',
+      artwork: [{ src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }],
+    });
+  } catch { /* */ }
+}
+if ('mediaSession' in navigator) {
+  const ms = (a, fn) => { try { navigator.mediaSession.setActionHandler(a, fn); } catch { /* این مرورگر این کلید رو نداره */ } };
+  ms('nexttrack', () => mediaZap(1));
+  ms('previoustrack', () => mediaZap(-1));
+  ms('play', () => { if (video.paused) togglePause(); });
+  ms('pause', () => { if (!video.paused) togglePause(); });
+  ms('stop', () => { if (mode === 'full') leaveFull(); else if (mode !== 'off') stopPlayback(); });
+}
+// تایمر خواب
+let sleepTimer = 0, sleepWarn = 0, sleepEnd = 0;
+const SLEEP_STEPS = [0, 30, 60, 90, 120];
+const hhmm = t => new Date(t).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+function setSleep(min){
+  clearTimeout(sleepTimer); clearTimeout(sleepWarn);
+  sleepEnd = 0;
+  if (min > 0) {
+    sleepEnd = Date.now() + min * 60000;
+    sleepTimer = setTimeout(() => {
+      sleepEnd = 0;
+      if (mode === 'full') leaveFull();
+      if (mode !== 'off') stopPlayback();
+      keepAwakeOff();
+      paintSleep();
+      toast('تایمر خواب: پخش خاموش شد. شب‌بخیر 🌙');
+    }, min * 60000);
+    if (min > 1) sleepWarn = setTimeout(() => toast('یک دقیقه‌ی دیگه پخش خاموش می‌شه.'), (min - 1) * 60000);
+  }
+  paintSleep();
+}
+function cycleSleep(){
+  const left = sleepEnd ? Math.round((sleepEnd - Date.now()) / 60000) : 0;
+  const cur = sleepEnd ? SLEEP_STEPS.reduce((b, x) => (x > 0 && Math.abs(x - left) < Math.abs(b - left) ? x : b), SLEEP_STEPS[1]) : 0;
+  const next = SLEEP_STEPS[(SLEEP_STEPS.indexOf(cur) + 1) % SLEEP_STEPS.length];
+  setSleep(next);
+  toast(next ? `تایمر خواب: ${fa(next)} دقیقه دیگه خاموش می‌شه (ساعت ${hhmm(sleepEnd)}).` : 'تایمر خواب خاموش شد.');
+}
+function paintSleep(){
+  const on = !!sleepEnd;
+  $('pSleepT').textContent = on ? ' ' + fa(Math.max(1, Math.round((sleepEnd - Date.now()) / 60000))) : '';
+  $('pSleep').classList.toggle('on', on);
+  $('sleepStatus').textContent = on ? `پخش ساعت ${hhmm(sleepEnd)} خاموش می‌شه.` : '';
+  const near = [15, 30, 60, 90, 120].find(x => on && Math.abs(x - (sleepEnd - Date.now()) / 60000) < 1.5);
+  $('sleepSel').value = on ? String(near || 0) : '0';
+}
+$('sleepSel').addEventListener('change', () => setSleep(+$('sleepSel').value));
+setInterval(() => { if (sleepEnd) paintSleep(); }, 30000);
+
 /* ---------- شروع ---------- */
+// آخرین شبکه‌ای که دیدی انتخاب می‌شه (چیزی پخش نمی‌شه تا خودت کلیک کنی)
+{ const last = store.get('sat.last.v1', null); if (last && typeof last === 'string' && byId(last)) selId = last; }
 render();
+scrollToSel();
 paintSignal();
 paintScan();
 paintPreviewBtn();
