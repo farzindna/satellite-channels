@@ -336,14 +336,19 @@
       <button class="btn ghost" type="button" id="mResetOrder">↺ برگردوندن ترتیب پیش‌فرض شبکه‌ها</button>
     </div>
     <h4>زیرنویس فارسی (آزمایشی)</h4>
-    <p class="hint">برای شبکه‌هایی که خودشون زیرنویس انگلیسی دارن، متن به فارسی ترجمه و روی تصویر نشون داده می‌شه. ترجمه با Claude انجام می‌شه و به کلید API خودت نیاز داره؛ کلید فقط توی همین مرورگر می‌مونه و جز به خود Anthropic جایی فرستاده نمی‌شه.</p>
+    <p class="hint">برای شبکه‌هایی که خودشون زیرنویس انگلیسی دارن، متن به فارسی ترجمه و روی تصویر نشون داده می‌شه. ترجمه با یه سرویس هوش مصنوعی و کلید API خودت انجام می‌شه؛ کلید فقط توی همین مرورگر می‌مونه و جز به همون سرویس جایی فرستاده نمی‌شه.</p>
     <div class="field" style="margin-top:.7rem">
-      <label for="subKey">کلید API (از console.anthropic.com)</label>
-      <input id="subKey" class="ltr" type="password" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+      <label for="subProv">سرویس‌دهنده</label>
+      <select id="subProv"></select>
     </div>
     <div class="field">
-      <label for="subModel">مدل ترجمه</label>
-      <select id="subModel"></select>
+      <label for="subKey" id="subKeyLabel">کلید API</label>
+      <input id="subKey" class="ltr" type="password" placeholder="aa-..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="subModel">اسم مدل</label>
+      <input id="subModel" class="ltr" list="subModels" autocomplete="off" spellcheck="false">
+      <datalist id="subModels"></datalist>
     </div>
     <label class="chk"><input type="checkbox" id="subOn"> زیرنویس فارسی روشن باشه (کلید <kbd>C</kbd> موقع پخش)</label>
     <label class="chk"><input type="checkbox" id="subBoth"> زیرنویس انگلیسی هم زیر فارسی نشون داده بشه</label>
@@ -383,7 +388,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=29"></script>
+<script src="channels.js?v=30"></script>
 <script>
 (() => {
 'use strict';
@@ -432,7 +437,7 @@ const store = {
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* حالت خصوصی یا حافظه‌ی پر */ } },
 };
 const K = { custom: 'sat.custom.v1', fav: 'sat.fav.v1', hidden: 'sat.hidden.v1', view: 'sat.view.v2', order: 'sat.order.v1',
-  filter: 'sat.filter.v1', sort: 'sat.sort.v1', help: 'sat.help.v1', subOn: 'sat.subs.on.v1', subKey: 'sat.subs.key.v1', subModel: 'sat.subs.model.v1', subBoth: 'sat.subs.both.v1', subUsage: 'sat.subs.usage.v1', migrated: 'sat.migrated.v1' };
+  filter: 'sat.filter.v1', sort: 'sat.sort.v1', help: 'sat.help.v1', subOn: 'sat.subs.on.v1', subProv: 'sat.subs.prov.v1', subKey: 'sat.subs.key.v2', subModel: 'sat.subs.model.v2', subBoth: 'sat.subs.both.v1', subUsage: 'sat.subs.usage.v1', migrated: 'sat.migrated.v1' };
 
 /* ---------- داده‌ها ---------- */
 const CATS = Array.isArray(window.SAT_CATEGORIES) && window.SAT_CATEGORIES.length ? window.SAT_CATEGORIES : [{ id: 'general', name: 'شبکه‌ها' }];
@@ -1249,19 +1254,36 @@ document.addEventListener('keydown', unmuteOnGesture, true);
 /* ---------- زیرنویس فارسی (آزمایشی) ----------
    زیرنویس انگلیسیِ خودِ پخش (WebVTT) خونده می‌شه، با Claude ترجمه می‌شه و روی تصویر میاد.
    زیرنویس‌ها چند ثانیه زودتر از نمایش به صفحه می‌رسن، برای همین ترجمه عقب نمی‌مونه. */
-const SUB_MODELS = [
-  { id: 'claude-opus-5-5', name: 'Claude Opus 5.5 · بهترین کیفیت (گران‌تر)', inP: 4, outP: 20, effort: true },
-  { id: 'claude-sonnet-5-5', name: 'Claude Sonnet 5.5 · متعادل', inP: 2, outP: 10, effort: true },
-  { id: 'claude-haiku-4-5', name: 'Claude Haiku 4.5 · ارزون‌ترین', inP: 1, outP: 5, effort: false },
-];
+const SUB_PROVIDERS = {
+  avalai: {
+    name: 'AvalAI (آوال‌ای‌آی)',
+    url: 'https://api.avalai.ir/v1/chat/completions',
+    models: ['gpt-4.1', 'gpt-4.1-mini', 'gemini-2.5-flash', 'gemini-2.0-flash'],
+    keyHint: 'کلیدی که از پنل AvalAI گرفتی',
+    keyPlaceholder: 'aa-...',
+  },
+  anthropic: {
+    name: 'Anthropic (مستقیم)',
+    url: 'https://api.anthropic.com/v1/messages',
+    models: ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-4-5'],
+    keyHint: 'کلید از console.anthropic.com',
+    keyPlaceholder: 'sk-ant-...',
+  },
+};
+for (const k of Object.keys(SUB_PROVIDERS)) SUB_PROVIDERS[k].def = SUB_PROVIDERS[k].models[0];
+// قیمت هر میلیون توکن (دلار) فقط برای Anthropic مستقیم؛ AvalAI با تومان حساب می‌کنه
+const SUB_PRICE = { 'claude-opus-5-5': [4, 20], 'claude-sonnet-5-5': [2, 10], 'claude-haiku-4-5': [1, 5] };
 const SUB = {
   on: store.get(K.subOn, false) === true,
-  key: String(store.get(K.subKey, '') || ''),
-  model: String(store.get(K.subModel, SUB_MODELS[0].id)),
+  prov: String(store.get(K.subProv, 'avalai')),
+  keys: (() => { const v = store.get(K.subKey, {}); return v && typeof v === 'object' ? v : (typeof v === 'string' && v ? { anthropic: v } : {}); })(),
+  models: (() => { const v = store.get(K.subModel, {}); return v && typeof v === 'object' ? v : {}; })(),
   both: store.get(K.subBoth, false) === true,
   usage: store.get(K.subUsage, {}) || {},
 };
-if (!SUB_MODELS.some(m => m.id === SUB.model)) SUB.model = SUB_MODELS[0].id;
+if (!SUB_PROVIDERS[SUB.prov]) SUB.prov = 'avalai';
+const subKey = () => String(SUB.keys[SUB.prov] || '').trim();
+const subModelId = () => String(SUB.models[SUB.prov] || SUB_PROVIDERS[SUB.prov].def).trim();
 const subCache = new Map();      // متن انگلیسی ← فارسی
 const subPending = new Set();    // متن‌هایی که الان داره ترجمه می‌شه
 let subTrack = null, subTimer = 0, subQueue = [], subInflight = false, subBackoff = 0, subErrShown = '', subHlsSet = false;
@@ -1325,33 +1347,31 @@ function subReport(kind, msg){
   subErrShown = kind;
   toast(msg);
 }
-async function subTranslate(lines, model){
-  const m = SUB_MODELS.find(x => x.id === model) || SUB_MODELS[0];
+async function subTranslate(lines){
+  const prov = SUB.prov, model = subModelId(), P = SUB_PROVIDERS[prov];
   const system = 'You are a professional subtitle translator. Translate the English subtitle lines into natural, fluent, colloquial Persian (Farsi) as spoken in films and TV, not stiff or word-for-word. Keep each line short enough to read quickly. Keep names and numbers; translate bracketed sound cues such as [MUSIC] into Persian inside brackets. The lines belong to one continuous program, so keep wording consistent. Reply with exactly one output line per input line in the form N|translation using the same numbers, and nothing else (no commentary, no code fences).';
-  const body = {
-    model: m.id,
-    max_tokens: 4000,
-    system,
-    messages: [{ role: 'user', content: (playing ? `Program: ${playing.name}\n\n` : '') + lines.map((x, i) => `${i + 1}|${x}`).join('\n') }],
-  };
-  if (m.effort) body.output_config = { effort: 'low' };
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': SUB.key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify(body),
-  });
+  const user = (playing ? `Program: ${playing.name}\n\n` : '') + lines.map((x, i) => `${i + 1}|${x}`).join('\n');
+  let headers, body;
+  if (prov === 'anthropic') {
+    headers = { 'content-type': 'application/json', 'x-api-key': subKey(), 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' };
+    body = { model, max_tokens: 4000, system, messages: [{ role: 'user', content: user }] };
+    if (/^claude-(opus-5-5|sonnet-5-5)$/.test(model)) body.output_config = { effort: 'low' };
+  } else {
+    // AvalAI با فرمت OpenAI کار می‌کنه؛ سقف بالا چون مدل‌های «فکرکننده» (مثل gemini-2.5) بخشی از سقف رو صرف استدلال می‌کنن
+    headers = { 'content-type': 'application/json', authorization: 'Bearer ' + subKey() };
+    body = { model, max_tokens: 6000, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };
+  }
+  const r = await fetch(P.url, { method: 'POST', headers, body: JSON.stringify(body) });
   if (!r.ok) { const e = new Error('http'); e.status = r.status; throw e; }
   const j = await r.json();
-  const u = SUB.usage[m.id] || (SUB.usage[m.id] = { i: 0, o: 0 });
-  u.i += (j.usage && j.usage.input_tokens) | 0;
-  u.o += (j.usage && j.usage.output_tokens) | 0;
+  const u = SUB.usage[prov + ':' + model] || (SUB.usage[prov + ':' + model] = { i: 0, o: 0 });
+  const us = j.usage || {};
+  u.i += (us.input_tokens ?? us.prompt_tokens) | 0;
+  u.o += (us.output_tokens ?? us.completion_tokens) | 0;
   store.set(K.subUsage, SUB.usage);
-  const text = (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+  const text = prov === 'anthropic'
+    ? (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n')
+    : String(j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content || '');
   const out = [];
   for (const line of text.split('\n')) {
     const mm = /^\s*(\d+)\s*\|\s*(.+?)\s*$/.exec(line);
@@ -1360,12 +1380,12 @@ async function subTranslate(lines, model){
   return out;
 }
 async function subPump(){
-  if (subInflight || !SUB.key || !subQueue.length || Date.now() < subBackoff) return;
+  if (subInflight || !subKey() || !subQueue.length || Date.now() < subBackoff) return;
   const batch = subQueue.slice(0, 30);
   subInflight = true;
   batch.forEach(x => subPending.add(x));
   try {
-    const out = await subTranslate(batch, SUB.model);
+    const out = await subTranslate(batch);
     batch.forEach((x, i) => { if (out[i]) subCache.set(x, out[i]); });
     if (subCache.size > 4000) for (const k of [...subCache.keys()].slice(0, 1000)) subCache.delete(k);
     subErrShown = '';
@@ -1374,7 +1394,7 @@ async function subPump(){
     if (s === 401 || s === 403) { subBackoff = Date.now() + 60000; subReport('auth', 'کلید API قبول نشد؛ توی تنظیمات دوباره وارد کن.'); }
     else if (s === 429) { subBackoff = Date.now() + 15000; subReport('rate', 'تعداد درخواست‌ها زیاد شد؛ چند ثانیه بعد ادامه می‌ده.'); }
     else if (s === 400 || s === 404) { subBackoff = Date.now() + 60000; subReport('bad', 'درخواست ترجمه رد شد؛ مدل دیگه‌ای رو امتحان کن یا اعتبار حسابت رو ببین.'); }
-    else { subBackoff = Date.now() + 8000; subReport('net', 'اتصال به سرویس ترجمه برقرار نشد؛ دوباره امتحان می‌کنه.'); }
+    else { subBackoff = Date.now() + 8000; subReport('net', 'اتصال به سرویس ترجمه برقرار نشد؛ دوباره امتحان می‌کنه. (اگه VPN روشنه، خاموشش کن و دوباره امتحان کن.)'); }
   } finally {
     batch.forEach(x => subPending.delete(x));
     subInflight = false;
@@ -1396,66 +1416,91 @@ function subsReset(){
   if (cc) cc.hidden = true;
 }
 function toggleSubs(){
-  if (!SUB.key) { toast('اول توی تنظیمات کلید API رو وارد کن.'); $('menuBtn').click(); return; }
+  if (!subKey()) { toast('اول توی تنظیمات کلید API رو وارد کن.'); $('menuBtn').click(); return; }
   SUB.on = !SUB.on;
   store.set(K.subOn, SUB.on);
   paintSubs();
   toast(SUB.on ? 'زیرنویس فارسی روشن شد.' : 'زیرنویس فارسی خاموش شد.');
 }
-function subCost(){
-  let usd = 0;
-  for (const m of SUB_MODELS) { const u = SUB.usage[m.id]; if (u) usd += (u.i * m.inP + u.o * m.outP) / 1e6; }
-  return usd;
+function subUsageText(){
+  let usd = 0, tok = 0;
+  for (const [k, u] of Object.entries(SUB.usage)) {
+    tok += (u.i | 0) + (u.o | 0);
+    const [prov, ...rest] = k.split(':'), p = SUB_PRICE[rest.join(':')];
+    if (prov === 'anthropic' && p) usd += (u.i * p[0] + u.o * p[1]) / 1e6;
+  }
+  if (!tok) return 'هر فیلم دو ساعته تقریباً ۷۰ تا ۱۰۰ هزار توکن مصرف می‌کنه. هزینه‌ش رو از پنل سرویس‌دهنده ببین و بهتره یه سقف اعتبار بذاری.';
+  return `مصرف تا الان از این مرورگر: ${tok < 1000 ? fa(tok) + ' توکن' : 'حدود ' + fa(Math.round(tok / 1000)) + ' هزار توکن'}${usd > 0 ? ` (حدود ${fa(usd < 0.01 ? '<۰٫۰۱' : usd.toFixed(2))} دلار برای Anthropic)` : ''}. هر فیلم دو ساعته تقریباً ۷۰ تا ۱۰۰ هزار توکن می‌شه.`;
 }
 function paintSubs(){
   $('pCC').classList.toggle('on', SUB.on);
   $('subOn').checked = SUB.on;
 }
 function paintSubMenu(){
-  $('subKey').value = SUB.key;
-  $('subModel').value = SUB.model;
+  const P = SUB_PROVIDERS[SUB.prov];
+  $('subProv').value = SUB.prov;
+  $('subKey').value = subKey();
+  $('subKey').placeholder = P.keyPlaceholder;
+  $('subKeyLabel').textContent = 'کلید API · ' + P.keyHint;
+  $('subModel').value = subModelId();
+  $('subModels').innerHTML = P.models.map(m => `<option value="${m}">`).join('');
   $('subBoth').checked = SUB.both;
-  const usd = subCost();
-  $('subStatus').textContent = usd > 0 ? `خرج تقریبی تا الان از این مرورگر: حدود ${fa(usd < 0.01 ? '<۰٫۰۱' : usd.toFixed(2))} دلار. برای هر فیلم دو ساعته تقریباً با Opus حدود ۱ دلار، با Sonnet حدود نیم دلار و با Haiku حدود ۰٫۲ دلار.`
-    : 'برای هر فیلم دو ساعته تقریباً با Opus حدود ۱ دلار، با Sonnet حدود نیم دلار و با Haiku حدود ۰٫۲ دلار خرج می‌شه (تخمینی). بهتره روی کلیدت سقف خرج بذاری.';
+  $('subStatus').textContent = subUsageText();
+}
+function subErrText(e){
+  const s = e && e.status;
+  return s === 401 || s === 403 ? '✕ کلید قبول نشد.'
+    : s === 429 ? '✕ تعداد درخواست‌ها زیاده یا اعتبار تموم شده؛ کمی بعد امتحان کن.'
+    : s === 400 || s === 404 ? '✕ درخواست رد شد؛ اسم مدل رو چک کن (باید دقیقاً همون اسمی باشه که توی پنل سرویس‌دهنده هست).'
+    : '✕ اتصال برقرار نشد. اگه VPN روشنه خاموشش کن؛ اگه بازم نشد ممکنه سرویس‌دهنده اجازه‌ی اتصال مستقیم از مرورگر رو نده.';
 }
 function initSubs(){
-  $('subModel').innerHTML = SUB_MODELS.map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join('');
-  $('subKey').addEventListener('change', () => {
-    SUB.key = $('subKey').value.trim();
-    store.set(K.subKey, SUB.key);
-    subBackoff = 0;
-    subErrShown = '';
+  $('subProv').innerHTML = Object.entries(SUB_PROVIDERS).map(([k, p]) => `<option value="${k}">${esc(p.name)}</option>`).join('');
+  $('subProv').addEventListener('change', () => {
+    SUB.prov = $('subProv').value;
+    store.set(K.subProv, SUB.prov);
+    subCache.clear(); subBackoff = 0; subErrShown = '';
+    paintSubMenu();
   });
-  $('subModel').addEventListener('change', () => { SUB.model = $('subModel').value; store.set(K.subModel, SUB.model); subCache.clear(); });
+  $('subKey').addEventListener('change', () => {
+    SUB.keys[SUB.prov] = $('subKey').value.trim();
+    store.set(K.subKey, SUB.keys);
+    subBackoff = 0; subErrShown = '';
+  });
+  $('subModel').addEventListener('change', () => {
+    SUB.models[SUB.prov] = $('subModel').value.trim() || SUB_PROVIDERS[SUB.prov].def;
+    store.set(K.subModel, SUB.models);
+    subCache.clear();
+  });
   $('subBoth').addEventListener('change', () => { SUB.both = $('subBoth').checked; store.set(K.subBoth, SUB.both); });
   $('subOn').addEventListener('change', () => {
-    if ($('subOn').checked && !SUB.key) { $('subOn').checked = false; $('subStatus').textContent = 'اول کلید API رو وارد کن.'; return; }
+    if ($('subOn').checked && !subKey()) { $('subOn').checked = false; $('subStatus').textContent = 'اول کلید API رو وارد کن.'; return; }
     SUB.on = $('subOn').checked;
     store.set(K.subOn, SUB.on);
     paintSubs();
   });
   $('subClear').addEventListener('click', () => {
-    SUB.key = '';
+    delete SUB.keys[SUB.prov];
     SUB.on = false;
-    store.set(K.subKey, '');
+    store.set(K.subKey, SUB.keys);
     store.set(K.subOn, false);
     $('subKey').value = '';
     paintSubs();
     $('subStatus').textContent = 'کلید از این مرورگر پاک شد.';
   });
   $('subTest').addEventListener('click', async () => {
-    SUB.key = $('subKey').value.trim();
-    store.set(K.subKey, SUB.key);
+    SUB.keys[SUB.prov] = $('subKey').value.trim();
+    SUB.models[SUB.prov] = $('subModel').value.trim() || SUB_PROVIDERS[SUB.prov].def;
+    store.set(K.subKey, SUB.keys);
+    store.set(K.subModel, SUB.models);
     const st = $('subStatus');
-    if (!SUB.key) { st.textContent = 'اول کلید API رو وارد کن.'; return; }
+    if (!subKey()) { st.textContent = 'اول کلید API رو وارد کن.'; return; }
     st.textContent = '⏳ در حال آزمایش…';
     try {
-      const out = await subTranslate(['Hello, how are you?'], SUB.model);
-      st.textContent = out[0] ? `✓ کلید درسته. نمونه‌ی ترجمه: «${out[0]}»` : 'جواب اومد ولی ترجمه‌ای توش نبود؛ دوباره امتحان کن.';
+      const out = await subTranslate(['Hello, how are you?']);
+      st.textContent = out[0] ? `✓ کلید و مدل درسته. نمونه‌ی ترجمه: «${out[0]}»` : 'جواب اومد ولی ترجمه‌ای توش نبود؛ مدل دیگه‌ای رو امتحان کن.';
     } catch (e) {
-      const s = e && e.status;
-      st.textContent = s === 401 || s === 403 ? '✕ کلید قبول نشد.' : s === 429 ? '✕ تعداد درخواست‌ها زیاده؛ کمی بعد امتحان کن.' : s === 400 || s === 404 ? '✕ درخواست رد شد؛ مدل دیگه‌ای رو امتحان کن یا اعتبار حسابت رو ببین.' : '✕ اتصال به سرویس برقرار نشد.';
+      st.textContent = subErrText(e);
     }
   });
   paintSubs();
