@@ -222,8 +222,6 @@ window.SAT_CHANNELS = [
   { id: "tv2", name: "IRIB TV2", fa: "شبکه دو", cat: "iran", badge: "۲", color: "#2e7d32", streams: [TWB("tv2")], embed: SEPEHR("tv2"), urls: [SEPEHR("tv2"), TWB_SITE("tv2")] },
   { id: "tehran", name: "IRIB Tehran", fa: "شبکه تهران", cat: "iran", badge: "تهران", color: "#6a1b9a", streams: [TWB("tehran")], embed: SEPEHR("tehran"), urls: [SEPEHR("tehran"), TWB_SITE("tehran")] },
   { id: "nasim", name: "IRIB Nasim", fa: "نسیم", cat: "iran", badge: "نسیم", color: "#00838f", streams: [TWB("nasim")], embed: SEPEHR("nasim"), urls: [SEPEHR("nasim"), TWB_SITE("nasim")] },
-  { id: "omid", name: "IRIB Omid", fa: "امید", cat: "iran", badge: "امید", color: "#ef6c00", streams: [TWB("omid")], embed: SEPEHR("omid"), urls: [SEPEHR("omid"), TWB_SITE("omid")] },
-  { id: "ofogh", name: "IRIB Ofogh", fa: "افق", cat: "iran", badge: "افق", color: "#4e342e", streams: [TWB("ofogh")], embed: SEPEHR("ofogh"), urls: [SEPEHR("ofogh"), TWB_SITE("ofogh")] },
   { id: "salamat", name: "IRIB Salamat", fa: "سلامت", cat: "iran", badge: "سلامت", color: "#00897b", streams: [TWB("salamat")], embed: SEPEHR("salamat"), urls: [SEPEHR("salamat"), TWB_SITE("salamat")] },
   { id: "amouzesh", name: "IRIB Amouzesh", fa: "آموزش", cat: "iran", badge: "آموزش", color: "#3949ab", streams: [TWB("amouzesh")], embed: SEPEHR("amouzesh"), urls: [SEPEHR("amouzesh"), TWB_SITE("amouzesh")] },
   { id: "irinn", name: "IRIB News", fa: "شبکه خبر", cat: "iran", badge: "خبر", color: "#b71c1c", streams: [TWB("irinn")], embed: SEPEHR("irinn"), urls: [SEPEHR("irinn"), TWB_SITE("irinn")] },
