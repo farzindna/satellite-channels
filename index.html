@@ -400,7 +400,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=38"></script>
+<script src="channels.js?v=39"></script>
 <script>
 (() => {
 'use strict';
@@ -1321,8 +1321,11 @@ const subCuesOf = t => (t && t.cues ? t.cues.length : 0);
 function subTextTracks(){
   return [...video.textTracks].filter(t => t.kind === 'subtitles' || t.kind === 'captions');
 }
+// زیرنویس جاسازی‌شده تا اولین جمله نیومده هیچ track ای نداره؛ پس اعلام‌شدنش توی manifest و علامت CC خود شبکه هم حساب می‌شه
+let subDeclaredCC = false;
 function subHasEnglish(){
   const tracks = subTextTracks();
+  if (subDeclaredCC || (playing && hasSubs(playing))) return true;
   if (tracks.some(subOkCaption)) return true;
   if (hls) return (hls.subtitleTracks || []).some(t => subIsEn(t.lang, t.name));
   return tracks.some(t => subIsEn(t.language, t.label));
@@ -1354,8 +1357,7 @@ function subTick(){
   const el = $('pSub');
   if (!avail || (!SUB.on && !SUB.en)) { subTrack = null; el.hidden = true; return; }
   subActivate();
-  if (!subTrack) { el.hidden = true; return; }
-  if (subTrack.cues && subTrack.cues.length) {
+  if (subTrack && subTrack.cues && subTrack.cues.length) {
     subGotCues = true;
     if (playing && !hasSubs(playing)) { subsSeen[playing.id] = true; store.set('sat.hassubs.v1', subsSeen); render(); }
   } else if (!subGotCues && !subEmptyShown && Date.now() - subStartedAt > 20000) {
@@ -1363,6 +1365,7 @@ function subTick(){
     subEmptyShown = true;
     toast('تا الان متن زیرنویسی از این شبکه نرسیده؛ ممکنه الان برنامه‌ی بدون زیرنویس باشه.');
   }
+  if (!subTrack) { el.hidden = true; return; }
   // کدوم خط‌ها تا ۶۰ ثانیه‌ی آینده هنوز ترجمه نشدن
   const t = video.currentTime, cues = subTrack.cues, queue = [], seen = new Set();
   if (cues) for (let i = 0; i < cues.length; i++) {
@@ -1465,7 +1468,7 @@ async function subPump(){
 }
 function subsStart(){
   clearInterval(subTimer);
-  subGotCues = false; subEmptyShown = false; subStartedAt = Date.now();
+  subGotCues = false; subEmptyShown = false; subStartedAt = Date.now(); subDeclaredCC = false;
   subHlsSet = false;
   subTimer = setInterval(subTick, 500);
 }
@@ -1475,6 +1478,7 @@ function subsReset(){
   subTrack = null;
   subQueue = [];
   subHlsSet = false;
+  subDeclaredCC = false;
   const el = $('pSub'), cc = $('pCC');
   if (el) { el.hidden = true; el.dataset.k = ''; }
   if (cc) cc.hidden = true;
@@ -1593,6 +1597,7 @@ async function playStream(){
       if (token !== playToken) return;
       if (!Hls || !Hls.isSupported()) throw new Error('unsupported');
       hls = new Hls({ manifestLoadingMaxRetry: 2, levelLoadingMaxRetry: 2, fragLoadingMaxRetry: 3 });
+      hls.on(Hls.Events.MANIFEST_LOADED, (_, d) => { subDeclaredCC = (d.captions || []).some(c => !SUB_OTHER_LANG.test(c.lang || '') && !SUB_OTHER_NAME.test(c.name || '')); });
       hls.on(Hls.Events.ERROR, (_, data) => { if (data.fatal) { lastErr = String(data.details || ''); streamFailed(token); } });
       hls.loadSource(url);
       hls.attachMedia(video);
