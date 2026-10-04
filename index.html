@@ -117,7 +117,7 @@
   .pv-note{color:#666;text-align:center;padding:1rem;font-size:1rem}
   .icon-btn.on{border-color:var(--frame);color:var(--frame)}
   .player.pv{right:auto;bottom:auto;border:3px solid var(--frame);border-radius:.3rem;overflow:hidden}
-  .player.pv .p-info,.player.pv .p-bar{display:none}
+  .player.pv .p-info,.player.pv .p-bar,.player.pv .p-fs{display:none}
   .player.pv .p-msg{font-size:.95rem;padding:.8rem 1rem}
   .player.pv .p-msg .dlg-actions{display:none}
   .p-msg .pm-title{display:block;border-bottom:3px solid var(--frame);margin:-.6rem -1rem .6rem;padding-bottom:.3rem}
@@ -147,7 +147,9 @@
   .p-msg .dlg-actions{justify-content:center}
   .p-bar{position:absolute;bottom:1.4rem;left:50%;transform:translateX(-50%);display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;background:#000c;border:3px solid var(--frame);border-radius:.3rem;padding:.5rem .8rem;transition:opacity .3s}
   .player.idle{cursor:none}
-  .player.idle .p-bar,.player.idle .p-info{opacity:0;pointer-events:none}
+  .player.idle .p-bar,.player.idle .p-info,.player.idle .p-fs{opacity:0;pointer-events:none}
+  .p-fs{position:absolute;right:1.4rem;bottom:1.4rem;z-index:1;width:3.6rem;height:3.6rem;display:grid;place-items:center;padding:0;background:#000c;color:#fff;border:3px solid var(--frame);border-radius:.3rem;cursor:pointer;transition:opacity .3s,background .15s}
+  .p-fs:hover,.p-fs:focus-visible{background:var(--frame);color:#000;outline:0}
 
   /* ---------- پنجره‌ها ---------- */
   dialog{background:#000;color:var(--text);border:3px solid var(--frame);border-radius:.35rem;padding:0;width:min(36rem,92vw);box-shadow:0 30px 80px rgba(0,0,0,.8)}
@@ -233,11 +235,11 @@
   <button id="pOpen" class="p-open" type="button" data-pact="site" hidden>🌐 چیزی نیومد؟ باز کردن در تب</button>
   <div id="pShield" class="p-shield" hidden title="دابل‌کلیک = تمام‌صفحه · یه کلیک = کار با خود پخش‌کننده"></div>
   <div id="pMute" class="p-mute" hidden>🔇 برای پخش صدا، یه جای صفحه کلیک کن</div>
+  <button class="p-fs" type="button" data-pact="full" id="pFull" title="تمام‌صفحه (F)" aria-label="تمام‌صفحه"></button>
   <div class="p-bar">
     <button class="btn ghost" type="button" data-pact="next" title="شبکه‌ی بعدی (↑)">▲ بعدی</button>
     <button class="btn ghost" type="button" data-pact="prev" title="شبکه‌ی قبلی (↓)">▼ قبلی</button>
     <button class="btn ghost" type="button" data-pact="site" id="pSite" title="باز کردن سایت شبکه (S)">🌐 سایت شبکه</button>
-    <button class="btn ghost" type="button" data-pact="full" id="pFull" title="تمام‌صفحه (F)" aria-label="تمام‌صفحه"></button>
     <button class="btn" type="button" data-pact="close" title="برگشت به فهرست (Esc)">✕ بستن</button>
   </div>
 </div>
@@ -332,7 +334,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=17"></script>
+<script src="channels.js?v=18"></script>
 <script>
 (() => {
 'use strict';
@@ -1087,8 +1089,8 @@ function leaveFull(){
 }
 // آیکون دکمه‌ی تمام‌صفحه: توی تمام‌صفحه «خروج» (فلش‌ها به مرکز)، بیرون از اون «ورود» (فلش‌ها به بیرون)
 const FS_ICON = {
-  enter: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/></svg>',
-  exit: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 9h-5V4M15 9l6-6M4 15h5v5M9 15l-6 6"/></svg>',
+  enter: '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/></svg>',
+  exit: '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 9h-5V4M15 9l6-6M4 15h5v5M9 15l-6 6"/></svg>',
 };
 function paintFsBtn(){
   const on = !!fsElement(), b = $('pFull');
