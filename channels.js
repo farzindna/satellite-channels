@@ -382,7 +382,6 @@ window.SAT_CHANNELS = [
   { id: "sistan", name: "IRIB Hamoon (Sistan)", fa: "شبکه هامون (سیستان)", cat: "iran", streams: ["https://ncdn.telewebion.ir/hamoon/live/playlist.m3u8", "https://live-aburayhan1109.telewebion.ir/ek/hamoon/live/720p/index.m3u8"] },
   { id: "zanjan", name: "IRIB Eshragh (Zanjan)", fa: "شبکه اشراق (زنجان)", cat: "iran", streams: ["https://ncdn.telewebion.ir/eshragh/live/playlist.m3u8", "https://live-aburayhan1102.telewebion.ir/ek/eshragh/live/720p/index.m3u8"] },
   { id: "fars", name: "IRIB Fars", fa: "شبکه فارس", cat: "iran", streams: ["https://ncdn.telewebion.ir/fars/live/playlist.m3u8", "https://live-aburayhan1105.telewebion.ir/ek/fars/live/720p/index.m3u8"] },
-  { id: "quran", name: "IRIB Quran", fa: "شبکه قرآن", cat: "iran", streams: ["https://ncdn.telewebion.ir/quran/live/playlist.m3u8", "https://live-aburayhan1102.telewebion.ir/ek/quran/live/720p/index.m3u8"] },
   { id: "labbayk", name: "IRIB Labbayk", fa: "شبکه لبیک", cat: "iran", streams: ["https://live-aburayhan1108.telewebion.ir/na/labbayk/live/720p/index.m3u8"] },
   { id: "tv1plus", name: "IRIB TV1 Plus", fa: "شبکه یک پلاس", cat: "iran", streams: ["https://live-aburayhan1102.telewebion.ir/na/tv1plus/live/720p/index.m3u8"] },
   { id: "irinn2", name: "IRIB News 2", fa: "شبکه خبر ۲", cat: "iran", streams: ["https://ncdn.telewebion.ir/irinn2/live/playlist.m3u8", "https://live-aburayhan1109.telewebion.ir/ek/irinn2/live/720p/index.m3u8"] },
