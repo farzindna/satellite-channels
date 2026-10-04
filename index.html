@@ -142,9 +142,6 @@
   .preview{flex:1;min-height:0;margin:1rem 0;border:3px solid #1d1d1d;border-radius:.3rem;display:grid;place-items:center;background:#030303}
   .pv-note{color:#666;text-align:center;padding:1rem;font-size:1rem}
   .icon-btn.on{border-color:var(--frame);color:var(--frame)}
-  .icon-btn.close{color:#ff6b63;border-color:#7f1d1d}
-  .icon-btn.close:hover,.icon-btn.close:focus-visible{background:#7f1d1d;border-color:#ef4444;color:#fff}
-  .icon-btn.close.armed{background:#c62828;border-color:#ef4444;color:#fff}
   .player.pv{right:auto;bottom:auto;border:3px solid var(--frame);border-radius:.3rem;overflow:hidden}
   .player.pv .p-info,.player.pv .p-bar,.player.pv .p-fs{display:none}
   .player.pv .p-sub{bottom:.6rem;max-width:94%}
@@ -281,7 +278,6 @@
         <button id="pvBtn" class="icon-btn" type="button" hidden aria-label="پیش‌نمایش"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg></button>
         <button id="audioBtn" class="icon-btn" type="button" title="سوییچ صدا · فقط برای Mac: میانبر «سوییچ صدا» رو اجرا می‌کنه تا خروجی صدا بین اسپیکرها عوض بشه" aria-label="سوییچ صدا"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>
         <button id="menuBtn" class="icon-btn gear" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
-      <button id="closeBtn" class="icon-btn close" type="button" hidden title="بستن برنامه" aria-label="بستن برنامه"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </span>
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
@@ -467,7 +463,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=55"></script>
+<script src="channels.js?v=56"></script>
 <script>
 (() => {
 'use strict';
@@ -1951,27 +1947,6 @@ $('helpBtn').addEventListener('click', toggleHelp);
 paintHelp();
 const AUDIO_SHORTCUT = 'سوییچ صدا';
 $('reloadBtn').addEventListener('click', () => location.reload());
-// دکمه‌ی بستن فقط وقتی صفحه مثل یه اپ باز شده (Dock یا نصب‌شده) دیده می‌شه؛ توی تب معمولی مرورگر بستن از داخل صفحه ممکن نیست
-{
-  const closeBtn = $('closeBtn');
-  const asApp = navigator.standalone === true || ['standalone', 'fullscreen', 'minimal-ui', 'window-controls-overlay'].some(m => matchMedia(`(display-mode: ${m})`).matches);
-  let armed = 0;
-  closeBtn.hidden = !asApp;
-  closeBtn.addEventListener('click', () => {
-    if (!armed) {
-      closeBtn.classList.add('armed');
-      closeBtn.title = 'دوباره بزن تا بسته بشه';
-      toast('برای بستن برنامه یک بار دیگه روی ✕ بزن');
-      armed = setTimeout(() => { armed = 0; closeBtn.classList.remove('armed'); closeBtn.title = 'بستن برنامه'; }, 3000);
-      return;
-    }
-    clearTimeout(armed);
-    stopPlayback();
-    window.close();
-    // بعضی مرورگرها اجازه‌ی بستن از داخل صفحه نمی‌دن
-    setTimeout(() => toast('این مرورگر اجازه‌ی بستن از داخل صفحه رو نمی‌ده؛ از ⌘ + Q یا ⌘ + W استفاده کن'), 500);
-  });
-}
 $('audioBtn').addEventListener('click', () => {
   location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(AUDIO_SHORTCUT);
 });
