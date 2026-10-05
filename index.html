@@ -135,7 +135,12 @@
   .ist,.iwarn,.iedit{direction:rtl;text-align:right;font-family:var(--font)}
   .ist{font-size:.9rem;margin-top:.3rem;color:#ccc}
   .iwarn{color:#ff8a80;font-weight:700;margin-top:.25rem;font-size:.9rem}
-  .iedit{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.45rem}
+  .iedit{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-top:.45rem}
+  .iedit .hint{width:100%;font-size:.78rem;color:#888;margin-top:.15rem}
+  .move-box{display:inline-flex;align-items:center;gap:.3rem;background:#111;border:1px solid #555;border-radius:.35rem;padding:.12rem .4rem}
+  .move-lbl{font-size:.82rem;color:#aaa}
+  .move-input{width:3.8rem;padding:.2rem .3rem;font-size:.95rem;font-weight:700;background:#000;color:var(--frame);border:1px solid #444;border-radius:.25rem;text-align:center;font-family:var(--rx)}
+  .move-input:focus{border-color:var(--frame);outline:none;background:#181818}
   .credit{display:block;margin-top:.5rem;font-size:.72rem;color:#777}
   .credit b{color:var(--frame)}
   .help{color:#777;font-size:.8rem;margin:0;line-height:2;text-align:right}
@@ -460,7 +465,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=60"></script>
+<script src="channels.js?v=61"></script>
 <script>
 (() => {
 'use strict';
@@ -783,12 +788,21 @@ function renderInfo(){
     ${editMode ? editHelpHTML(c) : ''}`;
 }
 function editHelpHTML(c){
+  const total = (view === 'fav' && !searchEl.value.trim() ? favList : numbered()).length;
   return `<div class="iedit">
     <button class="btn" type="button" data-iact="add">＋ افزودن شبکه</button>
-    ${c ? `<button class="btn ghost" type="button" data-iact="up">▲ بالا</button>
-    <button class="btn ghost" type="button" data-iact="down">▼ پایین</button>
+    ${c ? `
+    <button class="btn ghost" type="button" data-iact="top" title="انتقال به ابتدای فهرست (Shift+Home)">⏫ اول</button>
+    <button class="btn ghost" type="button" data-iact="up" title="یک ردیف بالاتر (Shift+↑)">▲ بالا</button>
+    <button class="btn ghost" type="button" data-iact="down" title="یک ردیف پایین‌تر (Shift+↓)">▼ پایین</button>
+    <button class="btn ghost" type="button" data-iact="bottom" title="انتقال به انتهای فهرست (Shift+End)">⏬ آخر</button>
+    <span class="move-box">
+      <label for="moveToNum" class="move-lbl">ردیف:</label>
+      <input type="number" id="moveToNum" class="move-input" min="1" max="${total}" placeholder="${c.num || ''}" value="" title="شماره ردیف مقصد">
+      <button class="btn ghost" type="button" data-iact="goto">برو</button>
+    </span>
     <button class="btn ghost" type="button" data-iact="edit">✎ ${c.builtin ? 'مشخصات / پنهان کردن' : 'ویرایش / حذف'}</button>` : ''}
-    <span class="hint">برای جابه‌جایی، ردیف‌ها رو با موس بکش و جای دلخواه رها کن.</span>
+    <span class="hint">برای جابه‌جایی: شماره ردیف مقصد رو بنویس و «برو» رو بزن، یا از دکمه‌های «اول / بالا / پایین / آخر» استفاده کن.</span>
   </div>`;
 }
 
@@ -834,6 +848,48 @@ function nudge(step){
   if (!selId || !canReorder()) return;
   const i = shown.findIndex(c => c.id === selId), target = shown[i + step];
   if (target) moveChannel(selId, target.id, step > 0);
+}
+function moveChannelToPos(id, targetNum){
+  if (!canReorder() || !id) return;
+  const num = parseInt(targetNum, 10);
+  if (!num || isNaN(num) || num < 1) {
+    toast('شماره ردیف معتبر نیست.');
+    return;
+  }
+  const isFav = view === 'fav' && !searchEl.value.trim();
+  const arr = isFav ? favList : order;
+  const from = arr.indexOf(id);
+  if (from < 0) return;
+
+  if (isFav) {
+    const targetIdx = Math.max(0, Math.min(arr.length - 1, num - 1));
+    if (from === targetIdx) return;
+    arr.splice(from, 1);
+    arr.splice(targetIdx, 0, id);
+    saveFavs();
+  } else {
+    const vis = numbered().filter(c => c.id !== id);
+    if (!vis.length) return;
+    const targetIdx = Math.max(0, Math.min(vis.length, num - 1));
+    arr.splice(from, 1);
+    if (targetIdx === 0) {
+      const firstVisIdx = arr.indexOf(vis[0].id);
+      arr.splice(firstVisIdx >= 0 ? firstVisIdx : 0, 0, id);
+    } else if (targetIdx >= vis.length) {
+      const lastVisIdx = arr.indexOf(vis[vis.length - 1].id);
+      arr.splice(lastVisIdx >= 0 ? lastVisIdx + 1 : arr.length, 0, id);
+    } else {
+      const refIdx = arr.indexOf(vis[targetIdx].id);
+      arr.splice(refIdx >= 0 ? refIdx : targetIdx, 0, id);
+    }
+    saveOrder();
+  }
+  selId = id;
+  render();
+  scrollToSel();
+  const finalCh = numbered().find(c => c.id === id);
+  const finalNum = isFav ? (favList.indexOf(id) + 1) : (finalCh ? finalCh.num : num);
+  toast(`«${byId(id).name}» به ردیف ${fa(finalNum)} منتقل شد.`);
 }
 
 let toastTimer;
@@ -2157,9 +2213,22 @@ infoEl.addEventListener('click', e => {
   if (!b) return;
   const act = b.dataset.iact, ch = selId && byId(selId);
   if (act === 'add') openEditor(null);
+  else if (act === 'top' && ch) moveChannelToPos(ch.id, 1);
+  else if (act === 'bottom' && ch) moveChannelToPos(ch.id, 999999);
   else if (act === 'up') nudge(-1);
   else if (act === 'down') nudge(1);
+  else if (act === 'goto' && ch) {
+    const inp = $('moveToNum');
+    if (inp) moveChannelToPos(ch.id, inp.value);
+  }
   else if (act === 'edit' && ch) openEditor(ch);
+});
+infoEl.addEventListener('keydown', e => {
+  if (e.target.id === 'moveToNum' && e.key === 'Enter') {
+    e.preventDefault();
+    const ch = selId && byId(selId);
+    if (ch) moveChannelToPos(ch.id, e.target.value);
+  }
 });
 
 // منوی همه‌ی دسته‌ها: روی اسم دسته بزن تا همه باز بشن و مستقیم انتخاب کنی
@@ -2323,8 +2392,8 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowDown') e.shiftKey && editMode ? nudge(1) : moveSel(1);
   else if (e.key === 'PageUp') moveSel(-10);
   else if (e.key === 'PageDown') moveSel(10);
-  else if (e.key === 'Home') moveSel(-1e6);
-  else if (e.key === 'End') moveSel(1e6);
+  else if (e.key === 'Home') e.shiftKey && editMode && ch ? moveChannelToPos(ch.id, 1) : moveSel(-1e6);
+  else if (e.key === 'End') e.shiftKey && editMode && ch ? moveChannelToPos(ch.id, 999999) : moveSel(1e6);
   else if (e.key === 'ArrowLeft') stepView(1);
   else if (e.key === 'ArrowRight') stepView(-1);
   else if (e.key === 'Backspace') { if (numBuf) popDigit(); else recallChannel(); }
