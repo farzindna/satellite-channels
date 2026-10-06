@@ -193,6 +193,10 @@
     border:0;
     overflow:hidden;
   }
+  .player.pv.has-parsa .p-frame-wrap iframe{
+    left:32px;
+    width:calc(100% + 11px);
+  }
   /* overlay masks to hide any residual Parsa TV margins */
   .p-parsa-mask-r,.p-parsa-mask-b{
     position:absolute;
@@ -685,7 +689,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=72"></script>
+<script src="channels.js?v=73"></script>
 <script>
 (() => {
 'use strict';
@@ -1483,7 +1487,8 @@ const previewBox = $('preview'), pvNote = $('pvNote');
 function placePlayer(){
   if (mode === 'preview') {
     const r = previewBox.getBoundingClientRect();
-    Object.assign(player.style, { top: r.top + 'px', left: r.left + 'px', width: r.width + 'px', height: r.height + 'px' });
+    const leftBleed = player.classList.contains('has-parsa') ? 24 : 0;
+    Object.assign(player.style, { top: r.top + 'px', left: (r.left - leftBleed) + 'px', width: (r.width + leftBleed) + 'px', height: r.height + 'px' });
   } else {
     player.style.cssText = '';
   }
