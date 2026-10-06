@@ -60,9 +60,6 @@ window.SAT_CHANNELS = [
     streams: ["https://rferl-ingest.akamaized.net/hls/live/2121768/tvmc01/playlist.m3u8"], urls: [P("Radio-Farda"), P("Radio-Farda-TV")] },
   { id: "iranefarda", name: "Irane Farda TV", fa: "ایران فردا", cat: "news", badge: "FARDA TV", color: "#37474f",
     streams: ["https://iranefardalive.com/stream/live.m3u8"], urls: [P("Irane-Farda")] },
-  { id: "afintl", name: "Afghanistan International", fa: "افغانستان اینترنشنال", cat: "news", streams: ["https://hls.afintl.com/hls/stream.m3u8"] },
-  { id: "tolonews", name: "TOLOnews", fa: "طلوع نیوز", cat: "news", badge: "TOLO NEWS", color: "#c62828",
-    streams: ["https://tgn.bozztv.com/eshgtv-dvrfl05/gin-tolonews/index.m3u8"] },
   { id: "iranwire", name: "Iran Wire TV", fa: "ایران‌وایر", cat: "news", streams: ["https://irwhls.wns.live/hls/stream.m3u8"] },
   { id: "iranindependent", name: "Iran Independent TV", fa: "تلویزیون مستقل ایران", cat: "news", streams: ["https://mediamtx.elitelatrade.com/live/stream/main_stream.m3u8"] },
   { id: "irannrtv", name: "Iran National Revolution TV", fa: "انقلاب ملی ایران", cat: "news", streams: ["https://hls.irannrtv.live/hls/stream.m3u8"] },
@@ -354,7 +351,6 @@ window.SAT_CHANNELS = [
   { id: "i24en", name: "i24NEWS English", fa: "آی۲۴ انگلیسی", cat: "english", streams: ["https://i24newsenglish-cdn.encoders.immergo.tv/master.m3u8"] },
   { id: "wion", name: "WION", fa: "وایون", cat: "english", streams: ["https://d7x8z4yuq42qn.cloudfront.net/index_7.m3u8"] },
   { id: "africanews", name: "Africanews English", fa: "آفریکانیوز", cat: "english", streams: ["https://cdn-euronews.akamaized.net/live/eds/africanews-en/25049/index.m3u8"] },
-  { id: "ted", name: "TED", fa: "تد (سخنرانی‌ها)", cat: "english", streams: ["https://d1b16tvvxk3tnu.cloudfront.net/TED.m3u8"] },
 
 ];
 }
