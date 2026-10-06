@@ -465,7 +465,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=62"></script>
+<script src="channels.js?v=63"></script>
 <script>
 (() => {
 'use strict';
@@ -513,7 +513,7 @@ const store = {
   get(k, fallback){ try { const v = localStorage.getItem(k); return v == null ? fallback : JSON.parse(v); } catch { return fallback; } },
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* حالت خصوصی یا حافظه‌ی پر */ } },
 };
-const K = { custom: 'sat.custom.v1', fav: 'sat.fav.v1', hidden: 'sat.hidden.v1', view: 'sat.view.v2', order: 'sat.order.v2',
+const K = { custom: 'sat.custom.v1', fav: 'sat.fav.v1', hidden: 'sat.hidden.v1', view: 'sat.view.v2', order: 'sat.order.v3',
   filter: 'sat.filter.v1', sort: 'sat.sort.v1', help: 'sat.help.v1', subOn: 'sat.subs.on.v1', subEn: 'sat.subs.en.v1', subProv: 'sat.subs.prov.v1', subKey: 'sat.subs.key.v2', subModel: 'sat.subs.model.v2', subBoth: 'sat.subs.both.v1', subUsage: 'sat.subs.usage.v1', subCap: 'sat.subs.cap.v1', subDay: 'sat.subs.day.v1', migrated: 'sat.migrated.v1', loadAvg: 'sat.load.avg.v1' };
 
 /* ---------- داده‌ها ---------- */
