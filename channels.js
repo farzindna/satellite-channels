@@ -46,6 +46,30 @@ const TWB_SITE = n => `https://telewebion.com/live/${n}`;
 const SEPEHR = n => `https://sepehrtv.ir/live/${n}`;
 
 window.SAT_CHANNELS = [
+  /* ── شبکه‌های خبری ── */
+  { id: "iranintl", name: "Iran International", fa: "ایران اینترنشنال", cat: "news", badge: "IRAN INTL", color: "#b3121b",
+    streams: ["https://hlspackager.akamaized.net/live/DB/IRAN_INTERNATIONAL/HLS/IRAN_INTERNATIONAL.m3u8", "https://live.livetvstream.co.uk/LS-63503-4/index.m3u8"],
+    embed: PM("Iran-International-TV"), urls: [P("Iran-International-TV")] },
+  { id: "bbcpersian", name: "BBC Persian", fa: "بی‌بی‌سی فارسی", cat: "news", badge: "BBC", color: "#a50e0e",
+    streams: ["https://vs-hls-pushb-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_persian_tv/mobile_wifi_main_hd_abr_v2.m3u8",
+    "https://vs-hls-pushb-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_persian_tv/pc_hd_abr_v2.m3u8"],
+    urls: [P("BBC-Persian")] },
+  { id: "voa", name: "VOA Persian", fa: "صدای آمریکا", cat: "news", badge: "VOA", color: "#1d4f91",
+    streams: ["https://voa-ingest.akamaized.net/hls/live/2033876/tvmc07/playlist.m3u8", WNS("voaphls")], urls: [P("VOA-Persian")] },
+  { id: "radiofarda", name: "Radio Farda", fa: "رادیو فردا", cat: "news", badge: "فردا", color: "#c2410c",
+    streams: ["https://rferl-ingest.akamaized.net/hls/live/2121768/tvmc01/playlist.m3u8"], urls: [P("Radio-Farda"), P("Radio-Farda-TV")] },
+  { id: "iranefarda", name: "Irane Farda TV", fa: "ایران فردا", cat: "news", badge: "FARDA TV", color: "#37474f",
+    streams: ["https://iranefardalive.com/stream/live.m3u8"], urls: [P("Irane-Farda")] },
+  { id: "afintl", name: "Afghanistan International", fa: "افغانستان اینترنشنال", cat: "news", streams: ["https://hls.afintl.com/hls/stream.m3u8"] },
+  { id: "tolonews", name: "TOLOnews", fa: "طلوع نیوز", cat: "news", badge: "TOLO NEWS", color: "#c62828",
+    streams: ["https://tgn.bozztv.com/eshgtv-dvrfl05/gin-tolonews/index.m3u8"] },
+  { id: "iranwire", name: "Iran Wire TV", fa: "ایران‌وایر", cat: "news", streams: ["https://irwhls.wns.live/hls/stream.m3u8"] },
+  { id: "iranindependent", name: "Iran Independent TV", fa: "تلویزیون مستقل ایران", cat: "news", streams: ["https://mediamtx.elitelatrade.com/live/stream/main_stream.m3u8"] },
+  { id: "irannrtv", name: "Iran National Revolution TV", fa: "انقلاب ملی ایران", cat: "news", streams: ["https://hls.irannrtv.live/hls/stream.m3u8"] },
+  { id: "nahadeazadi", name: "Nahade Azadi", fa: "نهاد آزادی", cat: "news", streams: ["https://livestream.5centscdn.com/nahadeazadi/14a66ff6dca989d3a2eb0dc8cdb50892.sdp/chunks.m3u8"] },
+  { id: "eslahtv", name: "Eslah TV", fa: "اصلاح", cat: "news", streams: ["https://eslahtvhls.wns.live/hls/stream.m3u8"] },
+  { id: "tasvireiran", name: "Tasvire Iran", fa: "تصویر ایران", cat: "news", streams: ["https://bozztv.com/1gbw5/tintv/tintv/playlist.m3u8"] },
+
   /* ── خانواده GEM (جم) ── */
   { id: "gemtv", name: "GEM TV", fa: "جم تی‌وی", cat: "movies", badge: "GEM", color: "#7b1fa2", streams: [], embed: PM("GEM-TV"), urls: [P("GEM-TV")] },
   { id: "gemseries", name: "GEM Series", fa: "جم سریال", cat: "movies", badge: "GEM SERIES", color: "#8e24aa", streams: [], embed: PM("GEM-Series-TV"), urls: [P("GEM-Series-TV")] },
@@ -66,10 +90,6 @@ window.SAT_CHANNELS = [
   { id: "gemfood", name: "GEM Food", fa: "جم فود (آشپزی)", cat: "general", badge: "GEM FOOD", color: "#ef6c00", streams: [], embed: PM("GEM-Food"), urls: [P("GEM-Food")] },
 
   /* ── خانواده BBC (بی‌بی‌سی) ── */
-  { id: "bbcpersian", name: "BBC Persian", fa: "بی‌بی‌سی فارسی", cat: "news", badge: "BBC", color: "#a50e0e",
-    streams: ["https://vs-hls-pushb-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_persian_tv/mobile_wifi_main_hd_abr_v2.m3u8",
-    "https://vs-hls-pushb-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_persian_tv/pc_hd_abr_v2.m3u8"],
-    urls: [P("BBC-Persian")] },
   { id: "bbcnews", name: "BBC News", fa: "بی‌بی‌سی نیوز", cat: "english", streams: ["https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/mobile_wifi_main_hd_abr_v2.m3u8"] },
   { id: "bbcearth", subs: true, name: "BBC Earth", fa: "BBC Earth", cat: "docs", badge: "BBC EARTH", color: "#1b5e20",
     streams: ["https://aegis-cloudfront-1.tubi.video/bb1fc6ad-9948-42ea-aaf3-20acfcdeecac/playlist.m3u8"] },
@@ -130,19 +150,9 @@ window.SAT_CHANNELS = [
   { id: "iribuhd", name: "IRIB UHD", fa: "فراتر (UHD)", cat: "iran", badge: "UHD", color: "#212121", streams: [TWB("faratar")] },
   { id: "irnatv", name: "IRNA TV", fa: "ایرنا", cat: "iran", streams: ["https://tv.irna.ir/live/stream/index.m3u8"] },
 
-  /* ── شبکه‌های خبری و سرگرمی برتر فارسی ── */
+  /* ── شبکه‌های سرگرمی برتر فارسی ── */
   { id: "manoto", name: "Manoto", fa: "منوتو", cat: "general", badge: "manoto", color: "#263238",
     streams: [], embed: PM("Manoto"), urls: [P("Manoto")] },
-  { id: "iranintl", name: "Iran International", fa: "ایران اینترنشنال", cat: "news", badge: "IRAN INTL", color: "#b3121b",
-    streams: ["https://hlspackager.akamaized.net/live/DB/IRAN_INTERNATIONAL/HLS/IRAN_INTERNATIONAL.m3u8", "https://live.livetvstream.co.uk/LS-63503-4/index.m3u8"],
-    embed: PM("Iran-International-TV"), urls: [P("Iran-International-TV")] },
-  { id: "afintl", name: "Afghanistan International", fa: "افغانستان اینترنشنال", cat: "news", streams: ["https://hls.afintl.com/hls/stream.m3u8"] },
-  { id: "voa", name: "VOA Persian", fa: "صدای آمریکا", cat: "news", badge: "VOA", color: "#1d4f91",
-    streams: ["https://voa-ingest.akamaized.net/hls/live/2033876/tvmc07/playlist.m3u8", WNS("voaphls")], urls: [P("VOA-Persian")] },
-  { id: "radiofarda", name: "Radio Farda", fa: "رادیو فردا", cat: "news", badge: "فردا", color: "#c2410c",
-    streams: ["https://rferl-ingest.akamaized.net/hls/live/2121768/tvmc01/playlist.m3u8"], urls: [P("Radio-Farda"), P("Radio-Farda-TV")] },
-  { id: "iranefarda", name: "Irane Farda TV", fa: "ایران فردا", cat: "news", badge: "FARDA TV", color: "#37474f",
-    streams: ["https://iranefardalive.com/stream/live.m3u8"], urls: [P("Irane-Farda")] },
   { id: "mbcpersia", name: "MBC Persia", fa: "ام‌بی‌سی پرشیا", cat: "movies", badge: "MBC", color: "#1565c0",
     streams: ["https://hls.mbcpersia.live/hls/stream.m3u8", "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-persia/818ee8e4b592dc497608f066d825bfb4/index.m3u8"],
     urls: [P("MBC-Persia")] },
@@ -195,7 +205,6 @@ window.SAT_CHANNELS = [
   { id: "datis", name: "Datis TV", fa: "داتیس", cat: "general", streams: ["https://dathls.wns.live/hls/stream.m3u8"] },
   { id: "dejtv", name: "DEJ TV", fa: "دژ", cat: "general", streams: ["https://rdejhls.wns.live/hls/stream.m3u8"] },
   { id: "donyai", name: "Donyai New", fa: "دنیای نو", cat: "general", streams: ["https://dunyanhls.wns.live/hls/stream.m3u8"] },
-  { id: "eslahtv", name: "Eslah TV", fa: "اصلاح", cat: "news", streams: ["https://eslahtvhls.wns.live/hls/stream.m3u8"] },
   { id: "gordafarid", name: "Gord Afarid TV", fa: "گردآفرید", cat: "general", streams: ["https://gatvhls.wns.live/hls/stream.m3u8"] },
   { id: "icnet1", name: "ICnet", fa: "آی‌سی‌نت", cat: "general", streams: ["https://icnet1hls.wns.live/hls/stream.m3u8"] },
   { id: "icnet2", name: "ICnet 2", fa: "آی‌سی‌نت ۲", cat: "general", streams: ["https://icnet2hls.wns.live/hls/stream.m3u8"] },
@@ -219,21 +228,14 @@ window.SAT_CHANNELS = [
   { id: "ganjehozoor", name: "Ganje Hozoor", fa: "گنج حضور", cat: "general", streams: ["https://media.parvizshahbazi.com/ganjehozour/Main_tv/playlist.m3u8"] },
   { id: "mihantv", name: "Mihan TV", fa: "میهن", cat: "general", streams: ["https://iptv.mihantv.com/mihantv/playlist.m3u8"] },
   { id: "ravitv", name: "Ravi TV", fa: "راوی", cat: "general", streams: ["https://hls.ravitv.com/hls/stream.m3u8"] },
-  { id: "tasvireiran", name: "Tasvire Iran", fa: "تصویر ایران", cat: "news", streams: ["https://bozztv.com/1gbw5/tintv/tintv/playlist.m3u8"] },
   { id: "payvand", name: "Payvand TV", fa: "پیوند", cat: "general", streams: ["https://tgn.bozztv.com/cus01/ucur1/Payvand/playlist.m3u8"] },
   { id: "watanemaa", name: "Watan-e-Maa TV", fa: "وطن ما", cat: "general", streams: ["https://5caf24a595d94.streamlock.net:1937/8132/8132/playlist.m3u8"] },
   { id: "israelpars", name: "Israel Pars TV", fa: "اسرائیل پارس", cat: "general", streams: ["https://live.pars-israel.com/tmp_hls/iptv/index.m3u8"] },
   { id: "iranjewish", name: "Iran Jewish TV", fa: "تلویزیون یهودیان ایران", cat: "general", streams: ["https://iran620.com:1935/live/IranJewishTv/playlist.m3u8"] },
   { id: "iranisraeltv", name: "Iran TV Israel", fa: "ایران تی‌وی اسرائیل", cat: "general", streams: ["https://streaminglive.co.il:3730/live/raniamranilive.m3u8"] },
-  { id: "iranwire", name: "Iran Wire TV", fa: "ایران‌وایر", cat: "news", streams: ["https://irwhls.wns.live/hls/stream.m3u8"] },
-  { id: "iranindependent", name: "Iran Independent TV", fa: "تلویزیون مستقل ایران", cat: "news", streams: ["https://mediamtx.elitelatrade.com/live/stream/main_stream.m3u8"] },
-  { id: "irannrtv", name: "Iran National Revolution TV", fa: "انقلاب ملی ایران", cat: "news", streams: ["https://hls.irannrtv.live/hls/stream.m3u8"] },
-  { id: "nahadeazadi", name: "Nahade Azadi", fa: "نهاد آزادی", cat: "news", streams: ["https://livestream.5centscdn.com/nahadeazadi/14a66ff6dca989d3a2eb0dc8cdb50892.sdp/chunks.m3u8"] },
   { id: "novintv", name: "Novin TV", fa: "نوین", cat: "general", streams: ["https://stream.novin.live/hls/playlist.m3u8"] },
   { id: "omidjavedan", name: "Omid Javedan", fa: "امید جاودان", cat: "general", streams: ["https://livestream.5centscdn.com/pwocchurchweb1/cebac1e921182acff008ab1222f0c916.sdp/playlist.m3u8"] },
   { id: "payamjavan", name: "Payam Javan TV", fa: "پیام جوان", cat: "general", streams: ["https://uni01rtmp.tulix.tv/kensecure/pjtv.stream/playlist.m3u8"] },
-  { id: "tolonews", name: "TOLOnews", fa: "طلوع نیوز", cat: "news", badge: "TOLO NEWS", color: "#c62828",
-    streams: ["https://tgn.bozztv.com/eshgtv-dvrfl05/gin-tolonews/index.m3u8"] },
 
   /* ── خانواده PBS (بین‌المللی) ── */
   { id: "pbskids", subs: true, name: "PBS Kids", fa: "پی‌بی‌اس کیدز", cat: "english", streams: ["https://livestream.pbskids.org/out/v1/14507d931bbe48a69287e4850e53443c/est.m3u8", "https://livestream.pbskids.org/out/v1/11f2e6b73eaa4887b3746cb863960e79/pst.m3u8"] },
