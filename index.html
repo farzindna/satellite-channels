@@ -234,7 +234,8 @@
     transform:translate(-50%,8px);
     pointer-events:none;
   }
-  .p-embed-tip b{color:var(--frame);font-size:1.05em}
+  .p-embed-tip b{color:var(--frame);font-size:1.1em}
+  .p-embed-tip b.pet-arrow{font-size:1.4em;display:inline-block;vertical-align:-.06em;line-height:1}
   .pet-close{background:none;border:0;color:#888;font-size:1rem;cursor:pointer;padding:0 .25rem;line-height:1}
   .pet-close:hover{color:#fff}
   .p-shield{position:absolute;inset:0;z-index:1;cursor:pointer}
@@ -522,7 +523,7 @@
   <div id="pSub" class="p-sub" hidden></div>
   <div id="pEmbedTip" class="p-embed-tip" hidden>
     <span aria-hidden="true">💡</span>
-    <span>برای پخش روی <b>▶</b> بزنید · برای تمام‌صفحه از <b>⛶</b> یا <b>⤢</b> داخل تصویر استفاده کنید</span>
+    <span>برای پخش روی <b>▶</b> بزنید · برای تمام‌صفحه از <b>⛶</b> یا <b class="pet-arrow">⤡</b> داخل تصویر استفاده کنید</span>
     <button type="button" class="pet-close" id="pTipClose" title="بستن راهنما" aria-label="بستن راهنما">✕</button>
   </div>
   <div id="pMute" class="p-mute" hidden>🔇 برای پخش صدا، یه جای صفحه کلیک کن</div>
@@ -689,7 +690,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=73"></script>
+<script src="channels.js?v=74"></script>
 <script>
 (() => {
 'use strict';
