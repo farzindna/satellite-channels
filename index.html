@@ -177,7 +177,7 @@
     width:100%;
     max-width:calc((100vh - 2.5rem) * 16 / 9);
     height:0 !important;
-    padding-bottom:54.8% !important;
+    padding-bottom:53.5% !important;
     overflow:hidden !important;
     background:#000;
     border-radius:.25rem;
@@ -186,9 +186,9 @@
   }
   .player.has-parsa .p-frame-wrap iframe{
     position:absolute;
-    top:-60px;
-    left:-10px;
-    width:calc(100% + 32px);
+    top:-56px;
+    left:-15px;
+    width:calc(100% + 40px);
     height:1000px;
     border:0;
     overflow:hidden;
@@ -357,7 +357,7 @@
   <div id="pSub" class="p-sub" hidden></div>
   <div id="pEmbedTip" class="p-embed-tip" hidden>
     <span aria-hidden="true">💡</span>
-    <span>برای پخش روی <b>▶</b> بزنید · برای تمام‌صفحه از <b>⛶</b> داخل تصویر استفاده کنید</span>
+    <span>برای پخش روی <b>▶</b> بزنید · برای تمام‌صفحه از <b>⛶</b> یا <b>⤢</b> داخل تصویر استفاده کنید</span>
     <button type="button" class="pet-close" id="pTipClose" title="بستن راهنما" aria-label="بستن راهنما">✕</button>
   </div>
   <div id="pMute" class="p-mute" hidden>🔇 برای پخش صدا، یه جای صفحه کلیک کن</div>
@@ -524,7 +524,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=67"></script>
+<script src="channels.js?v=68"></script>
 <script>
 (() => {
 'use strict';
@@ -1343,7 +1343,6 @@ function showEmbedTip(){
   clearTimeout(tipTimer);
   embedTip.classList.remove('fade-out');
   embedTip.hidden = false;
-  tipTimer = setTimeout(hideEmbedTip, 7500);
 }
 function hideEmbedTip(){
   clearTimeout(tipTimer);
@@ -1400,6 +1399,7 @@ function stopPlayback(){
   placePlayer();
 }
 function goFull(ch){
+  hideEmbedTip();
   clearTimeout(previewTimer);
   previewFor = null;
   zapList = shown.filter(inPage);
@@ -1417,7 +1417,11 @@ function leaveFull(){
   const ch = playing;
   $('pPause').hidden = true;
   if (video.paused && video.src) video.play().catch(() => {});
-  if (previewOn && ch) { mode = 'preview'; placePlayer(); } else stopPlayback();
+  if (previewOn && ch) {
+    mode = 'preview';
+    placePlayer();
+    if (isParsa(ch.embed)) showEmbedTip();
+  } else stopPlayback();
   if (ch) {
     if (!shown.some(c => c.id === ch.id)) setView('all');
     select(ch.id);
@@ -1435,8 +1439,12 @@ function paintFsBtn(){
   b.setAttribute('aria-label', b.title);
 }
 paintFsBtn();
-document.addEventListener('fullscreenchange', paintFsBtn);
-document.addEventListener('webkitfullscreenchange', paintFsBtn);
+function handleFsEvent(){
+  paintFsBtn();
+  if (fsElement()) hideEmbedTip();
+}
+document.addEventListener('fullscreenchange', handleFsEvent);
+document.addEventListener('webkitfullscreenchange', handleFsEvent);
 document.addEventListener('fullscreenchange', () => { if (!fsElement() && mode === 'full' && weFullscreened) { weFullscreened = false; leaveFull(); } });
 
 function playChannel(ch){
