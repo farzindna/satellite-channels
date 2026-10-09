@@ -1405,7 +1405,6 @@ function vpnWarning(url){
   const s = signal.state, vpn = needsVpn(url);
   if (s === 'offline') return 'اینترنت وصل نیست.';
   if (vpn && (s === 'novpn' || s === 'intranet')) return 'VPN وصل نیست؛ این شبکه بدون VPN احتمالاً باز نمی‌شه.';
-  if (!vpn && (s === 'vpn' || s === 'weak') && signal.domestic === false) return 'این شبکه داخلیه و با VPN فعلی باز نمی‌شه؛ بهتره VPN رو خاموش کنی.';
   return '';
 }
 // اگه با وضعیت فعلی VPN احتمالاً باز نمی‌شه، اول هشدار می‌ده
@@ -2248,7 +2247,7 @@ function streamFailed(token){
   const url = ch.streams[0], s = signal.state;
   const why = healthOf(ch) === 'cors' && !nativeHls ? 'سرور این شبکه پخش توی Chrome رو اجازه نمی‌ده؛ همین صفحه رو توی Safari باز کن، اونجا پخش می‌شه.'
     : needsVpn(url) && s !== 'vpn' && s !== 'weak' ? 'احتمالاً VPN لازمه.'
-    : !needsVpn(url) && (s === 'vpn' || s === 'weak') ? 'شبکه‌های داخلی معمولاً با VPN پخش نمی‌شن؛ VPN رو خاموش کن.'
+    : !needsVpn(url) && (s === 'vpn' || s === 'weak') ? 'این شبکه داخلیه؛ اگه VPN روشنه ممکنه با خاموش کردنش پخش بشه.'
     : 'ممکنه لینک پخش عوض شده باشه یا شبکه موقتاً قطع باشه.';
   setMsg(`<b class="pm-title">توجه</b><span class="pm-body">سیگنال ضعیف است<br><span class="hint">${why}</span></span>
     <div class="dlg-actions">
