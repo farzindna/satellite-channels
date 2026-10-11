@@ -694,7 +694,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=78"></script>
+<script src="channels.js?v=84"></script>
 <script>
 (() => {
 'use strict';
@@ -798,7 +798,10 @@ function cleanChannel(raw){
   if (!name || !(urls.length || streams.length)) return null;
   return {
     id: typeof raw.id === 'string' && /^[\w-]{1,40}$/.test(raw.id) ? raw.id : newId(),
-    name, urls, streams, embed: siteEmbed(urls),
+    name, urls, streams,
+    // popup: سایتش توی پنجره‌ی جدا روی کادر باز می‌شه، نه iframe (برای فایل پشتیبان/بازگردانی هم نگه داشته می‌شه)
+    embed: raw.popup === true ? '' : siteEmbed(urls),
+    ...(raw.popup === true ? { popup: true } : {}),
     cat: CAT[raw.cat] ? raw.cat : FALLBACK_CAT,
     badge: String(raw.badge || '').trim().slice(0, 12),
     color: isHex(raw.color) ? raw.color : '',
@@ -1423,9 +1426,44 @@ function openUrl(url){
   if (w) { try { w.focus(); } catch { /* بعضی مرورگرها اجازه نمی‌دن */ } }
   else toast('مرورگر جلوی باز شدن تب رو گرفت؛ برای این صفحه اجازه‌ی پاپ‌آپ بده.');
 }
+// شبکه‌های popup: سایت‌هایی که توی iframe باز نمی‌شن (صفحه‌شون خودش رو قایم می‌کنه)، پس یه پنجره‌ی جدا دقیقاً هم‌اندازه و هم‌جای کادر پیش‌نمایش
+const POPUP_WIN = 'satellite-popup';
+let popWin = null;
+function closePopup(){
+  try { if (popWin && !popWin.closed) popWin.close(); } catch { /* پنجره خودش بسته شده */ }
+  popWin = null;
+}
+function openPopup(url){
+  const r = previewBox.getBoundingClientRect();
+  // جای محتوای کادر روی صفحه‌ی نمایش = جای پنجره‌ی اصلی + نوار بالاش + جای کادر داخل صفحه
+  const x = Math.round(window.screenX + (window.outerWidth - window.innerWidth) / 2 + r.left);
+  const y = Math.round(window.screenY + (window.outerHeight - window.innerHeight) + r.top);
+  const w = Math.round(r.width), h = Math.round(r.height);
+  closePopup();
+  const win = window.open('', POPUP_WIN, `popup=yes,left=${x},top=${y},width=${w},height=${h}`);
+  if (!win) return toast('مرورگر جلوی باز شدن پنجره رو گرفت؛ برای این صفحه اجازه‌ی پاپ‌آپ بده.');
+  popWin = win;
+  // تا پنجره هنوز خالی و هم‌دامنه‌ست، کل پنجره (با نوار عنوانش) رو دقیقاً هم‌اندازه‌ی کادر می‌کنیم؛
+  // نوار عنوان نباید از کادر بیرون بزنه و دکمه‌های بالای صفحه رو بپوشونه. بعد از رفتن به سایت دیگه نمی‌شه جابه‌جاش کرد
+  setTimeout(() => {
+    try {
+      if (win.outerHeight !== win.innerHeight || win.outerWidth !== win.innerWidth) {
+        win.resizeTo(w, h);
+        win.moveTo(x, y);
+      }
+    } catch { /* بعضی مرورگرها (موبایل) اجازه‌ی جابه‌جایی نمی‌دن */ }
+    // «#sat-popup» به افزونه‌ی اختیاری خود کاربر (userscript) می‌گه این صفحه از برنامه باز شده تا فقط پخش‌کننده رو نشون بده
+    try { win.location.href = url + '#sat-popup'; win.focus(); } catch { /* پنجره بسته شد */ }
+  }, 120);
+}
 function openSite(ch){
   const url = ch.urls[0];
   if (!url) return toast('این شبکه سایت پخش نداره.');
+  if (ch.popup) return guard(ch, url, () => {
+    stopPlayback();
+    setNote(`«${ch.name}» توی پنجره‌ی جدا روی همین کادر باز شد.`);
+    openPopup(url);
+  });
   guard(ch, url, () => openUrl(url));
 }
 // شبکه‌هایی که پخش مستقیم دارن داخل صفحه پخش می‌شن، بقیه سایتشون باز می‌شه
@@ -1687,6 +1725,7 @@ document.addEventListener('webkitfullscreenchange', handleFsEvent);
 document.addEventListener('fullscreenchange', () => { if (!fsElement() && mode === 'full' && weFullscreened) { weFullscreened = false; leaveFull(); } });
 
 function playChannel(ch){
+  closePopup();
   subForceNative = false;
   connOk = false; reconnectTries = 0;
   if (playing && playing.id !== ch.id) prevId = playing.id;
@@ -2423,7 +2462,7 @@ function saveEditor(){
   const wasEditing = editing;
   let ch;
   if (wasEditing) {
-    ch = cleanChannel({ ...data, id: wasEditing.id });
+    ch = cleanChannel({ ...data, id: wasEditing.id, popup: wasEditing.popup });
     custom[custom.indexOf(wasEditing)] = ch;
   } else {
     ch = cleanChannel(data);
