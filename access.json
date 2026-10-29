@@ -1,0 +1,16 @@
+{
+  "updatedAt": "2026-10-29T21:00:00Z",
+  "defaultDays": 90,
+  "users": {
+    "user-01": { "expires": "2027-01-29", "active": true, "note": "دوست ۰۱" },
+    "user-02": { "expires": "2027-01-29", "active": true, "note": "دوست ۰۲" },
+    "user-03": { "expires": "2027-01-29", "active": true, "note": "دوست ۰۳" },
+    "user-04": { "expires": "2027-01-29", "active": true, "note": "دوست ۰۴" },
+    "user-05": { "expires": "2027-01-29", "active": true, "note": "دوست ۰۵" },
+    "user-06": { "expires": "2027-01-29", "active": true, "note": "دوست ۰۶" },
+    "user-07": { "expires": "2027-01-29", "active": true, "note": "دوست ۰۷" },
+    "user-08": { "expires": "2027-01-29", "active": true, "note": "دوست ۰۸" },
+    "user-09": { "expires": "2027-01-29", "active": true, "note": "دوست ۰۹" },
+    "user-10": { "expires": "2027-01-29", "active": true, "note": "دوست ۱۰" }
+  }
+}

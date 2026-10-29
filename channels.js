@@ -67,4 +67,20 @@ window.SAT_CHANNELS = [
   { id: "iribuhd", name: "IRIB UHD", fa: "فراتر (UHD)", cat: "iran", badge: "UHD", color: "#212121", streams: [TWB("faratar")] },
   { id: "irnatv", name: "IRNA TV", fa: "ایرنا", cat: "iran", streams: ["https://tv.irna.ir/live/stream/index.m3u8"] },
 ];
+
+window.SAT_ACCESS = {
+  defaultDays: 90,
+  users: {
+    "user-01": { "expires": "2027-01-29", "active": true },
+    "user-02": { "expires": "2027-01-29", "active": true },
+    "user-03": { "expires": "2027-01-29", "active": true },
+    "user-04": { "expires": "2027-01-29", "active": true },
+    "user-05": { "expires": "2027-01-29", "active": true },
+    "user-06": { "expires": "2027-01-29", "active": true },
+    "user-07": { "expires": "2027-01-29", "active": true },
+    "user-08": { "expires": "2027-01-29", "active": true },
+    "user-09": { "expires": "2027-01-29", "active": true },
+    "user-10": { "expires": "2027-01-29", "active": true }
+  }
+};
 }
