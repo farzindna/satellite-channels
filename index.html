@@ -11,7 +11,6 @@
 <meta name="apple-mobile-web-app-title" content="Living TV">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Living TV</title>
-<meta name="author" content="فرزین">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%BA%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -143,8 +142,6 @@
   .move-lbl{font-size:.82rem;color:#aaa}
   .move-input{width:3.8rem;padding:.2rem .3rem;font-size:.95rem;font-weight:700;background:#000;color:var(--frame);border:1px solid #444;border-radius:.25rem;text-align:center;font-family:var(--rx)}
   .move-input:focus{border-color:var(--frame);outline:none;background:#181818}
-  .credit{display:block;margin-top:.5rem;font-size:.72rem;color:#777}
-  .credit b{color:var(--frame)}
   .help{color:#777;font-size:.8rem;margin:0;line-height:2;text-align:right}
   .preview{flex:1;min-height:0;margin:1rem 0;border:3px solid #1d1d1d;border-radius:.3rem;display:grid;place-items:center;background:#030303}
   .pv-note{color:#666;text-align:center;padding:1rem;font-size:1rem}
@@ -509,7 +506,7 @@
     </div>
     <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
     <button id="scanText" class="scan" type="button" hidden title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
-    <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>PageUp</kbd> <kbd>PageDown</kbd> یا <kbd>←</kbd> <kbd>→</kbd> ورق زدن صفحات شبکه‌ها · کلیک روی تیتر = منوی دسته‌ها · عدد = شماره · <kbd>Backspace</kbd> شبکه‌ی قبلی · <kbd>T</kbd> تایمر خواب (موقع پخش) · دکمه‌های رسانه‌ی کیبورد = شبکه‌ی بعدی و قبلی · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب · <span class="rcc">CC</span> زیرنویس انگلیسی داره (می‌شه فارسیش کرد)<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)<span class="credit">توسعه‌یافته توسط <b>فرزین</b></span></p>
+    <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>PageUp</kbd> <kbd>PageDown</kbd> یا <kbd>←</kbd> <kbd>→</kbd> ورق زدن صفحات شبکه‌ها · کلیک روی تیتر = منوی دسته‌ها · عدد = شماره · <kbd>Backspace</kbd> شبکه‌ی قبلی · <kbd>T</kbd> تایمر خواب (موقع پخش) · دکمه‌های رسانه‌ی کیبورد = شبکه‌ی بعدی و قبلی · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب · <span class="rcc">CC</span> زیرنویس انگلیسی داره (می‌شه فارسیش کرد)<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)</p>
   </div>
 </div>
 
@@ -710,7 +707,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=87"></script>
+<script src="channels.js?v=88"></script>
 <script>
 (() => {
 'use strict';
