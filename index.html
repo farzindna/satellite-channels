@@ -1,0 +1,2980 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Living TV">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Living TV</title>
+<meta name="author" content="فرزین">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%BA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap">
+<style>
+  :root{
+    --frame:#f0b93a;
+    --text:#ffffff;
+    --muted:#a9a9a9;
+    --sel-text:#5d4a1c;
+    --red:#e53935;
+    --green:#2ecc71;
+    --yellow:#f4d03f;
+    --blue:#29b6f6;
+    --ok:#4cff7a;
+    --bad:#ff5252;
+    --font:"Vazirmatn","Tahoma",sans-serif;
+    --rx:"Arial","Helvetica Neue","Vazirmatn",sans-serif;
+  }
+  *{box-sizing:border-box}
+  /* اندازه‌ها برای دیدن از روی مبل روی تلویزیون بزرگ‌تر می‌شن */
+  html{font-size:clamp(14px, .55vw + 9px, 22px)}
+  body{margin:0;min-height:100vh;color:var(--text);font-family:var(--font);background:#000}
+  button,input,select{font:inherit;color:inherit}
+  button{cursor:pointer}
+  [hidden]{display:none !important}
+  kbd{font-family:var(--rx);background:#111;border:1px solid #444;border-radius:.3rem;padding:0 .35rem;direction:ltr;display:inline-block;font-size:.85em}
+  :focus-visible{outline:2px solid var(--frame);outline-offset:2px}
+
+  /* صفحه مثل منوی رسیور: فهرست سمت چپ، بقیه‌ی صفحه سیاه */
+  .app{display:flex;gap:2rem;height:100vh;padding:2.2rem 2.4rem;direction:ltr}
+  .panel{width:min(44rem,48vw);flex:0 0 auto;display:flex;flex-direction:column;border:3px solid var(--frame);border-radius:.35rem;background:#000;font-family:var(--rx)}
+  .side{flex:1;min-width:0;display:flex;flex-direction:column;direction:rtl;position:relative}
+  .topbar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;opacity:.8}
+  .topbar:hover,.topbar:focus-within{opacity:1}
+  .brand{font-weight:800;color:#ddd;white-space:nowrap}
+  .sbar{display:flex;align-items:center;gap:.5rem;margin:.45rem .55rem .1rem;padding:.1rem .7rem;background:#0d0d0d;border:1.5px solid #444;border-radius:.4rem;direction:rtl;cursor:text}
+  .sbar:focus-within{border-color:var(--frame);background:#141414}
+  .sicon{font-size:1rem;opacity:.8}
+  .search{flex:1;min-width:0;background:transparent;border:0;padding:.5rem 0;outline:none;font-size:1.05rem;color:inherit;font-family:var(--font)}
+  .skey{font-size:.75rem;color:#888;border:1px solid #444;border-radius:.25rem;padding:0 .35rem}
+  .search::placeholder{color:#777}
+  .search:focus{border-color:var(--frame)}
+  .pill{display:flex;align-items:center;gap:.45rem;background:#0d0d0d;border:1px solid #333;border-radius:999px;padding:.3rem .8rem;font-weight:700;white-space:nowrap;font-size:.9rem}
+  .dot{width:.6rem;height:.6rem;border-radius:50%;background:#777}
+  [data-state="vpn"] .dot{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+  [data-state="weak"] .dot{background:var(--yellow)}
+  [data-state="novpn"] .dot,[data-state="intranet"] .dot,[data-state="offline"] .dot{background:var(--bad)}
+  .scan{align-self:flex-start;background:none;border:0;color:var(--muted);font-size:.8rem;white-space:nowrap;padding:0 .2rem;min-height:1.2rem}
+  .scan[hidden]{display:none}
+  .tools{margin-inline-start:auto;display:flex;gap:.4rem}
+  .icon-btn{display:grid;place-items:center;width:2.75rem;height:2.75rem;padding:0;color:#d8d8d8;background:#0d0d0d;border:1px solid #333;border-radius:.45rem;cursor:pointer;transition:border-color .15s,color .15s,background .15s}
+  .icon-btn[hidden]{display:none}
+  .icon-btn svg{width:1.4rem;height:1.4rem;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .icon-btn:hover,.icon-btn:focus-visible{border-color:var(--frame);color:#fff;background:#181818;outline:0}
+  .btn{background:var(--frame);color:#2a1a00;border:0;border-radius:.35rem;padding:.45rem .95rem;font-weight:800;white-space:nowrap}
+  .btn.ghost{background:#111;color:var(--text);border:1px solid #555;font-weight:600}
+  .btn.danger{background:#7f1d1d;color:#fecaca}
+  .btn:disabled{opacity:.45;cursor:default}
+
+  .phead{display:flex;align-items:center;justify-content:space-between;padding:.15rem .9rem;border-bottom:3px solid var(--frame)}
+  .phead h1{margin:0;font-size:1.3rem;font-weight:700;text-align:center;flex:1;font-family:var(--font);direction:rtl}
+  .phead h1 small{font-size:.8rem;color:var(--muted);font-weight:400;margin-inline-start:.5rem}
+  .phead{position:relative}
+  .phead h1{cursor:pointer;border-radius:.3rem}
+  .phead h1:hover{background:#1c1c1c}
+  .phead h1 .caret{font-size:.7rem;color:var(--muted);margin-inline-start:.45rem;display:inline-block;transition:transform .15s}
+  .phead.open h1 .caret{transform:rotate(180deg)}
+  .catmenu{position:absolute;top:100%;inset-inline:0;z-index:30;background:#000;border:3px solid var(--frame);border-top:0;max-height:min(34rem,70vh);overflow-y:auto;padding:.25rem;box-shadow:0 .8rem 1.6rem #000c;font-family:var(--font);direction:rtl}
+  .catmenu[hidden]{display:none}
+  .catmenu button{display:flex;align-items:center;justify-content:space-between;gap:.8rem;width:100%;background:none;border:2px solid transparent;color:var(--text);font:700 1.15rem/1.65 var(--font);padding:0 .7rem;border-radius:.3rem;text-align:start;cursor:pointer}
+  .catmenu button small{font-size:.85rem;color:var(--muted);font-weight:400}
+  .catmenu button:hover,.catmenu button:focus-visible{background:#1c1c1c;outline:none;border-color:#555}
+  .catmenu button.cur{background:linear-gradient(180deg,#fff8dc 0%,#fbe6a0 35%,#f6c54d 70%,#eeaa1c 100%);color:var(--sel-text)}
+  .catmenu button.cur small{color:#5a4200}
+  .catmenu hr{border:0;border-top:1px solid #333;margin:.2rem .4rem}
+  .arrow{background:none;border:0;font-size:1.4rem;font-weight:700;padding:0 .4rem;color:var(--text);line-height:1.2;font-family:var(--rx);cursor:pointer;transition:color .12s,transform .1s}
+  .arrow:hover{color:var(--frame)}
+  .arrow:active{transform:scale(.92)}
+  .list{flex:1;min-height:0;overflow-y:scroll;padding:.35rem .3rem .35rem .45rem}
+  .list::-webkit-scrollbar{width:.9rem}
+  .list::-webkit-scrollbar-track{border:2px solid #ddd;border-radius:1rem;margin:.25rem 0;background:#000}
+  .list::-webkit-scrollbar-thumb{background:#ddd;border-radius:1rem;border:3px solid #000}
+  .row{display:flex;align-items:center;gap:.7rem;padding:0 .5rem;font-size:1.32rem;font-weight:700;line-height:1.9;cursor:pointer;user-select:none;border:2px solid transparent;scroll-margin:2rem;white-space:nowrap}
+  .row:hover:not(.sel){background:#1c1c1c}
+  .row.sel{background:linear-gradient(180deg,#fff8dc 0%,#fbe6a0 35%,#f6c54d 70%,#eeaa1c 100%);color:var(--sel-text)}
+  .row.dragging{opacity:.4}
+  .row.drop-before{border-top-color:var(--frame)}
+  .row.drop-after{border-bottom-color:var(--frame)}
+  .rnum{min-width:3.3rem;letter-spacing:.02em}
+  .rname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .row.st-row-bad:not(.sel) .rname{opacity:.5}
+  .rtags{display:flex;align-items:center;gap:.45rem;flex:0 0 auto}
+  .st{width:.62rem;height:.62rem;border-radius:50%;background:#666}
+  .rcc{font-size:.62rem;font-weight:800;letter-spacing:.03em;color:#9ad;border:1px solid #5a7a99;border-radius:.25rem;padding:0 .3rem;line-height:1.4;font-family:var(--font)}
+  .row.sel .rcc{color:#2a1a00;border-color:#2a1a00aa}
+  .st-live{background:#2ee66b}.st-ok{background:transparent;box-shadow:inset 0 0 0 2.5px #2ee66b}.st-cors{background:#ffa726}.st-bad,.st-codec{background:#ff3b3b}
+  .st-site,.st-embed{background:transparent;box-shadow:inset 0 0 0 1.5px #888}
+  .rfav{background:none;border:0;font-size:1.15rem;line-height:1;padding:.45rem .4rem;margin:-.45rem -.3rem;color:#555;cursor:pointer}
+  .rfav.on{color:#ffd54f}
+  .row.sel .rfav{color:rgba(93,74,28,.35)}
+  .row.sel .rfav.on{color:#b45309}
+  .grip{display:none;opacity:.6;cursor:grab}
+  .editing .grip{display:inline}
+  .editing .row{cursor:grab}
+  .empty{text-align:center;color:var(--muted);padding:3rem 1rem;font-family:var(--font);direction:rtl}
+
+  .keys{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem;padding:.35rem .7rem;border-top:3px solid var(--frame);border-bottom:3px solid var(--frame);direction:ltr}
+  .ckey{display:flex;align-items:center;gap:.4rem;background:none;border:0;font-weight:800;font-size:1rem;padding:.15rem .35rem;border-radius:.25rem;font-family:var(--font)}
+  .ckey i{width:1.15rem;height:1.15rem;border-radius:.15rem;box-shadow:inset 0 -3px 0 rgba(0,0,0,.3),inset 0 2px 0 rgba(255,255,255,.35)}
+  .ckey.red{color:#ff5a4f}.ckey.red i{background:var(--red)}
+  .ckey.red.on{background:#ff3b3b26;outline:1.5px solid #ff5a4f}
+  .fchip{margin-inline-start:.6rem;font-size:.8rem;font-weight:700;color:#fff;background:#c62828;border:0;border-radius:.3rem;padding:.1rem .5rem;cursor:pointer;vertical-align:middle;font-family:var(--font)}
+  .ckey.green{color:#38e07b}.ckey.green i{background:var(--green)}
+  .ckey.yellow{color:#f7dc6f}.ckey.yellow i{background:var(--yellow)}
+  .ckey.blue{color:#4fc3f7}.ckey.blue i{background:var(--blue)}
+  .ckey.on{background:#1b1b1b;box-shadow:inset 0 0 0 1px #666}
+
+  .info{padding:.45rem .9rem .6rem;min-height:7.4rem;direction:ltr}
+  .irow{display:flex;justify-content:space-between;gap:1rem;align-items:baseline}
+  .iname{font-size:1.3rem;font-weight:700}
+  .imeta{color:#ddd;font-size:1rem;font-weight:700;margin-top:.15rem;font-family:var(--font)}
+  .ist,.iwarn,.iedit{direction:rtl;text-align:right;font-family:var(--font)}
+  .ist{font-size:.9rem;margin-top:.3rem;color:#ccc}
+  .iwarn{color:#ff8a80;font-weight:700;margin-top:.25rem;font-size:.9rem}
+  .iedit{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-top:.45rem}
+  .iedit .hint{width:100%;font-size:.78rem;color:#888;margin-top:.15rem}
+  .move-box{display:inline-flex;align-items:center;gap:.3rem;background:#111;border:1px solid #555;border-radius:.35rem;padding:.12rem .4rem}
+  .move-lbl{font-size:.82rem;color:#aaa}
+  .move-input{width:3.8rem;padding:.2rem .3rem;font-size:.95rem;font-weight:700;background:#000;color:var(--frame);border:1px solid #444;border-radius:.25rem;text-align:center;font-family:var(--rx)}
+  .move-input:focus{border-color:var(--frame);outline:none;background:#181818}
+  .credit{display:block;margin-top:.5rem;font-size:.72rem;color:#777}
+  .credit b{color:var(--frame)}
+  .help{color:#777;font-size:.8rem;margin:0;line-height:2;text-align:right}
+  .preview{flex:1;min-height:0;margin:1rem 0;border:3px solid #1d1d1d;border-radius:.3rem;display:grid;place-items:center;background:#030303}
+  .pv-note{color:#666;text-align:center;padding:1rem;font-size:1rem}
+  .icon-btn.on{border-color:var(--frame);color:var(--frame)}
+  .player.pv{right:auto;bottom:auto;border:3px solid var(--frame);border-radius:.3rem;overflow:hidden}
+  .player.pv .p-info,.player.pv .p-bar,.player.pv .p-fs{display:none}
+  .player.pv .p-sub{bottom:.6rem;max-width:94%}
+  .player.pv .p-sub .fa{font-size:1rem}
+  .player.pv .p-sub .en{font-size:.75rem}
+  .player.pv .p-msg{font-size:.95rem;padding:.8rem 1rem}
+  .player.pv .p-msg .dlg-actions{display:none}
+  .p-msg .pm-title{display:block;border-bottom:3px solid var(--frame);margin:-.6rem -1rem .6rem;padding-bottom:.3rem}
+  .p-pause{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;font-size:4rem;color:#fff;background:#000a;border:3px solid var(--frame);border-radius:.4rem;padding:.2rem 1.4rem;pointer-events:none}
+  .player.pv .p-pause{font-size:2.5rem}
+  .p-mute{position:absolute;top:.6rem;right:.6rem;z-index:2;background:#000c;border:1px solid #555;border-radius:.3rem;padding:.2rem .6rem;font-size:.85rem}
+
+  /* پیام‌ها مثل پنجره‌ی «توجه» رسیور، وسط قسمت سیاه صفحه */
+  .toast{position:fixed;top:45%;right:calc((100vw - min(44rem,48vw) - 4.4rem) / 2);transform:translate(50%,-50%);z-index:70;min-width:16rem;max-width:min(28rem,40vw);background:#000;border:3px solid var(--frame);border-radius:.3rem;text-align:center;font-weight:700}
+  .toast::before{content:"توجه";display:block;border-bottom:3px solid var(--frame);padding:.25rem}
+  .toast span{display:block;padding:.75rem 1rem;line-height:1.8}
+  .num-entry{position:fixed;top:1.5rem;right:2rem;z-index:70;font-family:var(--rx);font-size:2.6rem;font-weight:700;color:#fff;background:#000;border:3px solid var(--frame);border-radius:.3rem;padding:.15rem 1rem;direction:ltr;letter-spacing:.08em;text-align:center}
+  .num-entry small{display:block;font-family:var(--font);font-size:.9rem;letter-spacing:0;direction:rtl;padding-bottom:.25rem}
+
+  /* ---------- پخش‌کننده‌ی داخل صفحه ---------- */
+  .player{position:fixed;inset:0;z-index:60;background:#000}
+  .player.has-parsa{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;overflow:hidden}
+  .player video{width:100%;height:100%;object-fit:contain;background:#000}
+  .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .p-frame-wrap{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
+  .player.has-parsa .p-frame-wrap{
+    position:relative;
+    width:100%;
+    max-width:calc((100vh - 2.5rem) * 16 / 9);
+    height:0 !important;
+    padding-bottom:55.2% !important;
+    overflow:hidden !important;
+    background:#000;
+    border-radius:.25rem;
+    box-shadow:0 0 25px rgba(0,0,0,.9);
+    flex:0 0 auto;
+  }
+  .player.has-parsa .p-frame-wrap iframe{
+    position:absolute;
+    top:-60px;
+    left:8px;
+    width:calc(100% + 35px);
+    height:1000px;
+    border:0;
+    overflow:hidden;
+  }
+  .player.pv.has-parsa .p-frame-wrap iframe{
+    left:32px;
+    width:calc(100% + 11px);
+  }
+  /* overlay masks to hide any residual Parsa TV margins */
+  .p-parsa-mask-r,.p-parsa-mask-b{
+    position:absolute;
+    background:#000;
+    z-index:6;
+    pointer-events:none;
+  }
+  .p-parsa-mask-r{top:0;right:0;bottom:0;width:8px;}
+  .p-parsa-mask-b{bottom:0;left:0;right:0;height:6px;}
+  .p-embed-tip{
+    position:absolute;
+    bottom:.8rem;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:10;
+    background:#000e;
+    color:#fff;
+    border:2px solid var(--frame);
+    border-radius:.4rem;
+    padding:.35rem .75rem;
+    display:flex;
+    align-items:center;
+    gap:.55rem;
+    font-size:.85rem;
+    font-family:var(--font);
+    direction:rtl;
+    box-shadow:0 6px 20px rgba(0,0,0,.8);
+    pointer-events:auto;
+    transition:opacity .35s,transform .35s;
+    white-space:nowrap;
+    max-width:95%;
+  }
+  .p-embed-tip.fade-out{
+    opacity:0;
+    transform:translate(-50%,8px);
+    pointer-events:none;
+  }
+  .p-embed-tip b{color:var(--frame);font-size:1.1em}
+  .p-embed-tip b.pet-arrow{font-size:1.4em;display:inline-block;vertical-align:-.06em;line-height:1}
+  .pet-close{background:none;border:0;color:#888;font-size:1rem;cursor:pointer;padding:0 .25rem;line-height:1}
+  .pet-close:hover{color:#fff}
+  .p-shield{position:absolute;inset:0;z-index:1;cursor:pointer}
+  .p-info,.p-msg,.p-bar{z-index:1}
+  .p-info{position:absolute;top:1.4rem;left:1.6rem;display:flex;align-items:center;gap:1rem;background:#000c;border:3px solid var(--frame);border-radius:.3rem;padding:.5rem 1.1rem;transition:opacity .3s;font-family:var(--rx);direction:ltr}
+  .p-info .pnum{font-size:1.8rem;font-weight:700}
+  .p-info .rlogo{display:none}
+  .p-msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#000;border:3px solid var(--frame);border-radius:.3rem;padding:1.1rem 1.5rem;text-align:center;font-size:1.1rem;font-weight:600;max-width:min(36rem,90vw);line-height:1.9}
+  .p-msg .dlg-actions{justify-content:center}
+  .p-load{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;background:#000e;border:3px solid var(--frame);border-radius:.3rem;padding:1rem 1.6rem 1.1rem;text-align:center;width:min(25rem,86%);font-family:var(--font);direction:rtl;pointer-events:none}
+  .p-load .pl-title{font-size:1.15rem;font-weight:700;margin-bottom:.55rem}
+  .p-load .pl-sig{display:flex;justify-content:center;align-items:flex-end;gap:.28rem;height:1.8rem;margin-bottom:.6rem;direction:ltr}
+  .p-load .pl-sig i{width:.45rem;background:#333;border-radius:1px;transition:background .25s}
+  .p-load .pl-sig i:nth-child(1){height:20%}.p-load .pl-sig i:nth-child(2){height:40%}.p-load .pl-sig i:nth-child(3){height:60%}.p-load .pl-sig i:nth-child(4){height:80%}.p-load .pl-sig i:nth-child(5){height:100%}
+  .p-load .pl-sig i.on{background:#2ecc5a;box-shadow:0 0 .5rem #2ecc5a66}
+  .p-load .pl-track{height:.7rem;border:2px solid #666;border-radius:.4rem;overflow:hidden;direction:ltr;background:#111}
+  .p-load .pl-fill{height:100%;width:0;background:linear-gradient(90deg,#1faa48,#5be584);transition:width .18s linear}
+  .p-load .pl-info{display:flex;justify-content:space-between;gap:.8rem;font-size:.9rem;color:var(--muted);margin-top:.5rem;font-weight:400}
+  .player.pv .p-load{padding:.6rem .9rem .7rem;width:min(18rem,90%)}
+  .player.pv .p-load .pl-title{font-size:.95rem;margin-bottom:.35rem}
+  .player.pv .p-load .pl-sig{height:1.2rem;margin-bottom:.4rem}
+  .player.pv .p-load .pl-info{font-size:.78rem}
+  .p-bar{position:absolute;bottom:1.4rem;left:50%;transform:translateX(-50%);display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;background:#000c;border:3px solid var(--frame);border-radius:.3rem;padding:.5rem .8rem;transition:opacity .3s}
+  .player.idle{cursor:none}
+  .player.idle .p-bar,.player.idle .p-info,.player.idle .p-fs,.player.idle .p-embed-tip{opacity:0;pointer-events:none}
+  .p-fs{position:absolute;right:1.4rem;bottom:1.4rem;z-index:1;width:3.6rem;height:3.6rem;display:grid;place-items:center;padding:0;background:#000c;color:#fff;border:3px solid var(--frame);border-radius:.3rem;cursor:pointer;transition:opacity .3s,background .15s}
+  .p-fs:hover,.p-fs:focus-visible{background:var(--frame);color:#000;outline:0}
+  .p-fs svg{width:2rem;height:2rem;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .p-cc{right:5.6rem}
+  .p-cc{position:absolute}
+  .p-cc.on{background:var(--frame);color:#000}
+  .p-cc .cct{position:absolute;bottom:.15rem;left:0;right:0;text-align:center;font-size:.62rem;font-weight:800;line-height:1}
+  .p-sub{position:absolute;left:50%;transform:translateX(-50%);bottom:7.4rem;width:max-content;max-width:82%;text-align:center;direction:rtl;z-index:1;pointer-events:none;transition:bottom .3s}
+  .player.idle .p-sub{bottom:2.4rem}
+  .p-sub .fa,.p-sub .en{display:inline-block;padding:.1em .6em;border-radius:.3em;background:#000b;text-shadow:0 1px 3px #000}
+  .p-sub .fa{font-size:clamp(1.4rem,2.6vw,2.5rem);font-weight:700;line-height:1.75;color:#fff}
+  .p-sub .en{font-size:clamp(1rem,1.7vw,1.5rem);line-height:1.5;color:#dcdcdc;margin-top:.25rem;direction:ltr}
+  .p-sub .sn{display:inline-block;margin-top:.25rem;font-size:clamp(.8rem,1.2vw,1rem);color:#ffcf6b;background:#000b;border-radius:.3rem;padding:0 .5rem}
+  .chk{display:flex;align-items:center;gap:.5rem;margin:.2rem 0 .8rem;color:var(--text)}
+  .chk input{width:1.1rem;height:1.1rem;accent-color:var(--frame)}
+
+  /* ---------- پنجره‌ها ---------- */
+  dialog{background:#000;color:var(--text);border:3px solid var(--frame);border-radius:.35rem;padding:0;width:min(36rem,92vw);box-shadow:0 30px 80px rgba(0,0,0,.8)}
+  dialog::backdrop{background:rgba(0,0,0,.6)}
+  .dlg-body{padding:1.2rem 1.4rem}
+  dialog h3{margin:0 0 1rem;font-size:1.2rem}
+  dialog h4{margin:1.1rem 0 .4rem;font-size:1rem}
+  .field{display:grid;gap:.35rem;margin-bottom:.8rem;min-width:0}
+  .field label{color:var(--muted);font-size:.9rem}
+  .field input,.field select{background:#111;border:1px solid #444;border-radius:.4rem;padding:.5rem .7rem;outline:none;width:100%}
+  .field select option{background:#111}
+  .field input:focus,.field select:focus{border-color:var(--frame)}
+  .field input:disabled,.field select:disabled{opacity:.7}
+  .field input[type="color"]{padding:.2rem;height:2.5rem}
+  .ltr{direction:ltr;text-align:left}
+  .row2{display:flex;gap:.7rem}
+  .hint{color:var(--muted);font-size:.85rem;margin:.15rem 0 0;line-height:1.8}
+  .err{color:var(--bad);font-weight:700;margin:.2rem 0}
+  .dlg-actions{display:flex;gap:.6rem;margin-top:1.1rem;flex-wrap:wrap;align-items:center}
+  .dlg-actions .spacer{flex:1}
+  .menu-list{display:grid;gap:.6rem}
+  .catlist{list-style:none;margin:0;padding:0;display:grid;gap:.4rem}
+  .catlist li{display:flex;align-items:center;gap:.6rem;background:#111;border:1px solid #333;border-radius:.35rem;padding:.3rem .6rem}
+  .catlist li span{flex:1}
+  .catlist button{background:none;border:0;color:#ff7b72;cursor:pointer;font-size:.85rem;font-family:var(--font)}
+  .menu-list .btn{text-align:start}
+  .keylist{margin:0;padding:0;list-style:none;display:grid;gap:.35rem;color:var(--muted);font-size:.9rem}
+  .check{display:flex;gap:.5rem;align-items:center;color:var(--muted);margin-top:.6rem}
+  .checks{list-style:none;padding:0;margin:.6rem 0;display:grid;gap:.3rem}
+  .ok{color:var(--ok);font-weight:800}
+  .bad{color:var(--bad);font-weight:800}
+  .verdict{background:#111;border:1px solid #333;border-radius:.4rem;padding:.7rem .9rem;line-height:1.9;margin:.8rem 0 .4rem}
+
+  @media (max-width:820px){
+    html,body{height:100%;overflow:hidden}
+    .app{
+      flex-direction:column;
+      height:100vh;
+      height:100dvh;
+      max-height:100dvh;
+      overflow:hidden;
+      padding:.35rem .45rem;
+      gap:.3rem;
+    }
+    .side{
+      order:1;
+      flex:0 0 calc(50% - .15rem);
+      height:calc(50% - .15rem);
+      max-height:calc(50% - .15rem);
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .topbar{
+      padding:0 .1rem;
+      gap:.35rem;
+      margin-bottom:.15rem;
+    }
+    .pill{
+      padding:.2rem .55rem;
+      font-size:.82rem;
+    }
+    .icon-btn{
+      width:2.2rem;
+      height:2.2rem;
+      border-radius:.35rem;
+    }
+    .icon-btn svg{
+      width:1.15rem;
+      height:1.15rem;
+    }
+    .preview{
+      width:100%;
+      flex:1 1 0;
+      min-height:0;
+      margin:0;
+      border:2px solid #222;
+      border-radius:.35rem;
+    }
+    .pv-note{
+      font-size:.8rem;
+      padding:.5rem;
+      line-height:1.45;
+    }
+    .panel{
+      order:2;
+      flex:0 0 calc(50% - .15rem);
+      height:calc(50% - .15rem);
+      max-height:calc(50% - .15rem);
+      width:100%;
+      border-width:2px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .phead{
+      padding:.15rem .5rem;
+      border-bottom-width:2px;
+    }
+    .phead h1{
+      font-size:1.1rem;
+    }
+    .sbar{
+      margin:.2rem .45rem .1rem;
+      padding:.05rem .55rem;
+    }
+    .search{
+      font-size:.95rem;
+      padding:.3rem 0;
+    }
+    .skey{
+      display:none;
+    }
+    .list{
+      flex:1 1 0;
+      min-height:0;
+      overflow-y:auto;
+      padding:.2rem .25rem;
+    }
+    .row{
+      font-size:1.05rem;
+      line-height:1.75;
+      padding:0 .4rem;
+    }
+    .rnum{
+      min-width:2.8rem;
+    }
+    .keys{
+      padding:.25rem .5rem;
+      gap:.2rem;
+      border-top-width:2px;
+      border-bottom-width:2px;
+    }
+    .ckey{
+      font-size:.82rem;
+      padding:.1rem .25rem;
+      gap:.3rem;
+    }
+    .ckey i{
+      width:.95rem;
+      height:.95rem;
+    }
+    .info{
+      min-height:auto;
+      padding:.25rem .6rem .3rem;
+    }
+    .iname{
+      font-size:1.05rem;
+    }
+    .imeta{
+      font-size:.82rem;
+      margin-top:.05rem;
+    }
+    .ist{
+      font-size:.78rem;
+      margin-top:.15rem;
+    }
+    .iwarn{
+      font-size:.78rem;
+      margin-top:.15rem;
+    }
+    .iedit{
+      margin-top:.3rem;
+      gap:.3rem;
+    }
+    .iedit .btn{
+      padding:.25rem .5rem;
+      font-size:.78rem;
+    }
+    .player.pv{
+      border-width:2px;
+    }
+    .p-embed-tip{
+      font-size:.75rem;
+      padding:.25rem .55rem;
+      gap:.35rem;
+      white-space:normal;
+      text-align:center;
+      max-width:95%;
+    }
+    .toast{
+      right:50%;
+      top:38%;
+      min-width:14rem;
+      max-width:90vw;
+    }
+    .help{
+      max-height:35vh;
+      overflow-y:auto;
+      font-size:.75rem;
+      line-height:1.7;
+    }
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+</head>
+<body data-signal="checking">
+
+<div class="app">
+  <section class="panel" id="panel">
+    <div class="phead">
+      <button class="arrow" id="catPrev" type="button" aria-label="صفحه‌ی قبلی" title="صفحه‌ی قبلی (ورق زدن عقب)">&lt;</button>
+      <h1 id="catTitle">همه‌ی شبکه‌ها</h1>
+      <button class="arrow" id="catNext" type="button" aria-label="صفحه‌ی بعدی" title="صفحه‌ی بعدی (ورق زدن جلو)">&gt;</button>
+      <div class="catmenu" id="catMenu" role="menu" aria-label="همه‌ی دسته‌ها" hidden></div>
+    </div>
+    <label class="sbar"><span class="sicon">🔍</span><input id="search" class="search" type="search" placeholder="جستجوی شبکه… (اسم فارسی یا انگلیسی)" autocomplete="off" aria-label="جستجوی شبکه"><kbd class="skey" title="کلید / برای رفتن به جستجو">/</kbd></label>
+    <div class="list" id="list" role="listbox" aria-labelledby="catTitle"></div>
+    <div class="keys">
+      <button class="ckey red" type="button" id="kRed" title="کلید R"><i></i><span id="kRedText">سالم/داخلی/VPN</span></button>
+      <button class="ckey green" type="button" id="kGreen" title="کلید G"><i></i><span>علاقه‌مندی</span></button>
+      <button class="ckey yellow" type="button" id="kYellow" title="کلید Y"><i></i><span>A-Z</span></button>
+      <button class="ckey blue" type="button" id="kBlue" title="کلید B"><i></i><span id="kBlueText">ویرایش</span></button>
+    </div>
+    <div class="info" id="info"></div>
+  </section>
+
+  <div class="side">
+    <div class="topbar">
+      <button id="signal" class="pill" type="button" data-state="checking" title="وضعیت VPN؛ برای جزئیات کلیک کن"><span class="dot"></span><span id="sigText">VPN</span></button>
+      <span class="tools">
+        <button id="helpBtn" class="icon-btn" type="button" title="راهنما (کلید H)" aria-label="راهنما" aria-controls="help"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.5-1.2 1-1.2 1.9"/><path d="M12 17.2h.01"/></svg></button>
+        <button id="reloadBtn" class="icon-btn" type="button" title="بارگذاری دوباره‌ی صفحه (برای وقتی صفحه رو مثل یه اپ توی Safari باز کردی)" aria-label="بارگذاری دوباره"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+        <button id="pvBtn" class="icon-btn" type="button" hidden aria-label="پیش‌نمایش"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg></button>
+        <button id="audioBtn" class="icon-btn" type="button" title="سوییچ صدا · فقط برای Mac: میانبر «سوییچ صدا» رو اجرا می‌کنه تا خروجی صدا بین اسپیکرها عوض بشه" aria-label="سوییچ صدا"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>
+        <button id="menuBtn" class="icon-btn gear" type="button" title="تنظیمات و پشتیبان‌گیری" aria-label="تنظیمات"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
+      </span>
+    </div>
+    <div class="preview" id="preview"><p class="pv-note" id="pvNote">روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.</p></div>
+    <button id="scanText" class="scan" type="button" hidden title="برای بررسی دوباره‌ی همه‌ی شبکه‌ها کلیک کن"></button>
+    <p class="help" id="help" hidden><kbd>↑</kbd> <kbd>↓</kbd> انتخاب · کلیک یا <kbd>Enter</kbd> = پیش‌نمایش · روی پیش‌نمایش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه · <kbd>PageUp</kbd> <kbd>PageDown</kbd> یا <kbd>←</kbd> <kbd>→</kbd> ورق زدن صفحات شبکه‌ها · کلیک روی تیتر = منوی دسته‌ها · عدد = شماره · <kbd>Backspace</kbd> شبکه‌ی قبلی · <kbd>T</kbd> تایمر خواب (موقع پخش) · دکمه‌های رسانه‌ی کیبورد = شبکه‌ی بعدی و قبلی · <kbd>H</kbd> بستن راهنما · <kbd>F</kbd> ستاره · <kbd>R</kbd> <kbd>G</kbd> <kbd>Y</kbd> <kbd>B</kbd> دکمه‌های رنگی<br><span style="color:#2ee66b">●</span> پخش شده و سالم · <span style="color:#2ee66b">○</span> احتمالاً سالم · <span style="color:#ffa726">●</span> فقط در Safari · <span style="color:#ff3b3b">●</span> الان قطع · ○ سایت یا یوتیوب · <span class="rcc">CC</span> زیرنویس انگلیسی داره (می‌شه فارسیش کرد)<br><b>🔊 سوییچ صدا</b> = فقط برای مک؛ میانبر Shortcuts رو اجرا می‌کنه و خروجی صدا رو بین دو اسپیکر عوض می‌کنه (باید قبلاً میانبرش رو بسازی)<span class="credit">توسعه‌یافته توسط <b>فرزین</b></span></p>
+  </div>
+</div>
+
+
+<div id="numEntry" class="num-entry" hidden></div>
+<div id="toast" class="toast" role="status" hidden><span id="toastText"></span></div>
+
+<div id="player" class="player" hidden>
+  <video id="video" playsinline></video>
+  <div id="pInfo" class="p-info"></div>
+  <div id="pMsg" class="p-msg" hidden></div>
+  <div id="pLoad" class="p-load" hidden aria-live="polite"><div class="pl-title">در حال یافتن سیگنال…</div><div class="pl-sig"><i></i><i></i><i></i><i></i><i></i></div><div class="pl-track"><div class="pl-fill" id="plFill"></div></div><div class="pl-info"><span id="plPhase">اتصال</span><span id="plTime"></span></div></div>
+  <div id="pPause" class="p-pause" hidden>❚❚</div>
+  <div id="pShield" class="p-shield" hidden title="دابل‌کلیک = تمام‌صفحه · یه کلیک = کار با خود پخش‌کننده"></div>
+  <div id="pSub" class="p-sub" hidden></div>
+  <div id="pEmbedTip" class="p-embed-tip" hidden>
+    <span aria-hidden="true">💡</span>
+    <span>برای شروع پخش، روی <b>▶</b> داخل تصویر بزنید</span>
+    <button type="button" class="pet-close" id="pTipClose" title="بستن راهنما" aria-label="بستن راهنما">✕</button>
+  </div>
+  <div id="pMute" class="p-mute" hidden>🔇 برای پخش صدا، یه جای صفحه کلیک کن</div>
+  <button class="p-fs p-cc" type="button" data-pact="subs" id="pCC" title="زیرنویس (C)" aria-label="زیرنویس" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h4M7 14h2M13 10h4M12 14h5"/></svg><span id="pCCt" class="cct"></span></button>
+  <button class="p-fs" type="button" data-pact="full" id="pFull" title="تمام‌صفحه (F)" aria-label="تمام‌صفحه"></button>
+  <div class="p-bar">
+    <button class="btn ghost" type="button" data-pact="next" title="شبکه‌ی بعدی (↑)">▲ بعدی</button>
+    <button class="btn ghost" type="button" data-pact="prev" title="شبکه‌ی قبلی (↓)">▼ قبلی</button>
+    <button class="btn ghost" type="button" data-pact="site" id="pSite" title="باز کردن سایت شبکه (S)">🌐 سایت شبکه</button>
+    <button class="btn ghost" type="button" data-pact="sleep" id="pSleep" title="تایمر خواب (T)" aria-label="تایمر خواب"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-.2em"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg><span id="pSleepT"></span></button>
+    <button class="btn" type="button" data-pact="close" title="برگشت به فهرست (Esc)">✕ بستن</button>
+  </div>
+</div>
+
+<dialog id="signalDlg" aria-labelledby="sigTitle">
+  <div class="dlg-body">
+    <h3 id="sigTitle">وضعیت VPN</h3>
+    <div id="sigBody"></div>
+    <div class="dlg-actions">
+      <button class="btn" type="button" id="recheckBtn">بررسی دوباره</button>
+      <button class="btn ghost" type="button" data-close>بستن</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="editDlg" aria-labelledby="editTitle">
+  <form id="editForm" class="dlg-body" novalidate>
+    <h3 id="editTitle">افزودن شبکه</h3>
+    <p class="hint" id="builtinNote" hidden>این شبکه جزو فهرست ثابت صفحه‌ست و اینجا قابل ویرایش نیست؛ اگه لازمش نداری می‌تونی پنهانش کنی.</p>
+    <p class="hint" id="lockedNote" hidden>این شبکه از یه فایل رمزدار اومده و قابل ویرایش نیست؛ اگه لازمش نداری می‌تونی حذفش کنی.</p>
+    <div class="field">
+      <label for="fName">اسم شبکه</label>
+      <input id="fName" maxlength="60" placeholder="مثلاً: شبکه یک" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="fUrl">لینک پخش (لینک ‎.m3u8‎ داخل صفحه پخش می‌شه، بقیه‌ی لینک‌ها سایتشون باز می‌شه)</label>
+      <input id="fUrl" class="ltr" type="url" placeholder="https://..." autocomplete="off">
+      <p class="hint" id="fVpnHint"></p>
+    </div>
+    <div class="field">
+      <label for="fUrl2">لینک جایگزین (اختیاری)</label>
+      <input id="fUrl2" class="ltr" type="url" placeholder="https://..." autocomplete="off">
+    </div>
+    <div class="row2">
+      <div class="field" style="flex:2">
+        <label for="fCat">دسته</label>
+        <select id="fCat"></select>
+        <input id="fNewCat" maxlength="30" placeholder="اسم گروه جدید، مثلاً «شبکه‌های مورد علاقه‌ی من»" autocomplete="off" hidden>
+      </div>
+      <div class="field" style="flex:2">
+        <label for="fBadge">متن لوگو (اختیاری)</label>
+        <input id="fBadge" maxlength="12" placeholder="مثلاً IRIB" autocomplete="off">
+      </div>
+      <div class="field" style="flex:1">
+        <label for="fColor">رنگ</label>
+        <input id="fColor" type="color" value="#1565c0">
+      </div>
+    </div>
+    <p class="err" id="fErr" hidden></p>
+    <div class="dlg-actions">
+      <button class="btn" id="fSave" type="submit">ذخیره</button>
+      <button class="btn ghost" type="button" data-close>بستن</button>
+      <span class="spacer"></span>
+      <button class="btn danger" type="button" id="fDelete" hidden>حذف شبکه</button>
+      <button class="btn danger" type="button" id="fHide" hidden>پنهان کردن</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="menuDlg" aria-labelledby="menuTitle">
+  <div class="dlg-body">
+    <h3 id="menuTitle">⚙ تنظیمات</h3>
+    <div class="menu-list">
+      <button class="btn ghost" type="button" id="mAdd">＋ افزودن شبکه‌ی جدید</button>
+      <button class="btn ghost" type="button" id="mExport">⬇ پشتیبان‌گیری (شبکه‌های خودم، ترتیب و علاقه‌مندی‌ها)</button>
+      <button class="btn ghost" type="button" id="mImport">⬆ بازگردانی از فایل پشتیبان</button>
+      <button class="btn ghost" type="button" id="mUnhide">↺ برگردوندن شبکه‌های پنهان‌شده <b id="mHiddenCount"></b></button>
+      <button class="btn ghost" type="button" id="mResetOrder">↺ برگردوندن ترتیب پیش‌فرض شبکه‌ها</button>
+    </div>
+    <h4>زیرنویس فارسی (آزمایشی)</h4>
+    <p class="hint">برای شبکه‌هایی که خودشون زیرنویس انگلیسی دارن، متن به فارسی ترجمه و روی تصویر نشون داده می‌شه. ترجمه با یه سرویس هوش مصنوعی و کلید API خودت انجام می‌شه؛ کلید فقط توی همین مرورگر می‌مونه و جز به همون سرویس جایی فرستاده نمی‌شه.</p>
+    <div class="field" style="margin-top:.7rem">
+      <label for="subProv">سرویس‌دهنده</label>
+      <select id="subProv"></select>
+    </div>
+    <div class="field">
+      <label for="subKey" id="subKeyLabel">کلید API</label>
+      <input id="subKey" class="ltr" type="password" placeholder="aa-..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="subModel">اسم مدل</label>
+      <input id="subModel" class="ltr" list="subModels" autocomplete="off" spellcheck="false">
+      <datalist id="subModels"></datalist>
+    </div>
+    <div class="field">
+      <label for="subMode">حالت زیرنویس (موقع پخش با کلید <kbd>C</kbd> هم عوض می‌شه)</label>
+      <select id="subMode">
+        <option value="off">خاموش</option>
+        <option value="en">انگلیسی · رایگان (از خود شبکه)</option>
+        <option value="fa">فارسی · با ترجمه (هزینه دارد)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="subCap">سقف مصرف روزانه‌ی ترجمه</label>
+      <select id="subCap">
+        <option value="30000">۳۰ هزار توکن (حدود یک سوم فیلم)</option>
+        <option value="60000">۶۰ هزار توکن</option>
+        <option value="100000">۱۰۰ هزار توکن (حدود یک فیلم)</option>
+        <option value="200000">۲۰۰ هزار توکن</option>
+        <option value="500000">۵۰۰ هزار توکن</option>
+        <option value="0">بدون سقف</option>
+      </select>
+    </div>
+    <label class="chk"><input type="checkbox" id="subBoth"> زیرنویس انگلیسی هم زیر فارسی نشون داده بشه</label>
+    <div class="menu-list">
+      <button class="btn ghost" type="button" id="subTest">✓ آزمایش کلید</button>
+      <button class="btn ghost" type="button" id="subClear">✕ پاک کردن کلید از این مرورگر</button>
+    </div>
+    <p class="hint" id="subStatus"></p>
+    <div class="menu-list">
+      <button class="btn ghost" type="button" id="subDiag">🛠 گزارش عیب‌یابی زیرنویس (موقع پخش یه شبکه بزن)</button>
+    </div>
+    <textarea id="subDiagOut" class="ltr" rows="9" readonly hidden style="width:100%;margin-top:.5rem;background:#111;color:#ddd;border:1px solid #444;border-radius:.4rem;padding:.5rem;font-size:.75rem"></textarea>
+    <h4>تایمر خواب</h4>
+    <div class="field">
+      <label for="sleepSel">بعد از این مدت پخش خودکار خاموش بشه</label>
+      <select id="sleepSel">
+        <option value="0">خاموش</option>
+        <option value="15">۱۵ دقیقه</option>
+        <option value="30">۳۰ دقیقه</option>
+        <option value="60">یک ساعت</option>
+        <option value="90">یک ساعت و نیم</option>
+        <option value="120">دو ساعت</option>
+      </select>
+      <p class="hint" id="sleepStatus"></p>
+    </div>
+    <div id="mCats" hidden>
+      <h4>گروه‌های من</h4>
+      <ul class="catlist" id="mCatList"></ul>
+    </div>
+    <p class="hint">ترتیب، علاقه‌مندی‌ها و شبکه‌هایی که خودت اضافه می‌کنی فقط توی همین مرورگر ذخیره می‌شن؛ اگه داده‌ی سایت یا تاریخچه‌ی مرورگر پاک بشه، یا یه مرورگر دیگه باز کنی، فایلت رو یه بار دیگه «بازگردانی» کن. هر چند وقت یک بار هم پشتیبان بگیر.</p>
+    <h4>کلیدهای میان‌بر</h4>
+    <ul class="keylist">
+      <li><kbd>↑</kbd> <kbd>↓</kbd> انتخاب شبکه · <kbd>Enter</kbd> پخش · <kbd>PgUp</kbd> <kbd>PgDn</kbd> صفحه‌ی بعد و قبل</li>
+      <li><kbd>←</kbd> <kbd>→</kbd> عوض کردن دسته · عدد + <kbd>Enter</kbd> پخش مستقیم همون شماره</li>
+      <li><kbd>R</kbd> فیلتر (سالم/داخلی/VPN) · <kbd>G</kbd> علاقه‌مندی‌ها · <kbd>Y</kbd> مرتب‌سازی A-Z · <kbd>B</kbd> حالت ویرایش · <kbd>F</kbd> ستاره</li>
+      <li>در حالت ویرایش: کشیدن با موس یا <kbd>Shift</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> برای جابه‌جایی</li>
+      <li>موقع پخش: <kbd>↑</kbd> <kbd>↓</kbd> کانال بعدی/قبلی · <kbd>F</kbd> تمام‌صفحه · <kbd>M</kbd> بی‌صدا · <kbd>Esc</kbd> برگشت</li>
+    </ul>
+    <div class="dlg-actions"><button class="btn" type="button" data-close>بستن</button></div>
+  </div>
+</dialog>
+
+<dialog id="warnDlg" aria-labelledby="warnTitle">
+  <div class="dlg-body">
+    <h3 id="warnTitle">⚠️ <span id="warnName"></span></h3>
+    <p id="warnText"></p>
+    <label class="check"><input type="checkbox" id="warnSkip"> تا وقتی این صفحه بازه دیگه نپرس</label>
+    <div class="dlg-actions">
+      <button class="btn" type="button" id="warnOpen">باز هم باز کن</button>
+      <button class="btn ghost" type="button" data-close>انصراف</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="pwDlg" aria-labelledby="pwTitle">
+  <form id="pwForm" class="dlg-body" novalidate>
+    <h3 id="pwTitle">🔒 این فایل رمز داره</h3>
+    <div class="field">
+      <label for="pwInput">رمز فایل</label>
+      <input id="pwInput" type="password" autocomplete="off" dir="ltr">
+    </div>
+    <p class="err" id="pwErr" hidden>رمز درست نیست.</p>
+    <div class="dlg-actions">
+      <button class="btn" type="submit">باز کن</button>
+      <button class="btn ghost" type="button" data-close>انصراف</button>
+    </div>
+  </form>
+</dialog>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script src="channels.js?v=87"></script>
+<script>
+(() => {
+'use strict';
+
+/* ---------- ابزارهای کوچک ---------- */
+const $ = id => document.getElementById(id);
+const FA = '۰۱۲۳۴۵۶۷۸۹';
+const fa = v => String(v).replace(/\d/g, d => FA[d]);
+const toLatin = s => String(s).replace(/[۰-۹]/g, d => FA.indexOf(d)).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+const pad4 = n => String(n).padStart(4, '0');
+const pad2 = n => String(n).padStart(2, '0');
+const timeStr = d => pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const normText = s => String(s || '').toLowerCase().replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').replace(/[\s‌‏-]+/g, '');
+const isHex = c => /^#[0-9a-f]{6}$/i.test(c || '');
+const collator = new Intl.Collator('fa');
+
+function isHttpUrl(u){ try { return /^https?:$/.test(new URL(u).protocol); } catch { return false; } }
+function hostOf(u){ try { return new URL(u).hostname.toLowerCase().replace(/^www\./, ''); } catch { return ''; } }
+function normUrl(u){ return String(u || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/#.*$/, '').replace(/\/+$/, ''); }
+function fixUrl(v){ v = String(v || '').trim(); return v && !/^[a-z][a-z0-9+.-]*:/i.test(v) ? 'https://' + v : v; }
+const httpList = v => (Array.isArray(v) ? v : []).map(u => String(u || '').trim()).filter(isHttpUrl);
+// صفحه‌ی پارسا تی‌وی (نسخه‌ی موبایل) رو می‌شه داخل کادر نشون داد، پس شبکه از صفحه بیرون نمی‌ره
+// لینک‌هایی که خودت اضافه می‌کنی: یوتیوب، پارسا تی‌وی یا هر سایتی، داخل کادر باز می‌شه
+function siteEmbed(urls){
+  const u = urls[0];
+  if (!u) return '';
+  let m;
+  if ((m = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|live\/|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/))) return `https://www.youtube.com/embed/${m[1]}`;
+  if ((m = u.match(/youtube\.com\/channel\/(UC[\w-]{22})/))) return `https://www.youtube.com/embed/live_stream?channel=${m[1]}`;
+  if ((m = u.match(/youtube\.com\/.*[?&]list=([\w-]+)/))) return `https://www.youtube.com/embed/videoseries?list=${m[1]}`;
+  return parsaEmbed(urls) || u;
+}
+// صفحه‌ی زنده‌ی تلوبیون → لینک پخش مستقیمش
+const twbStream = u => { const m = u.match(/^https:\/\/(?:www\.)?telewebion\.com\/live\/([\w-]+)/); return m ? `https://ncdn.telewebion.ir/${m[1]}/live/playlist.m3u8` : ''; };
+const parsaEmbed = urls => { const u = urls.find(x => /^https:\/\/www\.parsatv\.com\/name=/.test(x)); return u ? u.replace('/name=', '/m/name=') : ''; };
+
+// سایت‌های داخلی بدون VPN باز می‌شن؛ بقیه به VPN نیاز دارن
+const DOMESTIC_HOSTS = ['telewebion.com', 'aparat.com', 'filimo.com'];
+function needsVpn(u){ const h = hostOf(u); return !(h.endsWith('.ir') || DOMESTIC_HOSTS.some(d => h === d || h.endsWith('.' + d))); }
+// لینک پخش مستقیم (HLS) که داخل خود صفحه پخش می‌شه
+const isStream = u => /\.m3u8(?:[?#]|$)/i.test(u);
+
+const store = {
+  get(k, fallback){ try { const v = localStorage.getItem(k); return v == null ? fallback : JSON.parse(v); } catch { return fallback; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* حالت خصوصی یا حافظه‌ی پر */ } },
+};
+const K = { custom: 'sat.custom.v1', fav: 'sat.fav.v1', hidden: 'sat.hidden.v1', view: 'sat.view.v2', order: 'sat.order.v5',
+  filter: 'sat.filter.v1', sort: 'sat.sort.v1', help: 'sat.help.v1', subOn: 'sat.subs.on.v1', subEn: 'sat.subs.en.v1', subProv: 'sat.subs.prov.v1', subKey: 'sat.subs.key.v2', subModel: 'sat.subs.model.v2', subBoth: 'sat.subs.both.v1', subUsage: 'sat.subs.usage.v1', subCap: 'sat.subs.cap.v1', subDay: 'sat.subs.day.v1', migrated: 'sat.migrated.v1', loadAvg: 'sat.load.avg.v1' };
+
+/* ---------- داده‌ها ---------- */
+const CATS = Array.isArray(window.SAT_CATEGORIES) && window.SAT_CATEGORIES.length ? window.SAT_CATEGORIES : [{ id: 'general', name: 'شبکه‌ها' }];
+const CAT = Object.fromEntries(CATS.map(c => [c.id, c]));
+const FALLBACK_CAT = CAT.general ? 'general' : CATS[0].id;
+// گروه‌هایی که خود کاربر می‌سازه؛ آخر فهرست دسته‌ها اضافه می‌شن
+const CUSTOM_CATS_KEY = 'sat.cats.v1';
+const BUILTIN_CAT_IDS = new Set(CATS.map(c => c.id));
+let customCats = [];
+function addCustomCat(c){
+  if (!c || typeof c.id !== 'string' || !/^[\w-]{1,40}$/.test(c.id) || CAT[c.id]) return false;
+  const name = String(c.name || '').trim().slice(0, 30);
+  if (!name) return false;
+  const cat = { id: c.id, name, custom: true };
+  CATS.push(cat);
+  CAT[cat.id] = cat;
+  customCats.push(cat);
+  return true;
+}
+function saveCustomCats(){ store.set(CUSTOM_CATS_KEY, customCats.map(c => ({ id: c.id, name: c.name }))); }
+for (const c of store.get(CUSTOM_CATS_KEY, [])) addCustomCat(c);
+const BUILTIN = (Array.isArray(window.SAT_CHANNELS) ? window.SAT_CHANNELS : [])
+  .filter(c => c && c.id && c.name && (httpList(c.urls).length || httpList(c.streams).length))
+  .map(c => ({ ...c, urls: httpList(c.urls), streams: httpList(c.streams), embed: httpList([c.embed])[0] || parsaEmbed(httpList(c.urls)), cat: CAT[c.cat] ? c.cat : FALLBACK_CAT, builtin: true }));
+const BUILTIN_IDS = new Set(BUILTIN.map(c => c.id));
+
+const PALETTE = ['#1565c0', '#6a1b9a', '#00796b', '#c62828', '#e65100', '#2e7d32', '#ad1457', '#37474f', '#4527a0', '#00838f'];
+function autoColor(s){ let h = 0; for (const ch of String(s)) h = (h * 31 + ch.codePointAt(0)) >>> 0; return PALETTE[h % PALETTE.length]; }
+function inkFor(hex){
+  const n = parseInt(hex.slice(1), 16);
+  const lum = (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
+  return lum > 0.6 ? '#111' : '#fff';
+}
+function badgeOf(c){
+  if (c.badge) return c.badge;
+  const name = String(c.name).trim();
+  return [...name].length <= 7 ? name : name.split(/\s+/)[0].slice(0, 8);
+}
+function logoHTML(c){
+  const color = isHex(c.color) ? c.color : autoColor(c.name);
+  return `<span class="rlogo" style="--c:${color};--t:${inkFor(color)}">${esc(badgeOf(c))}</span>`;
+}
+
+/* شبکه‌های خودِ کاربر: فقط در همین مرورگر ذخیره می‌شن */
+function newId(){ return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function cleanChannel(raw){
+  if (!raw || typeof raw !== 'object') return null;
+  const name = String(raw.name || '').trim().slice(0, 60);
+  const all = [...httpList(Array.isArray(raw.urls) ? raw.urls : [raw.url]), ...httpList(raw.streams)];
+  const urls = all.filter(u => !isStream(u)).slice(0, 3);
+  const streams = [...all.filter(isStream), ...urls.map(twbStream).filter(Boolean)].slice(0, 3);
+  if (!name || !(urls.length || streams.length)) return null;
+  return {
+    id: typeof raw.id === 'string' && /^[\w-]{1,40}$/.test(raw.id) ? raw.id : newId(),
+    name, urls, streams,
+    // popup: سایتش توی پنجره‌ی جدا روی کادر باز می‌شه، نه iframe (برای فایل پشتیبان/بازگردانی هم نگه داشته می‌شه)
+    // embed: اگه فایل پشتیبان خودش embed داره (حتی خالی) همون می‌مونه، وگرنه از لینک ساخته می‌شه
+    embed: raw.popup === true ? '' : typeof raw.embed === 'string' ? (httpList([raw.embed])[0] || '') : siteEmbed(urls),
+    ...(raw.popup === true ? { popup: true } : {}),
+    cat: CAT[raw.cat] ? raw.cat : FALLBACK_CAT,
+    badge: String(raw.badge || '').trim().slice(0, 16),
+    color: isHex(raw.color) ? raw.color : '',
+    ...(raw.fa ? { fa: String(raw.fa).trim().slice(0, 60) } : {}),
+    ...(raw.subs === true ? { subs: true } : {}),
+    // locked: از فایل رمزدار اومده؛ لینک‌هاش توی ویرایشگر نشون داده نمی‌شه و توی پشتیبان‌گیری نمیاد
+    ...(raw.locked === true ? { locked: true } : {}),
+  };
+}
+
+let custom = [];
+{
+  const ids = new Set();
+  for (const raw of [].concat(store.get(K.custom, []) || [])) {
+    const c = cleanChannel(raw);
+    if (!c) continue;
+    if (ids.has(c.id) || BUILTIN_IDS.has(c.id)) c.id = newId();
+    ids.add(c.id);
+    custom.push(c);
+  }
+}
+const strArr = v => Array.isArray(v) ? v.filter(x => typeof x === 'string') : [];
+let favList = [...new Set(strArr(store.get(K.fav, [])))];   // ترتیب فهرست علاقه‌مندی‌ها مهمه
+const hidden = new Set(strArr(store.get(K.hidden, [])));
+let view = store.get(K.view, 'all');
+if (view !== 'all' && view !== 'fav' && !CAT[view]) view = 'all';
+// فیلتر دکمه‌ی قرمز موقتیه و با باز کردن دوباره‌ی صفحه برمی‌گرده روی «همه»
+let filter = 'all';
+let sortAZ = store.get(K.sort, false) === true;
+let editMode = false;
+
+const saveCustom = () => store.set(K.custom, custom);
+const saveFavs = () => store.set(K.fav, favList);
+const saveHidden = () => store.set(K.hidden, [...hidden]);
+
+// لینک‌های نسخه‌های قبلی صفحه که عمداً کنار گذاشته شدن (سریال‌ها و لینک‌های قدیمی یا تکراری)
+const LEGACY_DROPPED = new Set([
+  'https://www.youtube.com/watch?v=otooINZRTSQ',
+  'https://www.youtube.com/watch?v=e8UIOWQqej4',
+  'https://telewebion.com/product/0xc20be8f',
+  'https://telewebion.com/program/0x1b2a5df',
+  'https://telewebion.com/product/0xc20c9b9',
+  'https://telewebion.com/program/0x1b29476',
+  'https://www.filimo.com/m/sdp93',
+].map(normUrl));
+const LEGACY_CATS = { 'خبر': 'news', 'فیلم‌وسریال': 'movies', 'مستند': 'docs', 'موسیقی': 'music', 'ورزش': 'sports', 'ورزشی': 'sports' };
+
+// شبکه‌های تکراری (با لینک یکسان) و حذف‌شده‌ها رد می‌شن؛ تعداد اضافه‌شده‌ها برمی‌گرده
+function mergeCustom(list){
+  const known = new Set([...BUILTIN, ...custom].flatMap(c => [...c.urls, ...c.streams]).map(normUrl));
+  const ids = new Set(custom.map(c => c.id));
+  let added = 0;
+  for (const raw of list) {
+    const key = normUrl(raw && [...httpList(raw.streams), ...httpList(raw.urls), raw.url][0]);
+    // شبکه‌ای که شناسه‌ی خودش رو داره با شناسه مقایسه می‌شه (دو شبکه‌ی متفاوت گاهی یه لینک مشترک دارن)؛ فایل‌های قدیمی بی‌شناسه با لینک
+    const rid = raw && typeof raw.id === 'string' && /^[\w-]{1,40}$/.test(raw.id) ? raw.id : '';
+    if (!key || LEGACY_DROPPED.has(key) || (rid ? ids.has(rid) || BUILTIN_IDS.has(rid) : known.has(key))) continue;
+    const c = cleanChannel(raw);
+    if (!c) continue;
+    if (ids.has(c.id) || BUILTIN_IDS.has(c.id)) c.id = newId();
+    custom.push(c);
+    ids.add(c.id);
+    known.add(key);
+    added++;
+  }
+  return added;
+}
+function fromLegacy(list){
+  return (Array.isArray(list) ? list : [])
+    .filter(Boolean)
+    .map(o => ({ name: o.name, urls: [o.url], cat: LEGACY_CATS[o.category] || FALLBACK_CAT }));
+}
+// یک بار: شبکه‌هایی که در نسخه‌ی اول صفحه دستی اضافه شده بودن منتقل می‌شن
+if (!store.get(K.migrated, false)) {
+  for (const k of ['channels.v2.list', 'channels.v1.list']) mergeCustom(fromLegacy(store.get(k, [])));
+  saveCustom();
+  store.set(K.migrated, true);
+}
+
+/* ترتیب کلی شبکه‌ها (و در نتیجه شماره‌شون) با کشیدن عوض می‌شه */
+let order = [];
+function syncOrder(){
+  const all = [...BUILTIN, ...custom].map(c => c.id), exists = new Set(all);
+  const seen = new Set();
+  order = strArr(store.get(K.order, [])).filter(id => exists.has(id) && !seen.has(id) && seen.add(id));
+  for (const id of all) if (!seen.has(id)) { order.push(id); seen.add(id); }
+}
+const saveOrder = () => store.set(K.order, order);
+syncOrder();
+
+const byId = id => BUILTIN.find(c => c.id === id) || custom.find(c => c.id === id) || null;
+// همه‌ی شبکه‌های پیدا، به ترتیب کاربر، با شماره
+function numbered(){
+  const list = [];
+  for (const id of order) {
+    if (hidden.has(id)) continue;
+    const c = byId(id);
+    if (c) list.push({ ...c, num: list.length + 1 });
+  }
+  return list;
+}
+if (view !== 'all' && view !== 'fav' && !CAT[view]) view = 'all';
+if (!['all', 'ok', 'ir', 'vpn'].includes(filter)) filter = 'all';
+
+/* ---------- عناصر صفحه ---------- */
+const listEl = $('list'), searchEl = $('search'), infoEl = $('info'), panel = $('panel');
+const numEl = $('numEntry'), toastEl = $('toast');
+const sigBtn = $('signal'), sigText = $('sigText');
+const signalDlg = $('signalDlg'), editDlg = $('editDlg'), menuDlg = $('menuDlg'), warnDlg = $('warnDlg');
+const editForm = $('editForm'), fName = $('fName'), fUrl = $('fUrl'), fUrl2 = $('fUrl2'), fCat = $('fCat'), fBadge = $('fBadge'), fColor = $('fColor'), fErr = $('fErr');
+const importFile = $('importFile');
+
+// ترتیب دسته‌ها: «همه» و «علاقه‌مندی‌ها» در ابتدا، و سپس دسته‌ها به ترتیب استاندارد (خبری در صدر)
+// دسته‌ای که هیچ شبکه‌ای نداره (مثلاً شبکه‌هاش هنوز از فایل وارد نشدن) توی منو نمیاد؛ گروه‌های خود کاربر همیشه هستن
+const VIEWS = () => { const used = new Set([...BUILTIN, ...custom].map(c => c.cat)); return ['all', 'fav', ...CATS.filter(c => c.custom || used.has(c.id)).map(c => c.id)]; };
+if (!VIEWS().includes(view)) view = 'all';
+const viewName = v => v === 'all' ? 'همه‌ی شبکه‌ها' : v === 'fav' ? '★ علاقه‌مندی‌ها' : CAT[v] ? CAT[v].name : '';
+const FILTERS = { all: 'همه', ok: 'فقط سالم‌ها', ir: 'داخلی', vpn: 'VPN' };
+const primaryUrl = c => c.streams[0] || c.embed || c.urls[0];
+// داخل خود صفحه پخش می‌شه (لینک مستقیم یا یوتیوب)، نه با باز کردن سایت
+const inPage = c => c.streams.length > 0 || !!c.embed;
+const isYT = u => /youtube\.com|youtu\.be/.test(u || '');
+
+let shown = [];       // شبکه‌هایی که الان در فهرست دیده می‌شن
+let selId = null;
+
+function currentList(){
+  const q = normText(toLatin(searchEl.value.trim()));
+  const all = numbered();
+  let list;
+  if (q) {
+    list = all.filter(c => String(c.num) === q || normText(c.name + ' ' + (c.fa || '') + ' ' + (c.badge || '') + ' ' + (CAT[c.cat] ? CAT[c.cat].name : '')).includes(q));
+  } else if (view === 'fav') {
+    const map = new Map(all.map(c => [c.id, c]));
+    list = favList.map(id => map.get(id)).filter(Boolean);
+  } else {
+    list = view === 'all' ? all : all.filter(c => c.cat === view);
+  }
+  // جستجو همیشه توی همه‌ی شبکه‌ها می‌گرده، فیلتر قرمز روش اثر نداره
+  if (q) {}
+  else if (filter === 'ok') list = list.filter(c => { const st = healthOf(c); return st === 'live' || st === 'ok' || st === 'embed' || (st === 'cors' && nativeHls); });
+  else if (filter === 'ir') list = list.filter(c => !needsVpn(primaryUrl(c)));
+  else if (filter === 'vpn') list = list.filter(c => needsVpn(primaryUrl(c)));
+  if (sortAZ) list = [...list].sort((a, b) => collator.compare(a.name, b.name));
+  return list;
+}
+
+const ST_TEXT = { live: 'سالم؛ قبلاً توی همین مرورگر پخش شده', ok: 'احتمالاً سالم؛ بررسی شده ولی هنوز امتحانش نکردی', codec: 'فرمت تصویرش با این مرورگر پخش نمی‌شه', cors: 'سرورش فقط توی Safari پخش رو اجازه می‌ده', bad: 'الان جواب نمی‌ده', unk: 'هنوز بررسی نشده', embed: 'داخل صفحه پخش می‌شه (یوتیوب یا سایت پخش)', site: 'فقط سایت شبکه باز می‌شه' };
+// شبکه‌هایی که زیرنویس دارن: فهرست ثابت (subs توی channels.js) + چیزی که موقع پخش خودمون دیدیم
+const subsSeen = store.get('sat.hassubs.v1', {}) || {};
+const hasSubs = c => !!(c.subs || subsSeen[c.id]);
+function rowHTML(c){
+  const vpn = needsVpn(primaryUrl(c)), fav = favList.includes(c.id), st = healthOf(c);
+  return `<div class="row${c.id === selId ? ' sel' : ''}${vpn ? ' need-vpn' : ''}${st === 'bad' || st === 'codec' ? ' st-row-bad' : ''}" role="option" aria-selected="${c.id === selId}" data-id="${esc(c.id)}"${editMode ? ' draggable="true"' : ''}>
+    <span class="grip" aria-hidden="true">☰</span>
+    <span class="rnum">${pad4(c.num)}</span>
+    <span class="rname">${esc(c.name)}</span>
+    <span class="rtags">
+      ${hasSubs(c) ? '<span class="rcc" title="زیرنویس انگلیسی داره؛ زیرنویس فارسی هم می‌شه روش روشن کرد">CC</span>' : ''}
+      <i class="st st-${st}" title="${ST_TEXT[st]}"></i>
+      <button class="rfav${fav ? ' on' : ''}" type="button" data-act="fav" tabindex="-1" aria-pressed="${fav}" title="${fav ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}">${fav ? '★' : '☆'}</button>
+    </span>
+  </div>`;
+}
+
+function render(){
+  shown = currentList();
+  // اگه شبکه‌ی انتخاب‌شده توی فهرست جدید نیست، نوار زرد می‌ره روی شبکه‌ای که داره پخش می‌شه (یا اولی)؛ این فقط انتخابه و چیزی پخش نمی‌کنه
+  if (!shown.some(c => c.id === selId)) selId = playing && shown.some(c => c.id === playing.id) ? playing.id : shown.length ? shown[0].id : null;
+  const q = searchEl.value.trim();
+  const filtered = filter !== 'all' && !q;
+  $('catTitle').innerHTML = `${esc(q ? `جستجو: «${q}»` : viewName(view))}<span class="caret" aria-hidden="true">▼</span><small>${fa(shown.length)} شبکه</small>`
+    + (filtered ? `<button class="fchip" type="button" id="fClear" title="برداشتن فیلتر (کلید R)">فیلتر: ${esc(FILTERS[filter])} ✕</button>` : '');
+  $('kRed').classList.toggle('on', filtered);
+  $('kRedText').textContent = filter === 'all' ? 'سالم/داخلی/VPN' : FILTERS[filter];
+  $('kRed').classList.toggle('on', filter !== 'all');
+  $('kGreen').classList.toggle('on', view === 'fav');
+  $('kYellow').classList.toggle('on', sortAZ);
+  $('kBlue').classList.toggle('on', editMode);
+  $('kBlueText').textContent = editMode ? 'پایان ویرایش' : 'ویرایش';
+  panel.classList.toggle('editing', editMode);
+  if (!shown.length) {
+    const msg = !BUILTIN.length && !custom.length ? 'فهرست شبکه‌ها بارگذاری نشد (فایل channels.js).'
+      : q ? 'شبکه‌ای پیدا نشد.'
+      : view === 'fav' && !favList.length ? 'هنوز علاقه‌مندی نداری؛ روی ☆ کنار هر شبکه بزن یا کلید F رو فشار بده.'
+      : 'با این فیلتر شبکه‌ای نیست.';
+    listEl.innerHTML = `<p class="empty">${msg}</p>`;
+  } else {
+    listEl.innerHTML = shown.map(rowHTML).join('');
+  }
+  renderInfo();
+}
+function scrollToSel(){
+  const el = selId && listEl.querySelector(`.row[data-id="${CSS.escape(selId)}"]`);
+  if (el) el.scrollIntoView({ block: 'nearest' });
+}
+function select(id, noScroll){
+  if (!id || id === selId) return;
+  const prev = listEl.querySelector('.row.sel');
+  if (prev) { prev.classList.remove('sel'); prev.setAttribute('aria-selected', 'false'); }
+  selId = id;
+  const el = listEl.querySelector(`.row[data-id="${CSS.escape(id)}"]`);
+  if (el) { el.classList.add('sel'); el.setAttribute('aria-selected', 'true'); if (!noScroll) el.scrollIntoView({ block: 'nearest' }); }
+  renderInfo();
+}
+function moveSel(step){
+  if (!shown.length) return;
+  const i = shown.findIndex(c => c.id === selId);
+  select(shown[Math.max(0, Math.min(shown.length - 1, (i < 0 ? 0 : i) + step))].id);
+}
+
+function pageSize(){
+  const row = listEl.querySelector('.row');
+  const h = row ? row.getBoundingClientRect().height : 0;
+  if (h > 0 && listEl.clientHeight > 0) {
+    return Math.max(1, Math.round(listEl.clientHeight / h));
+  }
+  return 11;
+}
+
+function pageChannels(dir){
+  if (catMenuOpen()) closeCatMenu();
+  if (!shown.length) return;
+  const count = pageSize();
+  const rows = listEl.querySelectorAll('.row');
+  const listRect = listEl.getBoundingClientRect();
+
+  // پیدا کردن ایندکس اولین سطری که بالای فهرست قابل مشاهده‌ست
+  let topIdx = 0;
+  if (rows.length) {
+    for (let idx = 0; idx < rows.length; idx++) {
+      if (rows[idx].getBoundingClientRect().bottom > listRect.top + 8) {
+        topIdx = idx;
+        break;
+      }
+    }
+  } else {
+    const cur = shown.findIndex(c => c.id === selId);
+    topIdx = cur >= 0 ? cur : 0;
+  }
+
+  // اگر سطر انتخاب‌شده فعلی در دید هست، مبنای ورق زدن از اون سطر شروع می‌شه تا کلیک‌های پیاپی دقیق باشن
+  const curSelIdx = shown.findIndex(c => c.id === selId);
+  const curSelRow = curSelIdx >= 0 && listEl.querySelector(`.row[data-id="${CSS.escape(selId)}"]`);
+  let baseIdx = topIdx;
+  if (curSelRow) {
+    const r = curSelRow.getBoundingClientRect();
+    if (r.top >= listRect.top - 12 && r.bottom <= listRect.bottom + 12) {
+      baseIdx = curSelIdx;
+    }
+  }
+
+  let targetIdx;
+  if (dir > 0) {
+    targetIdx = Math.min(shown.length - 1, baseIdx + count);
+  } else {
+    targetIdx = Math.max(0, baseIdx - count);
+  }
+
+  const target = shown[targetIdx];
+  if (!target) return;
+  select(target.id, true);
+
+  const targetEl = listEl.querySelector(`.row[data-id="${CSS.escape(target.id)}"]`);
+  const smooth = !window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const behavior = smooth ? 'smooth' : 'auto';
+
+  if (targetEl) {
+    if (targetIdx === 0) {
+      listEl.scrollTo({ top: 0, behavior });
+    } else if (targetIdx === shown.length - 1 && dir > 0) {
+      listEl.scrollTo({ top: listEl.scrollHeight, behavior });
+    } else {
+      const targetScrollTop = listEl.scrollTop + (targetEl.getBoundingClientRect().top - listRect.top);
+      listEl.scrollTo({ top: Math.max(0, targetScrollTop), behavior });
+    }
+  }
+}
+
+function renderInfo(){
+  const c = shown.find(x => x.id === selId);
+  if (!c) { infoEl.innerHTML = editMode ? editHelpHTML(null) : ''; return; }
+  const url = primaryUrl(c), vpn = needsVpn(url), warn = vpnWarning(url), st = healthOf(c);
+  const how = c.streams.length ? (c.streams.length > 1 ? `${fa(c.streams.length)} منبع پخش` : 'پخش مستقیم')
+    : c.embed ? (isYT(c.embed) ? 'پخش از یوتیوب' : `پخش از ${esc(hostOf(c.embed))} داخل صفحه (روی پخش بزن)`) : `سایت ${esc(hostOf(url))} (اونجا باید روی پخش بزنی)`;
+  infoEl.innerHTML = `
+    <div class="irow"><span class="iname">${esc(c.name)}</span><span class="iname" dir="rtl">${esc(c.fa || '')}</span></div>
+    <div class="irow imeta"><span dir="ltr">CH ${pad4(c.num)}</span><span dir="rtl">${esc(CAT[c.cat] ? CAT[c.cat].name : '')} · ${how} · ${vpn ? 'VPN' : 'داخلی'}</span></div>
+    <div class="ist"><i class="st st-${st}" style="display:inline-block;vertical-align:middle"></i> ${ST_TEXT[st]}${st === 'cors' && !nativeHls ? ' — این صفحه رو توی Safari باز کن.' : ''}</div>
+    ${warn ? `<div class="iwarn">⚠️ ${esc(warn)}</div>` : ''}
+    ${editMode ? editHelpHTML(c) : ''}`;
+}
+function editHelpHTML(c){
+  const total = (view === 'fav' && !searchEl.value.trim() ? favList : numbered()).length;
+  return `<div class="iedit">
+    <button class="btn" type="button" data-iact="add">＋ افزودن شبکه</button>
+    ${c ? `
+    <button class="btn ghost" type="button" data-iact="top" title="انتقال به ابتدای فهرست (Shift+Home)">⏫ اول</button>
+    <button class="btn ghost" type="button" data-iact="up" title="یک ردیف بالاتر (Shift+↑)">▲ بالا</button>
+    <button class="btn ghost" type="button" data-iact="down" title="یک ردیف پایین‌تر (Shift+↓)">▼ پایین</button>
+    <button class="btn ghost" type="button" data-iact="bottom" title="انتقال به انتهای فهرست (Shift+End)">⏬ آخر</button>
+    <span class="move-box">
+      <label for="moveToNum" class="move-lbl">ردیف:</label>
+      <input type="number" id="moveToNum" class="move-input" min="1" max="${total}" placeholder="${c.num || ''}" value="" title="شماره ردیف مقصد">
+      <button class="btn ghost" type="button" data-iact="goto">برو</button>
+    </span>
+    <button class="btn ghost" type="button" data-iact="edit">✎ ${c.builtin ? 'مشخصات / پنهان کردن' : 'ویرایش / حذف'}</button>` : ''}
+    <span class="hint">برای جابه‌جایی: شماره ردیف مقصد رو بنویس و «برو» رو بزن، یا از دکمه‌های «اول / بالا / پایین / آخر» استفاده کن.</span>
+  </div>`;
+}
+
+function setView(v){
+  view = v;
+  if (playing) selId = playing.id;
+  store.set(K.view, v);
+  searchEl.value = '';
+  render();
+  listEl.scrollTop = 0;
+  scrollToSel();
+}
+function stepView(step){
+  const ids = VIEWS();
+  setView(ids[(ids.indexOf(view) + step + ids.length) % ids.length]);
+}
+
+function toggleFav(id){
+  if (favList.includes(id)) favList = favList.filter(x => x !== id);
+  else favList.push(id);
+  saveFavs();
+  const c = byId(id);
+  toast(favList.includes(id) ? `★ «${c.name}» به علاقه‌مندی‌ها اضافه شد` : `«${c.name}» از علاقه‌مندی‌ها برداشته شد`);
+  render();
+}
+
+/* جابه‌جایی: در فهرست علاقه‌مندی‌ها ترتیب همون فهرست، وگرنه ترتیب کلی عوض می‌شه */
+function moveChannel(id, targetId, after){
+  if (id === targetId) return;
+  const arr = view === 'fav' && !searchEl.value.trim() ? favList : order;
+  const from = arr.indexOf(id);
+  if (from < 0 || arr.indexOf(targetId) < 0) return;
+  arr.splice(from, 1);
+  arr.splice(arr.indexOf(targetId) + (after ? 1 : 0), 0, id);
+  if (arr === favList) saveFavs(); else saveOrder();
+  render();
+}
+function canReorder(){
+  if (sortAZ) { toast('برای جابه‌جا کردن، اول مرتب‌سازی A-Z (دکمه‌ی زرد) رو خاموش کن.'); return false; }
+  return true;
+}
+function nudge(step){
+  if (!selId || !canReorder()) return;
+  const i = shown.findIndex(c => c.id === selId), target = shown[i + step];
+  if (target) moveChannel(selId, target.id, step > 0);
+}
+function moveChannelToPos(id, targetNum){
+  if (!canReorder() || !id) return;
+  const num = parseInt(targetNum, 10);
+  if (!num || isNaN(num) || num < 1) {
+    toast('شماره ردیف معتبر نیست.');
+    return;
+  }
+  const isFav = view === 'fav' && !searchEl.value.trim();
+  const arr = isFav ? favList : order;
+  const from = arr.indexOf(id);
+  if (from < 0) return;
+
+  if (isFav) {
+    const targetIdx = Math.max(0, Math.min(arr.length - 1, num - 1));
+    if (from === targetIdx) return;
+    arr.splice(from, 1);
+    arr.splice(targetIdx, 0, id);
+    saveFavs();
+  } else {
+    const vis = numbered().filter(c => c.id !== id);
+    if (!vis.length) return;
+    const targetIdx = Math.max(0, Math.min(vis.length, num - 1));
+    arr.splice(from, 1);
+    if (targetIdx === 0) {
+      const firstVisIdx = arr.indexOf(vis[0].id);
+      arr.splice(firstVisIdx >= 0 ? firstVisIdx : 0, 0, id);
+    } else if (targetIdx >= vis.length) {
+      const lastVisIdx = arr.indexOf(vis[vis.length - 1].id);
+      arr.splice(lastVisIdx >= 0 ? lastVisIdx + 1 : arr.length, 0, id);
+    } else {
+      const refIdx = arr.indexOf(vis[targetIdx].id);
+      arr.splice(refIdx >= 0 ? refIdx : targetIdx, 0, id);
+    }
+    saveOrder();
+  }
+  selId = id;
+  render();
+  scrollToSel();
+  const finalCh = numbered().find(c => c.id === id);
+  const finalNum = isFav ? (favList.indexOf(id) + 1) : (finalCh ? finalCh.num : num);
+  toast(`«${byId(id).name}» به ردیف ${fa(finalNum)} منتقل شد.`);
+}
+
+let toastTimer;
+function toast(msg){
+  $('toastText').textContent = msg;
+  toastEl.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastEl.hidden = true; }, 3500);
+}
+
+/* ---------- تشخیص VPN ----------
+   چند سایت فیلترشده صدا زده می‌شن؛ اگه جواب بدن یعنی VPN وصله.
+   گوگل و تلوبیون هم برای «اینترنت بین‌الملل» و «سایت‌های داخلی» چک می‌شن. */
+const PROBES = {
+  blocked: ['https://www.youtube.com/favicon.ico', 'https://telegram.org/favicon.ico', 'https://www.bbc.com/favicon.ico'],
+  intl: 'https://www.google.com/favicon.ico',
+  domestic: 'https://telewebion.com/favicon.ico',
+};
+const signal = { state: 'checking', intl: null, domestic: null, okCount: 0, at: null, busy: false };
+const SIG_TEXT = { checking: 'در حال بررسی VPN…', vpn: 'VPN وصله', weak: 'VPN ضعیفه', novpn: 'VPN وصل نیست', intranet: 'اینترنت بین‌الملل قطعه', offline: 'اینترنت قطعه' };
+const ADVICE = {
+  checking: 'در حال بررسی اتصال…',
+  vpn: 'VPN وصله و شبکه‌های خارجی (برچسب VPN) باز می‌شن. شبکه‌های داخلی گاهی با VPN پخش نمی‌شن؛ اگه پخش نشدن، VPN رو خاموش کن.',
+  weak: 'VPN وصله ولی ضعیف یا ناپایداره؛ ممکنه بعضی شبکه‌ها باز نشن یا وسط پخش قطع بشن.',
+  novpn: 'VPN وصل نیست؛ فعلاً فقط شبکه‌های داخلی باز می‌شن. برای شبکه‌های خارجی، VPN رو روشن کن.',
+  intranet: 'به نظر می‌رسه اینترنت بین‌الملل قطعه و فقط سایت‌های داخلی باز می‌شن.',
+  offline: 'اینترنت وصل نیست؛ مودم یا اتصال شبکه رو چک کن.',
+};
+async function probe(url, ms = 7000){
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    // no-cors: فقط در دسترس بودن سرور مهمه، نه محتوای جواب
+    await fetch(url + '?_=' + Date.now(), { mode: 'no-cors', cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer', signal: ctrl.signal });
+    return true;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function checkSignal(){
+  if (signal.busy) return;
+  signal.busy = true;
+  let next;
+  if (!navigator.onLine) {
+    next = { state: 'offline', intl: false, domestic: false, okCount: 0 };
+  } else {
+    const [blocked, intl, domestic] = await Promise.all([Promise.all(PROBES.blocked.map(u => probe(u))), probe(PROBES.intl), probe(PROBES.domestic)]);
+    const okCount = blocked.filter(Boolean).length;
+    next = {
+      state: okCount >= 2 ? 'vpn' : okCount === 1 ? 'weak' : intl ? 'novpn' : domestic ? 'intranet' : 'offline',
+      intl: intl || okCount > 0, domestic, okCount,
+    };
+  }
+  Object.assign(signal, next, { at: new Date(), busy: false });
+  paintSignal();
+  scanAll(false);
+}
+function paintSignal(){
+  sigBtn.dataset.state = signal.state;
+  document.body.dataset.signal = signal.state;
+  // روی کپسول همیشه فقط «VPN» و رنگ چراغ؛ توضیح وضعیت توی راهنمای موس و پنجره‌ی جزئیاته
+  sigText.textContent = 'VPN';
+  sigBtn.title = SIG_TEXT[signal.state] + ' · برای جزئیات کلیک کن';
+  if (signalDlg.open) renderSignalDlg();
+  renderInfo();
+}
+const mark = v => v == null ? '<span class="hint">…</span>' : v ? '<span class="ok">✓</span>' : '<span class="bad">✕</span>';
+function renderSignalDlg(){
+  const s = signal;
+  const domesticNote = (s.state === 'vpn' || s.state === 'weak') && s.domestic === false ? ' <b>الان سایت‌های داخلی با این VPN باز نمی‌شن.</b>' : '';
+  $('sigBody').innerHTML = `
+    <p class="iname" data-state="${s.state}"><span class="dot" style="display:inline-block"></span> ${SIG_TEXT[s.state]}</p>
+    <ul class="checks">
+      <li>${mark(s.at ? s.okCount >= 2 : null)} سایت‌های فیلترشده (${fa(s.okCount)} از ${fa(PROBES.blocked.length)} باز شدن)</li>
+      <li>${mark(s.intl)} اینترنت بین‌الملل</li>
+      <li>${mark(s.domestic)} سایت‌های داخلی (تلوبیون)</li>
+    </ul>
+    <p class="verdict">${ADVICE[s.state]}${domesticNote}</p>
+    <p class="hint">${s.at ? 'آخرین بررسی: ساعت ' + fa(timeStr(s.at)) + ' · هر یک دقیقه خودکار تکرار می‌شه' : ''}</p>`;
+}
+let lastCheck = 0;
+function maybeCheck(minGap = 0){
+  if (document.visibilityState !== 'visible' || Date.now() - lastCheck < minGap) return;
+  lastCheck = Date.now();
+  checkSignal();
+}
+
+/* ---------- بررسی سلامت شبکه‌ها ----------
+   لینک‌های پخش مستقیم توی همین مرورگر و با همین اینترنت امتحان می‌شن (هر چند ساعت یک بار
+   و هر بار که VPN وصل یا قطع بشه): ok = پخش می‌شه، cors = سرورش فقط پخش توی Safari رو
+   اجازه می‌ده، bad = الان جواب نمی‌ده. لینکی که جواب داده اولِ پخش امتحان می‌شه. */
+const HEALTH_KEY = 'sat.health.v3';
+let health = store.get(HEALTH_KEY, null);
+if (!health || typeof health !== 'object' || !health.res || typeof health.res !== 'object') health = { at: 0, sig: '', res: {} };
+let scan = null;
+function healthOf(c){
+  if (!c.streams.length) return c.embed ? 'embed' : 'site';
+  const r = health.res[c.id];
+  return r && ['live', 'ok', 'cors', 'bad', 'codec'].includes(r.s) ? r.s : 'unk';
+}
+async function fetchText(url, ms = 8000){
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(url, { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer', signal: ctrl.signal });
+    return r.ok ? { url: r.url || url, text: await r.text() } : { err: 'http' };
+  } catch {
+    return { err: 'net' };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function fetchOk(url, mode, ms = 8000){
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    await fetch(url, { mode: 'no-cors', cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer', signal: ctrl.signal });
+    return true;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+// فقط جواب دادن فهرست پخش کافی نیست: تا اولین تکه‌ی تصویر هم می‌ریم که مطمئن بشیم واقعاً پخش می‌شه
+const firstUri = text => text.split(/\r?\n/).map(l => l.trim()).find(l => l && !l.startsWith('#'));
+function codecOk(list){
+  const type = `video/mp4; codecs="${list}"`;
+  if (nativeHls) return video.canPlayType(type) !== '';
+  return !!(window.MediaSource && MediaSource.isTypeSupported(type));
+}
+// جواب: true = سالم، 'net' = خطای شبکه یا CORS، false = سرور جواب بد داد
+async function deepCheck(url){
+  let m = await fetchText(url);
+  if (m.err) return m.err === 'net' ? 'net' : false;
+  if (!m.text.trimStart().startsWith('#EXTM3U')) return false;
+  if (/#EXT-X-STREAM-INF/.test(m.text)) {
+    // اگه هیچ کیفیتی با فرمتی که این مرورگر پخش می‌کنه نیست، از همین اول کنارش می‌ذاریم
+    const codecs = [...m.text.matchAll(/CODECS="([^"]+)"/g)].map(x => x[1]);
+    if (codecs.length && !codecs.some(codecOk)) return 'codec';
+    const v = firstUri(m.text);
+    if (!v) return false;
+    m = await fetchText(new URL(v, m.url).href);
+    if (m.err) return m.err === 'net' ? 'net' : false;
+    if (!m.text.trimStart().startsWith('#EXTM3U')) return false;
+  }
+  const seg = firstUri(m.text);
+  if (!seg) return false;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const r = await fetch(new URL(seg, m.url).href, { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer', headers: { Range: 'bytes=0-2047' }, signal: ctrl.signal });
+    return r.ok;
+  } catch {
+    return 'net';
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function checkChannel(c){
+  let reachable = false, codecFail = false;
+  for (let i = 0; i < c.streams.length; i++) {
+    const u = c.streams[i];
+    // سافاری خودش HLS پخش می‌کنه و محدودیت CORS براش مهم نیست
+    if (nativeHls) { if (await fetchOk(u, 'no-cors')) return { s: 'ok', i }; continue; }
+    const res = await deepCheck(u);
+    if (res === true) return { s: 'ok', i };
+    if (res === 'codec') { codecFail = true; continue; }
+    if (res === 'net' && !reachable && await fetchOk(u, 'no-cors', 6000)) reachable = true;
+  }
+  return { s: reachable ? 'cors' : codecFail ? 'codec' : 'bad', i: 0 };
+}
+async function scanAll(force){
+  if (scan || signal.state === 'checking') return;
+  const sigNow = signal.state === 'weak' ? 'vpn' : signal.state;
+  if (!force && health.sig === sigNow && Date.now() - health.at < 3 * 3600e3) return;
+  const list = [...BUILTIN, ...custom].filter(c => c.streams.length);
+  scan = { done: 0, total: list.length };
+  paintScan();
+  const res = {};
+  let k = 0;
+  const worker = async () => {
+    while (k < list.length) {
+      const c = list[k++];
+      const prev = health.res[c.id], got = await checkChannel(c);
+      // شبکه‌ای که قبلاً واقعاً پخش شده و الان هم جواب می‌ده، «سالم قطعی» می‌مونه
+      if (got.s === 'ok' && prev && prev.s === 'live') got.s = 'live';
+      res[c.id] = health.res[c.id] = got;
+      scan.done++;
+      if (scan.done % 8 === 0) { paintScan(); render(); }
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
+  health = { at: Date.now(), sig: sigNow, res };
+  store.set(HEALTH_KEY, health);
+  scan = null;
+  paintScan();
+  render();
+}
+function paintScan(){
+  const el = $('scanText');
+  if (scan) { el.textContent = `در حال بررسی شبکه‌ها… ${fa(scan.done)} از ${fa(scan.total)}`; return; }
+  const all = [...BUILTIN, ...custom].filter(c => c.streams.length && !hidden.has(c.id));
+  const ok = all.filter(c => ['ok', 'live'].includes(healthOf(c))).length, cors = all.filter(c => healthOf(c) === 'cors').length;
+  el.textContent = health.at ? `✓ ${fa(ok)} شبکه سالم${cors && !nativeHls ? ` · ${fa(cors)} فقط در Safari` : ''}` : '';
+}
+
+/* ---------- باز کردن و پخش ---------- */
+// سایت‌ها در یک تب ثابت باز می‌شن تا مثل عوض کردن کانال، قبلی جایگزین بشه
+const PLAYER_TAB = 'satellite-player';
+let skipWarn = false, pendingAction = null;
+
+function vpnWarning(url){
+  const s = signal.state, vpn = needsVpn(url);
+  if (s === 'offline') return 'اینترنت وصل نیست.';
+  if (vpn && (s === 'novpn' || s === 'intranet')) return 'VPN وصل نیست؛ این شبکه بدون VPN احتمالاً باز نمی‌شه.';
+  return '';
+}
+// اگه با وضعیت فعلی VPN احتمالاً باز نمی‌شه، اول هشدار می‌ده
+function guard(ch, url, action){
+  const warn = skipWarn ? '' : vpnWarning(url);
+  if (!warn) return action();
+  pendingAction = action;
+  $('warnName').textContent = ch.name;
+  $('warnText').textContent = warn;
+  $('warnSkip').checked = false;
+  warnDlg.showModal();
+  $('warnOpen').focus();
+}
+function openUrl(url){
+  const w = window.open(url, PLAYER_TAB);
+  if (w) { try { w.focus(); } catch { /* بعضی مرورگرها اجازه نمی‌دن */ } }
+  else toast('مرورگر جلوی باز شدن تب رو گرفت؛ برای این صفحه اجازه‌ی پاپ‌آپ بده.');
+}
+// شبکه‌های popup: سایت‌هایی که توی iframe باز نمی‌شن (صفحه‌شون خودش رو قایم می‌کنه)، پس یه پنجره‌ی جدا دقیقاً هم‌اندازه و هم‌جای کادر پیش‌نمایش
+const POPUP_WIN = 'satellite-popup';
+let popWin = null;
+function closePopup(){
+  try { if (popWin && !popWin.closed) popWin.close(); } catch { /* پنجره خودش بسته شده */ }
+  popWin = null;
+}
+function openPopup(url){
+  const r = previewBox.getBoundingClientRect();
+  // جای محتوای کادر روی صفحه‌ی نمایش = جای پنجره‌ی اصلی + نوار بالاش + جای کادر داخل صفحه
+  const x = Math.round(window.screenX + (window.outerWidth - window.innerWidth) / 2 + r.left);
+  const y = Math.round(window.screenY + (window.outerHeight - window.innerHeight) + r.top);
+  const w = Math.round(r.width), h = Math.round(r.height);
+  closePopup();
+  const win = window.open('', POPUP_WIN, `popup=yes,left=${x},top=${y},width=${w},height=${h}`);
+  if (!win) return toast('مرورگر جلوی باز شدن پنجره رو گرفت؛ برای این صفحه اجازه‌ی پاپ‌آپ بده.');
+  popWin = win;
+  // تا پنجره هنوز خالی و هم‌دامنه‌ست، کل پنجره (با نوار عنوانش) رو دقیقاً هم‌اندازه‌ی کادر می‌کنیم؛
+  // نوار عنوان نباید از کادر بیرون بزنه و دکمه‌های بالای صفحه رو بپوشونه. بعد از رفتن به سایت دیگه نمی‌شه جابه‌جاش کرد
+  setTimeout(() => {
+    try {
+      if (win.outerHeight !== win.innerHeight || win.outerWidth !== win.innerWidth) {
+        win.resizeTo(w, h);
+        win.moveTo(x, y);
+      }
+    } catch { /* بعضی مرورگرها (موبایل) اجازه‌ی جابه‌جایی نمی‌دن */ }
+    // «#sat-popup» به افزونه‌ی اختیاری خود کاربر (userscript) می‌گه این صفحه از برنامه باز شده تا فقط پخش‌کننده رو نشون بده
+    try { win.location.href = url + '#sat-popup'; win.focus(); } catch { /* پنجره بسته شد */ }
+  }, 120);
+}
+function openSite(ch){
+  const url = ch.urls[0];
+  if (!url) return toast('این شبکه سایت پخش نداره.');
+  if (ch.popup) return guard(ch, url, () => {
+    stopPlayback();
+    setNote(`«${ch.name}» توی پنجره‌ی جدا روی همین کادر باز شد.`);
+    openPopup(url);
+  });
+  guard(ch, url, () => openUrl(url));
+}
+// شبکه‌هایی که پخش مستقیم دارن داخل صفحه پخش می‌شن، بقیه سایتشون باز می‌شه
+// کلیک اول = پخش در پیش‌نمایش کنار فهرست، کلیک دوباره روی همون شبکه = تمام‌صفحه
+function startChannel(ch){
+  if (!inPage(ch)) return openSite(ch);
+  if (previewOn && !(mode === 'preview' && playing && playing.id === ch.id)) previewChannel(ch);
+  else goFull(ch);
+}
+
+/* ---------- زدن شماره‌ی شبکه مثل کنترل ماهواره ---------- */
+let numBuf = '', numTimer;
+function pushDigit(d){
+  numBuf = (numBuf.length >= 4 ? '' : numBuf) + d;
+  numEl.innerHTML = esc(numBuf) + '<span>_</span>';
+  numEl.hidden = false;
+  clearTimeout(numTimer);
+  numTimer = setTimeout(() => commitNumber('auto'), 1000);
+}
+function commitNumber(play){
+  clearTimeout(numTimer);
+  if (!numBuf) return;
+  const n = parseInt(numBuf, 10);
+  numBuf = '';
+  const ch = numbered().find(c => c.num === n);
+  if (!ch) {
+    numEl.innerHTML = `${esc(pad4(n))}<small>شبکه‌ای با این شماره نیست</small>`;
+    numTimer = setTimeout(() => { numEl.hidden = true; }, 1500);
+    return;
+  }
+  numEl.hidden = true;
+  if (mode === 'full') {
+    if (inPage(ch)) playChannel(ch);
+    else toast(`«${ch.name}» پخش مستقیم نداره.`);
+    return;
+  }
+  if (!shown.some(c => c.id === ch.id)) { filter = 'all'; setView('all'); }
+  select(ch.id);
+  if (play === 'auto') {
+    // شماره زدن یعنی «این شبکه رو بیار»؛ یه ثانیه بعد بدون کلیک پخش می‌شه
+    if (!inPage(ch)) return toast(`«${ch.name}» پخش مستقیم نداره؛ Enter بزن تا سایتش باز بشه.`);
+    if (playing && playing.id === ch.id && mode !== 'off') return;
+    if (previewOn) previewChannel(ch); else goFull(ch);
+  } else if (play) startChannel(ch);
+}
+function cancelNumber(){ clearTimeout(numTimer); numBuf = ''; numEl.hidden = true; }
+
+/* ---------- پخش‌کننده‌ی داخل صفحه (HLS) ----------
+   سافاری خودش HLS پخش می‌کنه؛ برای کروم کتابخونه‌ی hls.js فقط موقع نیاز بار می‌شه. */
+const player = $('player'), video = $('video'), pInfo = $('pInfo'), pMsg = $('pMsg');
+const nativeHls = !!video.canPlayType('application/vnd.apple.mpegurl');
+// Chrome نسخه‌های جدید خودش HLS پخش می‌کنه ولی زیرنویس‌ها رو به صفحه نمی‌ده؛ فقط Safari این کار رو می‌کنه
+const isSafariBrowser = /^((?!chrome|chromium|crios|android|edg).)*safari/i.test(navigator.userAgent);
+let subForceNative = false;   // اگه پخش با hls.js نشد، همون شبکه با پخش داخلی مرورگر امتحان می‌شه
+// شبکه‌ای که زیرنویس داره و زیرنویس روشنه توی Chrome با hls.js پخش می‌شه تا متن زیرنویس در دسترس باشه
+const subWantsHls = ch => !!(ch && nativeHls && !isSafariBrowser && !subForceNative && (SUB.on || SUB.en) && hasSubs(ch));
+let hls = null, hlsLoading = null, playing = null, zapList = [], streamIdx = 0, attempts = [], playToken = 0, stallTimer, idleTimer, weFullscreened = false;
+
+function loadHls(){
+  if (window.Hls) return Promise.resolve(window.Hls);
+  if (!hlsLoading) hlsLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'vendor/hls.min.js';
+    s.onload = () => resolve(window.Hls);
+    s.onerror = () => { hlsLoading = null; reject(new Error('hls.js')); };
+    document.head.appendChild(s);
+  });
+  return hlsLoading;
+}
+const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+function enterFullscreen(){
+  const el = document.documentElement, fn = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!fn || fsElement()) return;
+  try { const r = fn.call(el); weFullscreened = true; if (r && r.catch) r.catch(() => { weFullscreened = false; }); } catch { /* اجازه نداد */ }
+}
+function exitFullscreen(){
+  const fn = document.exitFullscreen || document.webkitExitFullscreen;
+  if (fn && fsElement()) { try { const r = fn.call(document); if (r && r.catch) r.catch(() => {}); } catch { /* */ } }
+}
+function setMsg(html){ pMsg.innerHTML = html; pMsg.hidden = !html; if (html) hideLoad(); }
+/* ---------- نوار «یافتن سیگنال» (حس رسیور) ---------- */
+const pLoad = $('pLoad'), plFill = $('plFill'), plPhase = $('plPhase'), plTime = $('plTime');
+let loadT0 = 0, loadTimer = 0, loadFloor = 0;
+let loadAvg = Math.min(15, Math.max(2, Number(store.get(K.loadAvg, 5)) || 5)); // میانگین ثانیه‌ی دفعه‌های قبل
+function loadProgress(){
+  const t = (Date.now() - loadT0) / 1000;
+  const est = loadAvg;
+  // پیشروی آرام بر اساس زمان؛ مراحل واقعی (لیست پخش، تصویر) پایه‌اش رو بالا می‌برن
+  const byTime = 92 * (1 - Math.exp(-t / (est / 2.2)));
+  const p = Math.min(96, Math.max(byTime, loadFloor));
+  plFill.style.width = p.toFixed(1) + '%';
+  pLoad.querySelectorAll('.pl-sig i').forEach((b, i) => b.classList.toggle('on', p >= (i + 1) * 19));
+  plTime.textContent = t < est ? `${fa(Math.floor(t))} از حدود ${fa(Math.round(est))} ثانیه` : `${fa(Math.floor(t))} ثانیه (بیشتر از معمول)`;
+}
+function startLoad(phase){
+  clearInterval(loadTimer);
+  loadT0 = Date.now(); loadFloor = 0;
+  plPhase.textContent = phase || 'اتصال به سرور';
+  pMsg.hidden = true;
+  pLoad.hidden = false;
+  loadProgress();
+  loadTimer = setInterval(loadProgress, 150);
+}
+function loadStep(floor, phase){
+  if (pLoad.hidden) return;
+  if (floor > loadFloor) { loadFloor = floor; plPhase.textContent = phase; loadProgress(); }
+}
+function hideLoad(){ clearInterval(loadTimer); loadTimer = 0; pLoad.hidden = true; }
+function loadDone(){
+  if (pLoad.hidden) return;
+  const secs = (Date.now() - loadT0) / 1000;
+  clearInterval(loadTimer); loadTimer = 0;
+  plFill.style.width = '100%';
+  pLoad.querySelectorAll('.pl-sig i').forEach(b => b.classList.add('on'));
+  plPhase.textContent = 'سیگنال برقرار شد';
+  setTimeout(() => { if (!loadTimer) pLoad.hidden = true; }, 350);
+  if (secs > 0.3 && secs < 40) { loadAvg = Math.min(15, Math.max(2, loadAvg * 0.6 + secs * 0.4)); store.set(K.loadAvg, Math.round(loadAvg * 10) / 10); }
+}
+function wakePlayer(){
+  player.classList.remove('idle');
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => { if (mode === 'full' && pMsg.hidden) player.classList.add('idle'); }, 3500);
+}
+/* حالت‌ها: off = چیزی پخش نمی‌شه، preview = پیش‌نمایش سمت راست فهرست، full = تمام‌صفحه */
+let lastErr = '';
+// کلید خاموش/روشن کردن پیش‌نمایش فعلاً کنار گذاشته شده: پیش‌نمایش همیشه روشنه.
+// برای برگردوندنش PREVIEW_TOGGLE رو true کن و دکمه‌ی pvBtn رو از حالت hidden دربیار.
+const PREVIEW_TOGGLE = false;
+let mode = 'off', previewOn = PREVIEW_TOGGLE ? store.get('sat.preview.v1', true) !== false : true, previewTimer, previewFor = null, autoMuted = false;
+const previewBox = $('preview'), pvNote = $('pvNote');
+function placePlayer(){
+  if (mode === 'preview') {
+    const r = previewBox.getBoundingClientRect();
+    const leftBleed = player.classList.contains('has-parsa') ? 24 : 0;
+    Object.assign(player.style, { top: r.top + 'px', left: (r.left - leftBleed) + 'px', width: (r.width + leftBleed) + 'px', height: r.height + 'px' });
+  } else {
+    player.style.cssText = '';
+  }
+  player.classList.toggle('pv', mode === 'preview');
+  if (mode !== 'full') player.classList.remove('idle');
+  player.hidden = mode === 'off';
+  updShield();
+}
+// روی پیش‌نمایش سایت‌ها (پارسا تی‌وی و یوتیوب) کلیک‌ها به خود سایت می‌رسه و صفحه نمی‌فهمه؛
+// برای همین یه لایه‌ی شفاف روشه: دابل‌کلیک = تمام‌صفحه، یه کلیک = لایه کنار می‌ره تا بشه با پخش‌کننده کار کرد
+const shield = $('pShield');
+let shieldOff = false, shieldTimer = 0;
+const isParsa = u => /parsatv\.com/i.test(u || '');
+const embedTip = $('pEmbedTip');
+let tipTimer = 0;
+function showEmbedTip(){
+  if (!embedTip) return;
+  clearTimeout(tipTimer);
+  embedTip.classList.remove('fade-out');
+  embedTip.hidden = false;
+}
+function hideEmbedTip(){
+  clearTimeout(tipTimer);
+  if (!embedTip || embedTip.hidden) return;
+  embedTip.classList.add('fade-out');
+  setTimeout(() => { if (embedTip) { embedTip.hidden = true; embedTip.classList.remove('fade-out'); } }, 350);
+}
+if ($('pTipClose')) $('pTipClose').addEventListener('click', hideEmbedTip);
+
+function updShield(){
+  const f = $('pFrame');
+  const isP = playing && isParsa(playing.embed);
+  shield.hidden = isP || !(mode === 'preview' && f && !shieldOff);
+}
+shield.addEventListener('click', e => {
+  e.stopPropagation();
+  if (shieldTimer) { clearTimeout(shieldTimer); shieldTimer = 0; if (playing) goFull(playing); return; }
+  shieldTimer = setTimeout(() => { shieldTimer = 0; shieldOff = true; updShield(); }, 320);
+});
+// موس که از کادر بیرون رفت، لایه برمی‌گرده (داخل iframe حرکت موس به صفحه نمی‌رسه، پس هر حرکتی بیرون از پخش‌کننده یعنی بیرون رفته)
+// چرخ موس روی لایه: لایه فوراً کنار می‌ره تا اسکرول به خود صفحه‌ی سایت برسه
+shield.addEventListener('wheel', () => { shieldOff = true; updShield(); }, { passive: true });
+document.addEventListener('mousemove', e => { if (shieldOff && !player.contains(e.target)) { shieldOff = false; updShield(); } });
+window.addEventListener('resize', placePlayer);
+window.addEventListener('scroll', placePlayer, { passive: true });
+if (window.ResizeObserver) new ResizeObserver(placePlayer).observe(previewBox);
+// جای پیش‌نمایش ممکنه با تغییر نوشته‌های بالای صفحه کمی جابه‌جا بشه؛ مرتب هم‌ترازش می‌کنیم
+setInterval(() => { if (mode === 'preview') placePlayer(); }, 400);
+function setNote(text){ pvNote.textContent = text; }
+function paintPreviewBtn(){
+  const b = $('pvBtn');
+  b.classList.toggle('on', previewOn);
+  b.title = previewOn ? 'پیش‌نمایش روشنه (کلیک = خاموش)' : 'پیش‌نمایش خاموشه (کلیک = روشن)';
+  b.style.opacity = previewOn ? '' : '.55';
+}
+function previewChannel(ch){
+  if (!inPage(ch)) {
+    stopPlayback();
+    setNote(`«${ch.name}» پخش مستقیم نداره؛ با کلیک، سایتش باز می‌شه.`);
+    return;
+  }
+  mode = 'preview';
+  placePlayer();
+  playChannel(ch);
+}
+function stopPlayback(){
+  keepAwakeOff();
+  clearTimeout(previewTimer);
+  previewFor = null;
+  playToken++;
+  stopStream();
+  setMsg('');
+  playing = null;
+  mode = 'off';
+  placePlayer();
+}
+function goFull(ch){
+  hideEmbedTip();
+  clearTimeout(previewTimer);
+  previewFor = null;
+  zapList = shown.filter(inPage);
+  mode = 'full';
+  placePlayer();
+  enterFullscreen();
+  if (!playing || playing.id !== ch.id) playChannel(ch);
+  else { pInfo.hidden = false; wakePlayer(); }
+}
+// برگشت از تمام‌صفحه به فهرست؛ اگه پیش‌نمایش روشنه همون شبکه کنارش ادامه پیدا می‌کنه
+function leaveFull(){
+  if (mode !== 'full') return;
+  if (weFullscreened) exitFullscreen();
+  weFullscreened = false;
+  const ch = playing;
+  $('pPause').hidden = true;
+  if (video.paused && video.src) video.play().catch(() => {});
+  if (previewOn && ch) {
+    mode = 'preview';
+    placePlayer();
+    if (isParsa(ch.embed)) showEmbedTip();
+  } else stopPlayback();
+  if (ch) {
+    if (!shown.some(c => c.id === ch.id)) setView('all');
+    select(ch.id);
+  }
+}
+// آیکون دکمه‌ی تمام‌صفحه: توی تمام‌صفحه «خروج» (فلش‌ها به مرکز)، بیرون از اون «ورود» (فلش‌ها به بیرون)
+const FS_ICON = {
+  enter: '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/></svg>',
+  exit: '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 9h-5V4M15 9l6-6M4 15h5v5M9 15l-6 6"/></svg>',
+};
+function paintFsBtn(){
+  const on = !!fsElement(), b = $('pFull');
+  b.innerHTML = FS_ICON[on ? 'exit' : 'enter'];
+  b.title = on ? 'خروج از تمام‌صفحه (F)' : 'تمام‌صفحه (F)';
+  b.setAttribute('aria-label', b.title);
+}
+paintFsBtn();
+function handleFsEvent(){
+  paintFsBtn();
+  if (fsElement()) hideEmbedTip();
+}
+document.addEventListener('fullscreenchange', handleFsEvent);
+document.addEventListener('webkitfullscreenchange', handleFsEvent);
+document.addEventListener('fullscreenchange', () => { if (!fsElement() && mode === 'full' && weFullscreened) { weFullscreened = false; leaveFull(); } });
+
+function playChannel(ch){
+  closePopup();
+  subForceNative = false;
+  connOk = false; reconnectTries = 0;
+  if (playing && playing.id !== ch.id) prevId = playing.id;
+  store.set('sat.last.v1', ch.id);
+  const numberedCh = numbered().find(c => c.id === ch.id) || ch;
+  if (!zapList.some(c => c.id === ch.id)) zapList = numbered().filter(inPage);
+  playing = numberedCh;
+  streamIdx = 0;
+  // لینکی که توی بررسی سلامت جواب داده، اول امتحان می‌شه
+  const best = health.res[ch.id] ? health.res[ch.id].i | 0 : 0;
+  attempts = [...new Set([best, ...ch.streams.keys()])].filter(i => i < ch.streams.length);
+  pInfo.innerHTML = `<span class="pnum">${pad4(numberedCh.num || 0)}</span><div><div class="iname">${esc(ch.name)}</div><div class="imeta">${esc(ch.fa || '')}</div></div>`;
+  $('pSite').hidden = !ch.urls.length;
+  if (mode === 'full' && selId !== ch.id) { selId = ch.id; }
+  wakePlayer();
+  updateMediaSession(ch);
+  if (ch.streams.length) playStream(); else showEmbed(ch);
+}
+function showEmbed(ch){
+  playToken++;
+  stopStream();
+  setMsg('');
+  const wrap = document.createElement('div');
+  wrap.id = 'pFrameWrap';
+  wrap.className = 'p-frame-wrap';
+  const isP = isParsa(ch.embed);
+  if (isP) {
+    wrap.classList.add('parsa-mode');
+    player.classList.add('has-parsa');
+    showEmbedTip();
+  } else {
+    player.classList.remove('has-parsa');
+    hideEmbedTip();
+  }
+  const f = document.createElement('iframe');
+  f.id = 'pFrame';
+  f.allow = 'autoplay; fullscreen; encrypted-media; picture-in-picture';
+  f.allowFullscreen = true;
+  f.referrerPolicy = 'strict-origin-when-cross-origin';
+  if (isYT(ch.embed)) f.src = ch.embed + (ch.embed.includes('?') ? '&' : '?') + 'autoplay=1&rel=0';
+  else {
+    // صفحه‌ی سایت‌های پخش (مثل پارسا تی‌وی) داخل کادر؛ بدون اجازه‌ی پاپ‌آپ و بردن کل صفحه به سایت دیگه
+    f.sandbox = 'allow-scripts allow-same-origin allow-presentation allow-forms';
+    if (isP) {
+      f.setAttribute('scrolling', 'no');
+      f.style.overflow = 'hidden';
+    }
+    f.src = ch.embed;
+  }
+  wrap.appendChild(f);
+  if (isP) {
+    // overlay masks: hide residual Parsa TV right/bottom margin strips
+    const mr = document.createElement('div');
+    mr.className = 'p-parsa-mask-r';
+    wrap.appendChild(mr);
+    const mb = document.createElement('div');
+    mb.className = 'p-parsa-mask-b';
+    wrap.appendChild(mb);
+  }
+  video.hidden = true;
+  player.insertBefore(wrap, pInfo);
+  startLoad('بارگذاری صفحه‌ی پخش');
+  f.addEventListener('load', () => { loadStep(90, 'بارگذاری صفحه‌ی پخش'); setTimeout(loadDone, 600); });
+  keepAwakeOn();
+  shieldOff = false;
+  updShield();
+  player.classList.remove('idle');
+  wakePlayer();
+}
+function stopStream(){
+  clearTimeout(stallTimer);
+  hideLoad();
+  hideEmbedTip();
+  player.classList.remove('has-parsa');
+  $('pPause').hidden = true;
+  const wrap = $('pFrameWrap');
+  if (wrap) wrap.remove();
+  const f = $('pFrame');
+  if (f) f.remove();
+  updShield();
+  video.hidden = false;
+  subsReset();
+  if (hls) { hls.destroy(); hls = null; }
+  video.removeAttribute('src');
+  video.load();
+}
+// مرورگر تا قبل از اولین کلیک یا کلید، پخش با صدا رو اجازه نمی‌ده؛ تا اون موقع بی‌صدا پخش می‌شه
+function startVideo(token){
+  if (!autoMuted) video.muted = false;
+  video.play().catch(err => {
+    if (token !== playToken || !err || err.name !== 'NotAllowedError') return;
+    autoMuted = true;
+    video.muted = true;
+    $('pMute').hidden = false;
+    video.play().catch(() => {});
+  });
+}
+function unmuteOnGesture(){
+  if (!autoMuted) return;
+  autoMuted = false;
+  video.muted = false;
+  $('pMute').hidden = true;
+}
+document.addEventListener('pointerdown', unmuteOnGesture, true);
+document.addEventListener('keydown', unmuteOnGesture, true);
+
+/* ---------- زیرنویس فارسی (آزمایشی) ----------
+   زیرنویس انگلیسیِ خودِ پخش (WebVTT) خونده می‌شه، با Claude ترجمه می‌شه و روی تصویر میاد.
+   زیرنویس‌ها چند ثانیه زودتر از نمایش به صفحه می‌رسن، برای همین ترجمه عقب نمی‌مونه. */
+const SUB_PROVIDERS = {
+  avalai: {
+    name: 'AvalAI (آوال‌ای‌آی)',
+    url: 'https://api.avalai.ir/v1/chat/completions',
+    models: ['gpt-4.1-mini', 'gemini-2.0-flash', 'gemini-2.5-flash', 'gpt-4.1'],
+    keyHint: 'کلیدی که از پنل AvalAI گرفتی',
+    keyPlaceholder: 'aa-...',
+  },
+  anthropic: {
+    name: 'Anthropic (مستقیم)',
+    url: 'https://api.anthropic.com/v1/messages',
+    models: ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-4-5'],
+    keyHint: 'کلید از console.anthropic.com',
+    keyPlaceholder: 'sk-ant-...',
+  },
+};
+for (const k of Object.keys(SUB_PROVIDERS)) SUB_PROVIDERS[k].def = SUB_PROVIDERS[k].models[0];
+// قیمت هر میلیون توکن (دلار) فقط برای Anthropic مستقیم؛ AvalAI با تومان حساب می‌کنه
+const SUB_PRICE = { 'claude-opus-5-5': [4, 20], 'claude-sonnet-5-5': [2, 10], 'claude-haiku-4-5': [1, 5] };
+const SUB = {
+  on: store.get(K.subOn, false) === true,   // ترجمه‌ی فارسی (هزینه دارد)
+  en: store.get(K.subEn, false) === true,   // فقط زیرنویس انگلیسیِ خود شبکه (رایگان)
+  prov: String(store.get(K.subProv, 'avalai')),
+  keys: (() => { const v = store.get(K.subKey, {}); return v && typeof v === 'object' ? v : (typeof v === 'string' && v ? { anthropic: v } : {}); })(),
+  models: (() => { const v = store.get(K.subModel, {}); return v && typeof v === 'object' ? v : {}; })(),
+  both: store.get(K.subBoth, false) === true,
+  usage: store.get(K.subUsage, {}) || {},
+  cap: (() => { const v = store.get(K.subCap, 100000); return typeof v === 'number' && v >= 0 ? v : 100000; })(),   // سقف توکن روزانه؛ ۰ = نامحدود
+  day: store.get(K.subDay, { d: '', t: 0 }) || { d: '', t: 0 },
+};
+if (!SUB_PROVIDERS[SUB.prov]) SUB.prov = 'avalai';
+const subToday = () => new Date().toLocaleDateString('en-CA');
+function subDayTokens(){
+  const d = subToday();
+  if (!SUB.day || SUB.day.d !== d) SUB.day = { d, t: 0 };
+  return SUB.day.t | 0;
+}
+const subCapReached = () => SUB.cap > 0 && subDayTokens() >= SUB.cap;
+const subKey = () => String(SUB.keys[SUB.prov] || '').trim();
+const subModelId = () => String(SUB.models[SUB.prov] || SUB_PROVIDERS[SUB.prov].def).trim();
+const subCache = new Map();      // متن انگلیسی ← فارسی
+const subPending = new Set();    // متن‌هایی که الان داره ترجمه می‌شه
+const subMiss = {};        // چند بار ترجمه‌ی این خط جا افتاده
+let subNote = '';          // پیام وضعیت که زیر زیرنویس نشون داده می‌شه
+let subGotCues = false, subEmptyShown = false, subStartedAt = 0, subTrack = null, subTimer = 0, subQueue = [], subInflight = false, subBackoff = 0, subErrShown = '', subHlsSet = false;
+
+const subClean = t => String(t || '').replace(/<[^>]*>/g, '').replace(/\{\\an?\d\}/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/[♪♫]+/g, '').replace(/\s*\n\s*/g, ' ').replace(/\s*>{2,}\s*/g, ' ').trim();
+const subIsEn = (lang, label) => /^en/i.test(lang || '') || /english|انگلیسی/i.test(label || '');
+const subIsSdh = label => /sdh|hearing|forced/i.test(label || '');
+
+// زیرنویس CEA-608/708 که داخل خود تصویر جاسازی شده (kind = captions) فقط اگه انگلیسی یا بدون زبان مشخص باشه قبول می‌شه
+const SUB_OTHER_LANG = /^(es|spa|fr|fre|fra|de|ger|deu|sv|swe|nl|dut|nld|it|ita|pt|por|ru|rus|ar|ara|fa|per|fas|zh|chi|ja|jpn|ko|kor)/i;
+const SUB_OTHER_NAME = /spanish|french|german|swedish|dutch|italian|portug|russian|arabic|persian|chinese|japanese|korean/i;
+const subOkCaption = t => t.kind === 'captions' && !SUB_OTHER_LANG.test(t.language || '') && !SUB_OTHER_NAME.test(t.label || '');
+// خط‌هایی که ترجمه نمی‌خوان (فقط علامت/عدد) توکن مصرف نکنن
+const subWorth = x => /[A-Za-z]{2}/.test(x);
+const subNorm = x => x.toLowerCase().replace(/[^a-z0-9 ]+/g, '').replace(/\s+/g, ' ').trim();
+const subCuesOf = t => (t && t.cues ? t.cues.length : 0);
+function subTextTracks(){
+  return [...video.textTracks].filter(t => t.kind === 'subtitles' || t.kind === 'captions');
+}
+// زیرنویس جاسازی‌شده تا اولین جمله نیومده هیچ track ای نداره؛ پس اعلام‌شدنش توی manifest و علامت CC خود شبکه هم حساب می‌شه
+let subDeclaredCC = false;
+const subUD = { events: 0, samples: 0, withBytes: 0, seiLike: 0 };   // چیزی که hls.js از داخل تصویر خونده (برای عیب‌یابی)
+function subHasEnglish(){
+  const tracks = subTextTracks();
+  if (subDeclaredCC || (playing && hasSubs(playing))) return true;
+  if (tracks.some(subOkCaption)) return true;
+  if (hls) return (hls.subtitleTracks || []).some(t => subIsEn(t.lang, t.name));
+  return tracks.some(t => subIsEn(t.language, t.label));
+}
+function subActivate(){
+  // hls.js فقط وقتی یه زیرنویس انتخاب شده باشه دانلودش می‌کنه؛ نمایشش رو خودمون انجام می‌دیم (حالت hidden)
+  if (hls && !subHlsSet) {
+    const list = hls.subtitleTracks || [];
+    let i = list.findIndex(t => subIsEn(t.lang, t.name) && !subIsSdh(t.name));
+    if (i < 0) i = list.findIndex(t => subIsEn(t.lang, t.name));
+    if (i >= 0) { hls.subtitleTrack = i; hls.subtitleDisplay = true; subHlsSet = true; }
+  }
+  const tracks = subTextTracks();
+  // زیرنویس جدا (WebVTT)
+  const vtts = tracks.filter(t => t.kind === 'subtitles' && subIsEn(t.language, t.label));
+  const vtt = vtts.find(t => !subIsSdh(t.label) && t.mode !== 'disabled') || vtts.find(t => t.mode !== 'disabled') || (hls ? null : (vtts.find(t => !subIsSdh(t.label)) || vtts[0])) || null;
+  // زیرنویس جاسازی‌شده توی تصویر (CEA-608/708)؛ باید hidden باشه تا متنش قابل خوندن بشه
+  const ceas = tracks.filter(subOkCaption);
+  for (const t of ceas) if (t.mode !== 'hidden') t.mode = 'hidden';
+  const cea = ceas.slice().sort((x, y) => subCuesOf(y) - subCuesOf(x))[0] || null;
+  // هر کدوم که متن واقعی داره؛ اولویت با WebVTT
+  subTrack = subCuesOf(vtt) ? vtt : subCuesOf(cea) ? cea : (vtt || cea);
+  if (subTrack && subTrack.mode !== 'hidden') subTrack.mode = 'hidden';
+  for (const t of tracks) if (t !== subTrack && t.mode === 'showing') t.mode = 'hidden';
+}
+function subTick(){
+  const avail = subHasEnglish();
+  $('pCC').hidden = !avail;
+  const el = $('pSub');
+  if (!avail || (!SUB.on && !SUB.en)) { subTrack = null; el.hidden = true; return; }
+  subActivate();
+  if (subTrack && subTrack.cues && subTrack.cues.length) {
+    subGotCues = true;
+    if (playing && !hasSubs(playing)) { subsSeen[playing.id] = true; store.set('sat.hassubs.v1', subsSeen); render(); }
+  } else if (!subGotCues && !subEmptyShown && Date.now() - subStartedAt > 20000) {
+    // بعضی شبکه‌ها (مثل Rakuten) یه زیرنویس اعلام می‌کنن ولی فایلش خالیه
+    subEmptyShown = true;
+    toast('تا الان متن زیرنویسی از این شبکه نرسیده؛ ممکنه الان برنامه‌ی بدون زیرنویس باشه.');
+  }
+  if (!subTrack) { el.hidden = true; return; }
+  // کدوم خط‌ها تا ۶۰ ثانیه‌ی آینده هنوز ترجمه نشدن
+  const t = video.currentTime, cues = subTrack.cues, queue = [], seen = new Set(), windowNorm = [];
+  if (cues) for (let i = 0; i < cues.length; i++) {
+    const c = cues[i];
+    if (c.endTime < t - 1) continue;
+    if (c.startTime > t + 60) break;
+    const x = subClean(c.text);
+    if (x) windowNorm.push(subNorm(x));
+    if (SUB.on && x && subWorth(x) && !subCache.has(x) && !subPending.has(x) && !seen.has(x) && (subMiss[x] | 0) < 3) { seen.add(x); queue.push(x); }
+  }
+  // زیرنویس‌های زنده‌ی CEA جمله رو کم‌کم کامل می‌کنن («THE» ← «THE MARKETS» ← …)؛ فقط نسخه‌ی کامل‌تر ترجمه می‌شه
+  subQueue = queue.filter(x => { const n = subNorm(x); return !windowNorm.some(y => y.length > n.length && y.startsWith(n)); });
+  subRender();
+  if (SUB.on) subPump();
+}
+function subRender(){
+  const el = $('pSub');
+  const act = subTrack && subTrack.activeCues ? [...subTrack.activeCues] : [];
+  const texts = [...new Set(act.map(c => subClean(c.text)).filter(Boolean))];
+  if (!texts.length) { el.hidden = true; return; }
+  const ready = SUB.on && texts.every(x => subCache.has(x));
+  const note = SUB.on && !ready && subNote ? `<div class="sn">⚠ ${esc(subNote)}</div>` : '';
+  const faText = ready ? texts.map(x => subCache.get(x)).join('\n') : '';
+  const html = (faText ? `<div class="fa">${esc(faText).replace(/\n/g, '<br>')}</div>` : '')
+    + (!faText || SUB.both ? `<div class="en">${esc(texts.join(' '))}</div>` : '') + note;
+  if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; }
+  el.hidden = false;
+}
+function subReport(kind, msg){
+  if (subErrShown === kind) return;
+  subErrShown = kind;
+  toast(msg);
+}
+async function subTranslate(lines){
+  const prov = SUB.prov, model = subModelId(), P = SUB_PROVIDERS[prov];
+  const system = 'Translate English subtitle lines into natural, colloquial Persian (Farsi) as spoken in films and TV. Keep names and numbers; put translated sound cues like [MUSIC] in brackets. Lines may be ALL CAPS or have >> speaker marks: ignore the marks and write normal Persian. Reply with exactly one line per input line as N|translation, N being the same number in plain ASCII digits. Nothing else.';
+  const user = (playing ? `Program: ${playing.name}\n\n` : '') + lines.map((x, i) => `${i + 1}|${x}`).join('\n');
+  let headers, body;
+  if (prov === 'anthropic') {
+    headers = { 'content-type': 'application/json', 'x-api-key': subKey(), 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' };
+    body = { model, max_tokens: 4000, system, messages: [{ role: 'user', content: user }] };
+    if (/^claude-(opus-5-5|sonnet-5-5)$/.test(model)) body.output_config = { effort: 'low' };
+  } else {
+    // AvalAI با فرمت OpenAI کار می‌کنه؛ سقف بالا چون مدل‌های «فکرکننده» (مثل gemini-2.5) بخشی از سقف رو صرف استدلال می‌کنن
+    headers = { 'content-type': 'application/json', authorization: 'Bearer ' + subKey() };
+    body = { model, max_tokens: 6000, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };
+  }
+  const r = await fetch(P.url, { method: 'POST', headers, body: JSON.stringify(body) });
+  if (!r.ok) { const e = new Error('http'); e.status = r.status; throw e; }
+  const j = await r.json();
+  const u = SUB.usage[prov + ':' + model] || (SUB.usage[prov + ':' + model] = { i: 0, o: 0 });
+  const us = j.usage || {};
+  u.i += (us.input_tokens ?? us.prompt_tokens) | 0;
+  u.o += (us.output_tokens ?? us.completion_tokens) | 0;
+  store.set(K.subUsage, SUB.usage);
+  subDayTokens();
+  SUB.day.t += ((us.input_tokens ?? us.prompt_tokens) | 0) + ((us.output_tokens ?? us.completion_tokens) | 0);
+  store.set(K.subDay, SUB.day);
+  const text = prov === 'anthropic'
+    ? (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n')
+    : String(j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content || '');
+  return subParse(text, lines.length);
+}
+// مدل وقتی فارسی می‌نویسه ممکنه شماره‌ها رو هم فارسی/عربی بنویسه یا به‌جای | از : و . استفاده کنه؛ همه‌ش قبول می‌شه
+const subDigits = t => String(t).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+function subParse(text, n){
+  const rows = String(text).split('\n').map(l => l.trim()).filter(l => l && !/^```/.test(l));
+  const out = [];
+  for (const line of rows) {
+    const mm = /^\W{0,3}([0-9۰-۹٠-٩]+)\s*[|｜│¦:：.)\-–—]\s*(.+?)\s*$/.exec(line);
+    const k = mm && +subDigits(mm[1]);
+    if (mm && k >= 1 && k <= n) out[k - 1] = mm[2].replace(/^["«]|["»]$/g, '').trim();
+  }
+  // اگه شماره‌ای پیدا نشد ولی تعداد خط‌ها درسته، به ترتیب می‌گیریم
+  if (!out.some(Boolean) && rows.length === n) rows.forEach((l, i) => { out[i] = l; });
+  return out;
+}
+async function subPump(){
+  if (subInflight || !subKey() || !subQueue.length || Date.now() < subBackoff) return;
+  // وقتی پخش مکث شده، صفحه پشت‌صحنه‌ست، یا تازه شبکه عوض شده (زپینگ) چیزی ترجمه نمی‌شه
+  if (video.paused || document.hidden || Date.now() - subStartedAt < 5000) return;
+  if (subCapReached()) {
+    subNote = 'سقف مصرف امروز برای ترجمه پر شد؛ زیرنویس انگلیسی نشون داده می‌شه.';
+    if (subErrShown !== 'cap') { subErrShown = 'cap'; toast('سقف مصرف روزانه‌ی ترجمه پر شد. از تنظیمات می‌تونی بالاترش ببری.'); }
+    return;
+  }
+  const batch = subQueue.slice(0, 40);
+  subInflight = true;
+  batch.forEach(x => subPending.add(x));
+  try {
+    const out = await subTranslate(batch);
+    let miss = 0;
+    batch.forEach((x, i) => {
+      if (out[i]) subCache.set(x, out[i]);
+      else { miss++; subMiss[x] = (subMiss[x] || 0) + 1; }
+    });
+    subNote = miss > batch.length / 2 ? 'ترجمه‌ی بعضی خط‌ها ناقص برگشت؛ مدل دیگه‌ای رو امتحان کن.' : '';
+    if (miss) console.warn('subtitle translation: missing', miss, 'of', batch.length);
+    if (subCache.size > 4000) for (const k of [...subCache.keys()].slice(0, 1000)) subCache.delete(k);
+    subErrShown = '';
+  } catch (e) {
+    const s = e && e.status;
+    subNote = subErrText(e).replace(/^✕\s*/, '');
+    if (s === 401 || s === 403) { subBackoff = Date.now() + 60000; subReport('auth', 'کلید API قبول نشد؛ توی تنظیمات دوباره وارد کن.'); }
+    else if (s === 429) { subBackoff = Date.now() + 15000; subReport('rate', 'تعداد درخواست‌ها زیاد شد؛ چند ثانیه بعد ادامه می‌ده.'); }
+    else if (s === 400 || s === 404) { subBackoff = Date.now() + 60000; subReport('bad', 'درخواست ترجمه رد شد؛ مدل دیگه‌ای رو امتحان کن یا اعتبار حسابت رو ببین.'); }
+    else { subBackoff = Date.now() + 8000; subReport('net', 'اتصال به سرویس ترجمه برقرار نشد؛ دوباره امتحان می‌کنه. (اگه VPN روشنه، خاموشش کن و دوباره امتحان کن.)'); }
+  } finally {
+    batch.forEach(x => subPending.delete(x));
+    subInflight = false;
+  }
+}
+function subsStart(){
+  clearInterval(subTimer);
+  subGotCues = false; subEmptyShown = false; subStartedAt = Date.now(); subDeclaredCC = false;
+  subUD.events = subUD.samples = subUD.withBytes = subUD.seiLike = 0;
+  subHlsSet = false;
+  subTimer = setInterval(subTick, 500);
+}
+function subsReset(){
+  clearInterval(subTimer);
+  subTimer = 0;
+  subTrack = null;
+  subQueue = [];
+  subHlsSet = false;
+  subDeclaredCC = false;
+  const el = $('pSub'), cc = $('pCC');
+  if (el) { el.hidden = true; el.dataset.k = ''; }
+  if (cc) cc.hidden = true;
+}
+function setSubMode(m){
+  const was = SUB.on || SUB.en;
+  SUB.on = m === 'fa';
+  SUB.en = m === 'en';
+  store.set(K.subOn, SUB.on);
+  store.set(K.subEn, SUB.en);
+  subErrShown = '';
+  paintSubs();
+  // شبکه داره با پخش داخلی Chrome پخش می‌شه و زیرنویس تازه روشن شده؛ برای دسترسی به متن با hls.js دوباره شروع می‌کنیم
+  if (!was && (SUB.on || SUB.en) && playing && !hls && playing.streams.length && subWantsHls(playing)) { streamIdx = 0; playStream(); }
+}
+// دکمه‌ی CC و کلید C: خاموش ← انگلیسی (رایگان) ← فارسی ← خاموش
+function toggleSubs(){
+  if (!SUB.on && !SUB.en) { setSubMode('en'); toast('زیرنویس انگلیسی (رایگان) روشن شد.'); }
+  else if (SUB.en) {
+    if (!subKey()) { setSubMode('off'); toast('برای زیرنویس فارسی باید توی تنظیمات کلید API بذاری. زیرنویس خاموش شد.'); }
+    else { setSubMode('fa'); toast('زیرنویس فارسی روشن شد.'); }
+  } else { setSubMode('off'); toast('زیرنویس خاموش شد.'); }
+}
+function subReportText(){
+  const L = [];
+  const f = n => (typeof n === 'number' ? n.toFixed(1) : String(n));
+  L.push('channel: ' + (playing ? playing.name : '-') + ' | mode: ' + (SUB.on ? 'fa' : SUB.en ? 'en' : 'off') + ' | player: ' + (hls ? 'hls.js ' + (window.Hls && Hls.version) : nativeHls ? 'native' : 'none'));
+  L.push('browser: ' + navigator.userAgent.replace(/^Mozilla\/5.0 /, '').slice(0, 110));
+  L.push('time: ' + f(video.currentTime) + ' / duration ' + f(video.duration) + ' | paused: ' + video.paused + ' | readyState ' + video.readyState);
+  L.push('declared CC in manifest: ' + subDeclaredCC + ' | hls userdata events: ' + subUD.events + ', samples: ' + subUD.samples + ', with caption bytes: ' + subUD.withBytes);
+  if (hls) L.push('hls subtitle tracks: ' + JSON.stringify((hls.subtitleTracks || []).map(t => [t.lang, t.name])) + ' | CEA enabled: ' + hls.config.enableCEA708Captions);
+  const tr = [...video.textTracks];
+  L.push('text tracks: ' + tr.length);
+  tr.forEach((t, i) => {
+    const c = t.cues;
+    let line = `  #${i} kind=${t.kind} label="${t.label}" lang=${t.language} mode=${t.mode} cues=${c ? c.length : 'null'}`;
+    if (c && c.length) { const a = c[0], z = c[c.length - 1]; line += ` first=${f(a.startTime)}-${f(a.endTime)} last=${f(z.startTime)}-${f(z.endTime)} active=${t.activeCues ? t.activeCues.length : 0} sample="${String(z.text).replace(/\n/g, ' ').slice(0, 60)}"`; }
+    L.push(line);
+  });
+  L.push('chosen track: ' + (subTrack ? subTrack.kind + '/' + subTrack.label : 'none') + ' | got cues: ' + subGotCues + ' | cache lines: ' + subCache.size);
+  return L.join('\n');
+}
+function subUsageText(){
+  let usd = 0, tok = 0;
+  for (const [k, u] of Object.entries(SUB.usage)) {
+    tok += (u.i | 0) + (u.o | 0);
+    const [prov, ...rest] = k.split(':'), p = SUB_PRICE[rest.join(':')];
+    if (prov === 'anthropic' && p) usd += (u.i * p[0] + u.o * p[1]) / 1e6;
+  }
+  const k1 = n => n < 1000 ? fa(n) + ' توکن' : fa(Math.round(n / 1000)) + ' هزار توکن';
+  const today = subDayTokens();
+  let t = `امروز: ${k1(today)}${SUB.cap ? ' از سقف ' + k1(SUB.cap) : ''}.`;
+  if (tok) t += ` مجموع از اول: ${k1(tok)}${usd > 0 ? ` (حدود ${fa(usd < 0.01 ? '<۰٫۰۱' : usd.toFixed(2))} دلار برای Anthropic)` : ''}.`;
+  return t + ' هر فیلم دو ساعته با ترجمه‌ی کامل حدود ۵۰ تا ۱۰۰ هزار توکن می‌شه؛ قیمت دقیق رو از پنل سرویس‌دهنده ببین.';
+}
+function paintSubs(){
+  const m = SUB.on ? 'fa' : SUB.en ? 'en' : 'off';
+  $('pCC').classList.toggle('on', m !== 'off');
+  $('pCCt').textContent = m === 'fa' ? 'فا' : m === 'en' ? 'EN' : '';
+  $('pCC').title = 'زیرنویس (C): ' + (m === 'fa' ? 'فارسی' : m === 'en' ? 'انگلیسی' : 'خاموش');
+  $('subMode').value = m;
+}
+function paintSubMenu(){
+  const P = SUB_PROVIDERS[SUB.prov];
+  $('subProv').value = SUB.prov;
+  $('subKey').value = subKey();
+  $('subKey').placeholder = P.keyPlaceholder;
+  $('subKeyLabel').textContent = 'کلید API · ' + P.keyHint;
+  $('subModel').value = subModelId();
+  $('subModels').innerHTML = P.models.map(m => `<option value="${m}">`).join('');
+  $('subBoth').checked = SUB.both;
+  $('subCap').value = String(SUB.cap);
+  $('subStatus').textContent = subUsageText();
+}
+function subErrText(e){
+  const s = e && e.status;
+  return s === 401 || s === 403 ? '✕ کلید قبول نشد.'
+    : s === 429 ? '✕ تعداد درخواست‌ها زیاده یا اعتبار تموم شده؛ کمی بعد امتحان کن.'
+    : s === 400 || s === 404 ? '✕ درخواست رد شد؛ اسم مدل رو چک کن (باید دقیقاً همون اسمی باشه که توی پنل سرویس‌دهنده هست).'
+    : '✕ اتصال برقرار نشد. اگه VPN روشنه خاموشش کن؛ اگه بازم نشد ممکنه سرویس‌دهنده اجازه‌ی اتصال مستقیم از مرورگر رو نده.';
+}
+function initSubs(){
+  $('subProv').innerHTML = Object.entries(SUB_PROVIDERS).map(([k, p]) => `<option value="${k}">${esc(p.name)}</option>`).join('');
+  $('subProv').addEventListener('change', () => {
+    SUB.prov = $('subProv').value;
+    store.set(K.subProv, SUB.prov);
+    subCache.clear(); subBackoff = 0; subErrShown = '';
+    paintSubMenu();
+  });
+  $('subKey').addEventListener('change', () => {
+    SUB.keys[SUB.prov] = $('subKey').value.trim();
+    store.set(K.subKey, SUB.keys);
+    subBackoff = 0; subErrShown = '';
+  });
+  $('subModel').addEventListener('change', () => {
+    SUB.models[SUB.prov] = $('subModel').value.trim() || SUB_PROVIDERS[SUB.prov].def;
+    store.set(K.subModel, SUB.models);
+    subCache.clear();
+  });
+  $('subCap').addEventListener('change', () => {
+    SUB.cap = +$('subCap').value;
+    store.set(K.subCap, SUB.cap);
+    subErrShown = '';
+    subNote = '';
+    $('subStatus').textContent = subUsageText();
+  });
+  $('subBoth').addEventListener('change', () => { SUB.both = $('subBoth').checked; store.set(K.subBoth, SUB.both); });
+  $('subMode').addEventListener('change', () => {
+    const m = $('subMode').value;
+    if (m === 'fa' && !subKey()) { paintSubs(); $('subStatus').textContent = 'برای زیرنویس فارسی اول کلید API رو وارد کن.'; return; }
+    setSubMode(m);
+  });
+  $('subClear').addEventListener('click', () => {
+    delete SUB.keys[SUB.prov];
+    if (SUB.on) setSubMode('en');
+    store.set(K.subKey, SUB.keys);
+    $('subKey').value = '';
+    paintSubs();
+    $('subStatus').textContent = 'کلید از این مرورگر پاک شد.';
+  });
+  $('subTest').addEventListener('click', async () => {
+    SUB.keys[SUB.prov] = $('subKey').value.trim();
+    SUB.models[SUB.prov] = $('subModel').value.trim() || SUB_PROVIDERS[SUB.prov].def;
+    store.set(K.subKey, SUB.keys);
+    store.set(K.subModel, SUB.models);
+    const st = $('subStatus');
+    if (!subKey()) { st.textContent = 'اول کلید API رو وارد کن.'; return; }
+    st.textContent = '⏳ در حال آزمایش…';
+    try {
+      const out = await subTranslate(['Hello, how are you?']);
+      st.textContent = out[0] ? `✓ کلید و مدل درسته. نمونه‌ی ترجمه: «${out[0]}»` : 'جواب اومد ولی ترجمه‌ای توش نبود؛ مدل دیگه‌ای رو امتحان کن.';
+    } catch (e) {
+      st.textContent = subErrText(e);
+    }
+  });
+  $('subDiag').addEventListener('click', async () => {
+    const txt = subReportText(), box = $('subDiagOut');
+    box.value = txt;
+    box.hidden = false;
+    box.select();
+    let ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; } catch { /* کاربر خودش کپی می‌کنه */ }
+    $('subStatus').textContent = ok ? 'گزارش کپی شد؛ توی چت بچسبون.' : 'گزارش پایینه؛ انتخابش کن و کپی کن.';
+  });
+  paintSubs();
+}
+
+async function playStream(){
+  const ch = playing, token = ++playToken, url = ch.streams[attempts[streamIdx]];
+  stopStream();
+  setMsg('');
+  startLoad(ch.streams.length > 1 ? `اتصال · منبع ${fa(streamIdx + 1)} از ${fa(ch.streams.length)}` : 'اتصال به سرور');
+  stallTimer = setTimeout(() => streamFailed(token), 15000);
+  try {
+    if (nativeHls && !subWantsHls(ch)) {
+      video.src = url;
+    } else {
+      const Hls = await loadHls();
+      if (token !== playToken) return;
+      if (!Hls || !Hls.isSupported()) throw new Error('unsupported');
+      hls = new Hls({ manifestLoadingMaxRetry: 2, levelLoadingMaxRetry: 2, fragLoadingMaxRetry: 3 });
+      hls.on(Hls.Events.FRAG_PARSING_USERDATA, (_, d) => {
+        subUD.events++;
+        for (const x of d.samples || []) { subUD.samples++; if (x.bytes) subUD.withBytes++; if (x.type != null) subUD.seiLike++; }
+      });
+      hls.on(Hls.Events.MANIFEST_LOADED, () => loadStep(40, 'دریافت لیست پخش'));
+      hls.on(Hls.Events.LEVEL_LOADED, () => loadStep(62, 'انتخاب کیفیت'));
+      hls.on(Hls.Events.FRAG_LOADED, () => loadStep(84, 'بافر تصویر'));
+      hls.on(Hls.Events.MANIFEST_LOADED, (_, d) => { subDeclaredCC = (d.captions || []).some(c => !SUB_OTHER_LANG.test(c.lang || '') && !SUB_OTHER_NAME.test(c.name || '')); });
+      hls.on(Hls.Events.ERROR, (_, data) => {
+        if (!data.fatal || token !== playToken) return;
+        // hls.js به سرورهایی که CORS ندارن نمی‌رسه؛ پخش داخلی Chrome به CORS نیاز نداره
+        if (nativeHls && !isSafariBrowser && !subForceNative) { subForceNative = true; playStream(); return; }
+        lastErr = String(data.details || '');
+        streamFailed(token);
+      });
+      hls.loadSource(url);
+      hls.attachMedia(video);
+    }
+    subsStart();
+    startVideo(token);
+  } catch {
+    streamFailed(token);
+  }
+}
+// نقطه‌ی رنگی کنار شبکه همون لحظه به‌روز می‌شه
+function refreshDot(id){
+  const row = listEl.querySelector(`.row[data-id="${CSS.escape(id)}"]`), c = byId(id);
+  if (!row || !c) return;
+  const st = healthOf(c);
+  row.querySelector('.st').className = 'st st-' + st;
+  row.classList.toggle('st-row-bad', st === 'bad' || st === 'codec');
+  if (id === selId) renderInfo();
+}
+// اگه یه منبع کار نکرد، بعدی امتحان می‌شه؛ آخر سر پیشنهاد باز کردن سایت شبکه
+function streamFailed(token){
+  if (token !== playToken || !playing) return;
+  const ch = playing;
+  // پخش قبلاً درست کار کرده و وسط راه قطع شده: چند بار با فاصله‌ی بیشتر خودکار دوباره وصل می‌شه
+  if (connOk && reconnectTries < RECONNECT_WAIT.length) {
+    const wait = RECONNECT_WAIT[reconnectTries++];
+    setMsg(`⏳ اتصال قطع شد؛ دوباره وصل می‌شه… <span class="hint">(${fa(reconnectTries)} از ${fa(RECONNECT_WAIT.length)})</span>`);
+    stopStream();
+    clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(() => { if (playing && playing.id === ch.id && mode !== 'off') { streamIdx = Math.min(streamIdx, attempts.length - 1); playStream(); } }, wait);
+    return;
+  }
+  if (++streamIdx < attempts.length) return playStream();
+  health.res[ch.id] = { s: healthOf(ch) === 'cors' ? 'cors' : /codec/i.test(lastErr) ? 'codec' : 'bad', i: 0 };
+  lastErr = '';
+  store.set(HEALTH_KEY, health);
+  refreshDot(ch.id);
+  if (ch.embed) return showEmbed(ch);
+  playToken++;
+  stopStream();
+  const url = ch.streams[0], s = signal.state;
+  const why = healthOf(ch) === 'cors' && !nativeHls ? 'سرور این شبکه پخش توی Chrome رو اجازه نمی‌ده؛ همین صفحه رو توی Safari باز کن، اونجا پخش می‌شه.'
+    : needsVpn(url) && s !== 'vpn' && s !== 'weak' ? 'احتمالاً VPN لازمه.'
+    : !needsVpn(url) && (s === 'vpn' || s === 'weak') ? 'این شبکه داخلیه؛ اگه VPN روشنه ممکنه با خاموش کردنش پخش بشه.'
+    : 'ممکنه لینک پخش عوض شده باشه یا شبکه موقتاً قطع باشه.';
+  setMsg(`<b class="pm-title">توجه</b><span class="pm-body">سیگنال ضعیف است<br><span class="hint">${why}</span></span>
+    <div class="dlg-actions">
+      <button class="btn" type="button" data-pact="retry">↻ دوباره</button>
+      ${ch.urls.length ? '<button class="btn ghost" type="button" data-pact="site">🌐 سایت شبکه</button>' : ''}
+      <button class="btn ghost" type="button" data-pact="next">▲ شبکه‌ی بعدی</button>
+    </div>`);
+  wakePlayer();
+}
+function zap(step){
+  if (!playing || !zapList.length) return;
+  const i = zapList.findIndex(c => c.id === playing.id);
+  playChannel(zapList[(i + step + zapList.length) % zapList.length]);
+}
+function playerAction(act){
+  if (act === 'next') zap(1);
+  else if (act === 'prev') zap(-1);
+  else if (act === 'close') leaveFull();
+  else if (act === 'retry' && playing) { streamIdx = 0; if (playing.streams.length) playStream(); else showEmbed(playing); }
+  else if (act === 'site' && playing) openSite(playing);
+  else if (act === 'subs') toggleSubs();
+  else if (act === 'sleep') cycleSleep();
+  else if (act === 'full') { if (fsElement()) exitFullscreen(); else enterFullscreen(); setTimeout(paintFsBtn, 150); }
+}
+function playerKey(e){
+  const digit = /^(?:Digit|Numpad)(\d)$/.exec(e.code);
+  wakePlayer();
+  if (digit && !e.shiftKey) pushDigit(digit[1]);
+  else if (numBuf && (e.key === 'Enter' || e.code === 'NumpadEnter')) commitNumber(true);
+  else if (e.key === 'Backspace') { if (numBuf) popDigit(); else recallChannel(); }
+  else if (e.key === 'Escape') leaveFull();
+  else if (e.code === 'KeyT') cycleSleep();
+  else if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'ArrowLeft') zap(1);
+  else if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'ArrowRight') zap(-1);
+  else if (e.key === ' ') togglePause();
+  else if (e.code === 'KeyF') playerAction('full');
+  else if (e.code === 'KeyM') video.muted = !video.muted;
+  else if (e.code === 'KeyC') toggleSubs();
+  else if (e.code === 'KeyS' && playing && playing.urls.length) openSite(playing);
+  else return;
+  e.preventDefault();
+}
+video.addEventListener('loadstart', () => loadStep(25, 'اتصال به سرور'));
+video.addEventListener('loadedmetadata', () => loadStep(60, 'دریافت لیست پخش'));
+video.addEventListener('loadeddata', () => loadStep(84, 'بافر تصویر'));
+video.addEventListener('playing', () => {
+  loadDone();
+  clearTimeout(stallTimer);
+  clearTimeout(waitTimer);
+  connOk = true;
+  reconnectTries = 0;
+  keepAwakeOn();
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+  setMsg('');
+  wakePlayer();
+  // پخش واقعاً شروع شد: همین لینک برای دفعه‌ی بعد علامت سالم می‌گیره
+  if (playing && playing.streams.length) {
+    health.res[playing.id] = { s: 'live', i: attempts[streamIdx] | 0 };
+    store.set(HEALTH_KEY, health);
+    refreshDot(playing.id);
+  }
+});
+video.addEventListener('waiting', () => {
+  if (pMsg.hidden && pLoad.hidden) setMsg('⏳');
+  // اگه بیشتر از ۲۵ ثانیه بافر نشد، مثل قطع شدن حساب می‌شه
+  clearTimeout(waitTimer);
+  const tk = playToken;
+  waitTimer = setTimeout(() => { if (tk === playToken && playing && video.readyState < 3) streamFailed(tk); }, 25000);
+});
+video.addEventListener('ended', () => { if (playing && mode !== 'off' && connOk && !video.loop) streamFailed(playToken); });
+video.addEventListener('error', () => { if (nativeHls && playing && !hls) streamFailed(playToken); });
+let pvClickTimer = 0;
+player.addEventListener('dblclick', e => {
+  if (e.target.closest('[data-pact], #pShield')) return;
+  clearTimeout(pvClickTimer);
+  if (mode === 'preview' && playing) goFull(playing); else playerAction('full');
+});
+player.addEventListener('mousemove', wakePlayer);
+player.addEventListener('click', e => {
+  const b = e.target.closest('[data-pact]');
+  if (b) return playerAction(b.dataset.pact);
+  // پیش‌نمایش: کلیک = مکث / ادامه، دابل‌کلیک = تمام‌صفحه؛ تمام‌صفحه: کلیک = مکث / ادامه
+  if (mode === 'preview' && playing) {
+    clearTimeout(pvClickTimer);
+    pvClickTimer = setTimeout(togglePause, 260);
+  }
+  else if (mode === 'full' && playing) togglePause();
+});
+function togglePause(){
+  if (!playing || $('pFrame')) return;
+  if (video.paused) video.play().catch(() => {}); else video.pause();
+}
+video.addEventListener('pause', () => { if (mode !== 'off' && playing && video.src) $('pPause').hidden = false; });
+video.addEventListener('play', () => { $('pPause').hidden = true; });
+// صفحه‌ی وب نمی‌تونه خروجی صدای مک رو عوض کنه؛ برای همین میانبری که توی اپ Shortcuts ساخته شده رو صدا می‌زنیم
+// راهنمای زیر پیش‌نمایش: پیش‌فرض بسته‌ست و انتخاب کاربر یادش می‌مونه
+let helpOn = store.get(K.help, false) === true;
+function paintHelp(){
+  $('help').hidden = !helpOn;
+  $('helpBtn').classList.toggle('on', helpOn);
+}
+function toggleHelp(){ helpOn = !helpOn; store.set(K.help, helpOn); paintHelp(); }
+$('helpBtn').addEventListener('click', toggleHelp);
+paintHelp();
+const AUDIO_SHORTCUT = 'سوییچ صدا';
+$('reloadBtn').addEventListener('click', () => location.reload());
+$('audioBtn').addEventListener('click', () => {
+  location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent(AUDIO_SHORTCUT);
+});
+$('pvBtn').addEventListener('click', () => {
+  previewOn = !previewOn;
+  store.set('sat.preview.v1', previewOn);
+  paintPreviewBtn();
+  if (!previewOn && mode === 'preview') stopPlayback();
+  setNote(previewOn ? 'روی یه شبکه کلیک کن تا اینجا پخش بشه؛ روی پخش: کلیک = مکث، دابل‌کلیک = تمام‌صفحه.' : 'پیش‌نمایش خاموشه؛ با کلیک روی هر شبکه، تمام‌صفحه پخش می‌شه.');
+});
+
+/* ---------- افزودن / ویرایش ---------- */
+let editing = null;
+function openEditor(ch){
+  editing = ch ? byId(ch.id) : null;
+  const builtin = !!(editing && editing.builtin), locked = !!(editing && editing.locked), ro = builtin || locked;
+  $('editTitle').textContent = !ch ? 'افزودن شبکه' : builtin ? ch.name : 'ویرایش شبکه';
+  fCat.innerHTML = CATS.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('') + '<option value="__new">＋ گروه جدید…</option>';
+  $('fNewCat').value = '';
+  $('fNewCat').hidden = true;
+  const links = editing && !locked ? [...editing.streams, ...editing.urls] : [];
+  fName.value = editing ? editing.name : '';
+  fUrl.value = links[0] || '';
+  fUrl2.value = links[1] || '';
+  fCat.value = editing ? editing.cat : (CAT[view] ? view : FALLBACK_CAT);
+  fBadge.value = editing ? (editing.badge || '') : '';
+  fColor.value = editing ? (isHex(editing.color) ? editing.color : autoColor(editing.name)) : PALETTE[custom.length % PALETTE.length];
+  for (const el of [fName, fUrl, fUrl2, fCat, $('fNewCat'), fBadge, fColor]) el.disabled = ro;
+  $('builtinNote').hidden = !builtin;
+  $('lockedNote').hidden = !locked;
+  $('fSave').hidden = ro;
+  $('fDelete').hidden = !editing || builtin;
+  $('fHide').hidden = !builtin;
+  fErr.hidden = true;
+  updateVpnHint();
+  editDlg.showModal();
+  if (!ro) fName.focus();
+}
+function updateVpnHint(){
+  const u = fixUrl(fUrl.value);
+  $('fVpnHint').textContent = !isHttpUrl(u) ? ''
+    : (isStream(u) ? '▶ لینک پخش مستقیمه و داخل همین صفحه پخش می‌شه. ' : '📺 صفحه‌ی سایت داخل کادر پیش‌نمایش باز می‌شه (اگه سایت اجازه نده، دکمه‌ی «باز کردن در تب» هست). ')
+      + (needsVpn(u) ? '🔒 لینک خارجیه و به VPN نیاز داره.' : '🏠 لینک داخلیه و بدون VPN باز می‌شه.');
+}
+editForm.addEventListener('submit', e => {
+  e.preventDefault();
+  if (!editing || !(editing.builtin || editing.locked)) saveEditor();
+});
+function saveEditor(){
+  const url = fixUrl(fUrl.value), url2 = fixUrl(fUrl2.value);
+  const fail = msg => { fErr.textContent = msg; fErr.hidden = false; };
+  if (!fName.value.trim()) return fail('اسم شبکه رو بنویس.');
+  if (!isHttpUrl(url)) return fail('لینک پخش درست نیست؛ باید چیزی شبیه https://... باشه.');
+  if (url2 && !isHttpUrl(url2)) return fail('لینک جایگزین درست نیست.');
+  let catId = fCat.value;
+  if (catId === '__new') {
+    const nm = $('fNewCat').value.trim();
+    if (!nm) return fail('اسم گروه جدید رو بنویس.');
+    const same = CATS.find(c => c.name === nm);
+    if (same) catId = same.id;
+    else {
+      catId = 'g' + Date.now().toString(36);
+      addCustomCat({ id: catId, name: nm });
+      saveCustomCats();
+    }
+  }
+  const data = { name: fName.value, urls: url2 ? [url, url2] : [url], cat: catId, badge: fBadge.value, color: fColor.value };
+  const wasEditing = editing;
+  let ch;
+  if (wasEditing) {
+    // لینک‌ها دست نخوردن → همه‌ی لینک‌ها و embed قبلی می‌مونن (فرم فقط دو لینک اول رو نشون می‌ده)
+    const sameUrls = data.urls.join('\n') === [...wasEditing.streams, ...wasEditing.urls].slice(0, 2).join('\n');
+    ch = cleanChannel({ ...data, id: wasEditing.id, popup: wasEditing.popup, fa: wasEditing.fa, subs: wasEditing.subs,
+      ...(sameUrls ? { urls: wasEditing.urls, streams: wasEditing.streams, embed: wasEditing.embed } : {}) });
+    custom[custom.indexOf(wasEditing)] = ch;
+  } else {
+    ch = cleanChannel(data);
+    custom.push(ch);
+  }
+  saveCustom();
+  syncOrder();
+  editDlg.close();
+  if (!wasEditing && view !== 'all' && view !== ch.cat) setView(ch.cat);
+  selId = ch.id;
+  render();
+  toast(wasEditing ? `«${ch.name}» ذخیره شد.` : `«${ch.name}» اضافه شد.`);
+}
+fCat.addEventListener('change', () => {
+  const nw = fCat.value === '__new';
+  $('fNewCat').hidden = !nw;
+  if (nw) $('fNewCat').focus();
+});
+fUrl.addEventListener('input', updateVpnHint);
+$('fDelete').addEventListener('click', () => {
+  const ch = editing;
+  if (!ch || ch.builtin || !confirm(`«${ch.name}» حذف بشه؟`)) return;
+  custom = custom.filter(c => c !== ch);
+  favList = favList.filter(id => id !== ch.id);
+  saveCustom();
+  saveFavs();
+  syncOrder();
+  saveOrder();
+  editDlg.close();
+  render();
+  toast(`«${ch.name}» حذف شد.`);
+});
+$('fHide').addEventListener('click', () => {
+  const ch = editing;
+  if (!ch || !ch.builtin) return;
+  hidden.add(ch.id);
+  saveHidden();
+  editDlg.close();
+  render();
+  toast(`«${ch.name}» پنهان شد؛ از ⚙ می‌تونی برش گردونی.`);
+});
+editDlg.addEventListener('close', () => { editing = null; });
+
+/* ---------- پشتیبان‌گیری ---------- */
+function exportBackup(){
+  const data = { app: 'satellite-remote', version: 2, exportedAt: new Date().toISOString(), custom: custom.filter(c => !c.locked), categories: customCats.map(c => ({ id: c.id, name: c.name })), favorites: favList, hidden: [...hidden], order };
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+  a.download = 'satellite-backup.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast(custom.some(c => c.locked) ? 'فایل پشتیبان دانلود شد؛ شبکه‌های فایل رمزدار توش نیستن، اون فایل رو جدا نگه دار.' : 'فایل پشتیبان دانلود شد.');
+}
+/* فایل پشتیبان رمزدار: AES-GCM با کلیدی که PBKDF2-SHA256 از رمز می‌سازه (رمز جایی ذخیره نمی‌شه) */
+const b64bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function decryptBackup(enc, pass){
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64bytes(enc.salt), iterations: enc.iter }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64bytes(enc.iv) }, key, b64bytes(enc.data));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+// پنجره‌ی رمز؛ با رمز درست محتوای فایل برمی‌گرده، با انصراف null
+function askPassword(enc){
+  return new Promise(resolve => {
+    const dlg = $('pwDlg'), input = $('pwInput'), err = $('pwErr');
+    let done = false;
+    input.value = '';
+    err.hidden = true;
+    $('pwForm').onsubmit = async e => {
+      e.preventDefault();
+      try { const data = await decryptBackup(enc, input.value); done = true; dlg.close(); resolve(data); }
+      catch { err.hidden = false; input.select(); }
+    };
+    dlg.onclose = () => { input.value = ''; if (!done) resolve(null); };
+    dlg.showModal();
+    input.focus();
+  });
+}
+importFile.addEventListener('change', async () => {
+  const file = importFile.files && importFile.files[0];
+  importFile.value = '';
+  if (!file) return;
+  try {
+    let data = JSON.parse(await file.text()), locked = false;
+    if (data && data.enc === 'aes-gcm') {
+      if (![data.salt, data.iv, data.data].every(x => typeof x === 'string') || !(data.iter >= 100000 && data.iter <= 5000000)) throw new Error('bad enc');
+      data = await askPassword(data);
+      if (!data) return;
+      locked = true;
+    }
+    let added;
+    if (data && Array.isArray(data.custom)) {
+      if (Array.isArray(data.categories)) { for (const c of data.categories) addCustomCat(c); saveCustomCats(); }
+      added = mergeCustom(locked ? data.custom.map(c => ({ ...c, locked: true })) : data.custom);
+      for (const id of strArr(data.favorites)) if (!favList.includes(id)) favList.push(id);
+      for (const id of strArr(data.hidden)) if (BUILTIN_IDS.has(id)) hidden.add(id);
+      if (Array.isArray(data.order)) store.set(K.order, strArr(data.order));
+    } else if (data && Array.isArray(data.channels)) {
+      // خروجی نسخه‌ی اول صفحه (channels-export.json)
+      added = mergeCustom(fromLegacy(data.channels));
+      const all = [...BUILTIN, ...custom];
+      for (const name of strArr(data.favorites)) { const c = all.find(x => x.name === name); if (c && !favList.includes(c.id)) favList.push(c.id); }
+    } else {
+      throw new Error('unknown format');
+    }
+    saveCustom();
+    saveFavs();
+    saveHidden();
+    syncOrder();
+    saveOrder();
+    render();
+    menuDlg.close();
+    toast(`بازگردانی انجام شد؛ ${fa(added)} شبکه‌ی جدید اضافه شد.`);
+  } catch {
+    toast('این فایل، پشتیبان معتبری نیست.');
+  }
+});
+
+/* ---------- رویدادها ---------- */
+// کل ستون ستاره (بالا و پایینش هم) ستاره حساب می‌شه؛ وگرنه کلیک کمی کج، شبکه رو دوباره باز می‌کرد یا تمام‌صفحه می‌کرد
+function onStar(e, row){
+  if (e.target.closest('[data-act="fav"]')) return true;
+  const b = row.querySelector('[data-act="fav"]');
+  if (!b || !e.clientX) return false;
+  const r = b.getBoundingClientRect();
+  return e.clientX >= r.left - 4 && e.clientX <= r.right + 4;
+}
+listEl.addEventListener('click', e => {
+  const row = e.target.closest('.row');
+  if (!row) return;
+  const ch = byId(row.dataset.id);
+  if (!ch) return;
+  if (onStar(e, row)) { selId = ch.id; toggleFav(ch.id); return; }
+  select(ch.id, true);
+  if (!editMode) startChannel(ch);
+});
+listEl.addEventListener('dblclick', e => {
+  const row = e.target.closest('.row');
+  const ch = row && byId(row.dataset.id);
+  if (!ch || onStar(e, row)) return;
+  if (editMode) openEditor(ch);
+  else if (inPage(ch)) goFull(ch);
+});
+
+// کشیدن و رها کردن ردیف‌ها در حالت ویرایش
+let dragId = null;
+listEl.addEventListener('dragstart', e => {
+  const row = e.target.closest('.row');
+  if (!row || !editMode) return;
+  if (sortAZ) { e.preventDefault(); canReorder(); return; }
+  dragId = row.dataset.id;
+  row.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', dragId);
+});
+const clearDrop = () => listEl.querySelectorAll('.drop-before,.drop-after').forEach(r => r.classList.remove('drop-before', 'drop-after'));
+listEl.addEventListener('dragover', e => {
+  const row = e.target.closest('.row');
+  if (!dragId || !row) return;
+  e.preventDefault();
+  const r = row.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+  clearDrop();
+  row.classList.add(after ? 'drop-after' : 'drop-before');
+});
+listEl.addEventListener('drop', e => {
+  const row = e.target.closest('.row');
+  if (!dragId || !row) return;
+  e.preventDefault();
+  const r = row.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+  const id = dragId;
+  dragId = null;
+  selId = id;
+  moveChannel(id, row.dataset.id, after);
+});
+listEl.addEventListener('dragend', () => { dragId = null; clearDrop(); listEl.querySelectorAll('.dragging').forEach(r => r.classList.remove('dragging')); });
+
+infoEl.addEventListener('click', e => {
+  const b = e.target.closest('[data-iact]');
+  if (!b) return;
+  const act = b.dataset.iact, ch = selId && byId(selId);
+  if (act === 'add') openEditor(null);
+  else if (act === 'top' && ch) moveChannelToPos(ch.id, 1);
+  else if (act === 'bottom' && ch) moveChannelToPos(ch.id, 999999);
+  else if (act === 'up') nudge(-1);
+  else if (act === 'down') nudge(1);
+  else if (act === 'goto' && ch) {
+    const inp = $('moveToNum');
+    if (inp) moveChannelToPos(ch.id, inp.value);
+  }
+  else if (act === 'edit' && ch) openEditor(ch);
+});
+infoEl.addEventListener('keydown', e => {
+  if (e.target.id === 'moveToNum' && e.key === 'Enter') {
+    e.preventDefault();
+    const ch = selId && byId(selId);
+    if (ch) moveChannelToPos(ch.id, e.target.value);
+  }
+});
+
+// منوی همه‌ی دسته‌ها: روی اسم دسته بزن تا همه باز بشن و مستقیم انتخاب کنی
+const catMenu = $('catMenu');
+const catMenuOpen = () => !catMenu.hidden;
+function closeCatMenu(refocus){
+  catMenu.hidden = true;
+  $('catTitle').closest('.phead').classList.remove('open');
+  $('catTitle').setAttribute('aria-expanded', 'false');
+  if (refocus) $('catTitle').focus();
+}
+function openCatMenu(){
+  const all = numbered();
+  const count = v => v === 'all' ? all.length : v === 'fav' ? all.filter(c => favList.includes(c.id)).length : all.filter(c => c.cat === v).length;
+  catMenu.innerHTML = VIEWS().map((v, i) =>
+    (i === 2 ? '<hr>' : '') + `<button type="button" role="menuitem" data-view="${esc(v)}"${v === view ? ' class="cur"' : ''}><span>${esc(viewName(v))}</span><small>${fa(count(v))} شبکه</small></button>`).join('');
+  catMenu.hidden = false;
+  $('catTitle').closest('.phead').classList.add('open');
+  $('catTitle').setAttribute('aria-expanded', 'true');
+  const cur = catMenu.querySelector('.cur');
+  if (cur) { cur.focus({ preventScroll: true }); cur.scrollIntoView({ block: 'nearest' }); }
+}
+$('catTitle').setAttribute('tabindex', '0');
+$('catTitle').setAttribute('role', 'button');
+$('catTitle').setAttribute('aria-haspopup', 'menu');
+$('catTitle').setAttribute('aria-expanded', 'false');
+$('catTitle').addEventListener('click', e => {
+  if (e.target.closest('#fClear')) { filter = 'all'; render(); return; }
+  if (catMenuOpen()) closeCatMenu(); else openCatMenu();
+});
+$('catTitle').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (!catMenuOpen()) openCatMenu(); }
+});
+catMenu.addEventListener('click', e => {
+  const b = e.target.closest('button[data-view]');
+  if (!b) return;
+  closeCatMenu();
+  setView(b.dataset.view);
+});
+catMenu.addEventListener('keydown', e => {
+  const items = [...catMenu.querySelectorAll('button')];
+  const i = items.indexOf(document.activeElement);
+  let handled = true;
+  if (e.key === 'ArrowDown') items[(i + 1) % items.length].focus();
+  else if (e.key === 'ArrowUp') items[(i - 1 + items.length) % items.length].focus();
+  else if (e.key === 'Home') items[0].focus();
+  else if (e.key === 'End') items[items.length - 1].focus();
+  else if (e.key === 'Escape' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') closeCatMenu(true);
+  else handled = false;
+  if (handled) { e.preventDefault(); e.stopPropagation(); }
+});
+// کلیک بیرون از منو یا گرفتن فوکوس: بسته می‌شه
+document.addEventListener('click', e => { if (catMenuOpen() && !e.target.closest('.phead')) closeCatMenu(); });
+
+$('catPrev').addEventListener('click', () => pageChannels(-1));
+$('catNext').addEventListener('click', () => pageChannels(1));
+function pressRed(){
+  const ids = Object.keys(FILTERS);
+  filter = ids[(ids.indexOf(filter) + 1) % ids.length];
+  render();
+}
+function pressGreen(){ setView(view === 'fav' ? 'all' : 'fav'); }
+function pressYellow(){ sortAZ = !sortAZ; store.set(K.sort, sortAZ); render(); }
+function pressBlue(){
+  editMode = !editMode;
+  if (editMode && sortAZ) { sortAZ = false; store.set(K.sort, false); }
+  render();
+  if (editMode) toast('حالت ویرایش: ردیف‌ها رو بکش و جابه‌جا کن، یا شبکه‌ی تازه اضافه کن.');
+}
+$('kRed').addEventListener('click', pressRed);
+$('kGreen').addEventListener('click', pressGreen);
+$('kYellow').addEventListener('click', pressYellow);
+$('kBlue').addEventListener('click', pressBlue);
+
+searchEl.addEventListener('input', () => { if (playing) selId = playing.id; render(); });
+function paintMenuCats(){
+  $('mCats').hidden = !customCats.length;
+  $('mCatList').innerHTML = customCats.map(c => `<li><span>${esc(c.name)} <small>(${fa(custom.filter(x => x.cat === c.id).length)} شبکه)</small></span><button type="button" data-delcat="${esc(c.id)}">حذف گروه</button></li>`).join('');
+}
+$('mCatList').addEventListener('click', e => {
+  const id = e.target.dataset && e.target.dataset.delcat;
+  const cat = id && CAT[id];
+  if (!cat || !cat.custom) return;
+  const n = custom.filter(x => x.cat === id).length;
+  if (!confirm(`گروه «${cat.name}» حذف بشه؟${n ? ` ${fa(n)} شبکه‌ی داخلش به گروه «${CAT[FALLBACK_CAT].name}» می‌رن.` : ''}`)) return;
+  custom = custom.map(x => x.cat === id ? { ...x, cat: FALLBACK_CAT } : x);
+  CATS.splice(CATS.indexOf(cat), 1);
+  delete CAT[id];
+  customCats = customCats.filter(c => c !== cat);
+  saveCustom();
+  saveCustomCats();
+  if (view === id) setView('all');
+  syncOrder();
+  render();
+  paintMenuCats();
+});
+$('menuBtn').addEventListener('click', () => {
+  paintMenuCats();
+  paintSubMenu();
+  $('mHiddenCount').textContent = hidden.size ? `(${fa(hidden.size)})` : '';
+  $('mUnhide').disabled = !hidden.size;
+  menuDlg.showModal();
+});
+$('mAdd').addEventListener('click', () => { menuDlg.close(); openEditor(null); });
+$('mExport').addEventListener('click', exportBackup);
+$('mImport').addEventListener('click', () => importFile.click());
+$('mUnhide').addEventListener('click', () => {
+  hidden.clear();
+  saveHidden();
+  render();
+  menuDlg.close();
+  toast('شبکه‌های پنهان‌شده برگشتن.');
+});
+$('mResetOrder').addEventListener('click', () => {
+  if (!confirm('ترتیب همه‌ی شبکه‌ها به حالت اول برگرده؟')) return;
+  store.set(K.order, []);
+  syncOrder();
+  saveOrder();
+  render();
+  menuDlg.close();
+  toast('ترتیب شبکه‌ها برگشت به حالت اول.');
+});
+sigBtn.addEventListener('click', () => { renderSignalDlg(); signalDlg.showModal(); });
+$('scanText').addEventListener('click', () => scanAll(true));
+$('recheckBtn').addEventListener('click', () => { lastCheck = Date.now(); checkSignal(); });
+$('warnOpen').addEventListener('click', () => {
+  if ($('warnSkip').checked) skipWarn = true;
+  warnDlg.close();
+  const action = pendingAction;
+  pendingAction = null;
+  if (action) action();
+});
+document.addEventListener('click', e => {
+  const closer = e.target.closest('[data-close]');
+  if (closer) closer.closest('dialog').close();
+  else if (e.target.tagName === 'DIALOG') e.target.close(); // کلیک بیرون از پنجره
+});
+
+document.addEventListener('keydown', e => {
+  if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (document.querySelector('dialog[open]')) return;
+  if (mode === 'full') { playerKey(e); return; }
+  if (catMenuOpen()) { if (e.key === 'Escape') { e.preventDefault(); closeCatMenu(true); } return; }
+  const t = e.target;
+  if (t === searchEl) {
+    if (e.key === 'Escape') { searchEl.value = ''; render(); searchEl.blur(); }
+    else if (e.key === 'ArrowDown' || e.key === 'Enter') { e.preventDefault(); searchEl.blur(); }
+    return;
+  }
+  if (t.closest && t.closest('input, select, textarea')) return;
+  // Enter یا فاصله روی یه دکمه (مثل فلش دسته‌ها) فقط همون دکمه رو می‌زنه، نه پخش شبکه‌ی انتخاب‌شده
+  if ((e.key === 'Enter' || e.key === ' ') && t.closest && t.closest('button')) return;
+  const digit = /^(?:Digit|Numpad)(\d)$/.exec(e.code);
+  if (digit && !e.shiftKey) { e.preventDefault(); pushDigit(digit[1]); return; }
+  const ch = selId && byId(selId);
+  let handled = true;
+  if (numBuf && (e.key === 'Enter' || e.code === 'NumpadEnter')) commitNumber(true);
+  else if (e.key === 'Enter' && ch && !editMode) startChannel(ch);
+  else if (e.key === 'Enter' && ch && editMode) openEditor(ch);
+  else if (e.key === 'ArrowUp') e.shiftKey && editMode ? nudge(-1) : moveSel(-1);
+  else if (e.key === 'ArrowDown') e.shiftKey && editMode ? nudge(1) : moveSel(1);
+  else if (e.key === 'PageUp') pageChannels(-1);
+  else if (e.key === 'PageDown') pageChannels(1);
+  else if (e.key === 'Home') e.shiftKey && editMode && ch ? moveChannelToPos(ch.id, 1) : moveSel(-1e6);
+  else if (e.key === 'End') e.shiftKey && editMode && ch ? moveChannelToPos(ch.id, 999999) : moveSel(1e6);
+  else if (e.key === 'ArrowLeft') pageChannels(-1);
+  else if (e.key === 'ArrowRight') pageChannels(1);
+  else if (e.key === 'Backspace') { if (numBuf) popDigit(); else recallChannel(); }
+  else if (e.key === 'Escape') { cancelNumber(); if (editMode) pressBlue(); }
+  else if (e.code === 'KeyH') toggleHelp();
+  else if (e.code === 'Slash') { searchEl.focus(); searchEl.select(); }
+  else if (e.code === 'KeyF' && ch) toggleFav(ch.id);
+  else if (e.code === 'KeyS' && ch) openSite(ch);
+  else if (e.code === 'KeyR') pressRed();
+  else if (e.code === 'KeyG') pressGreen();
+  else if (e.code === 'KeyY') pressYellow();
+  else if (e.code === 'KeyB') pressBlue();
+  else handled = false;
+  if (handled) e.preventDefault();
+});
+
+/* ---------- حس تلویزیون: شبکه‌ی قبلی، کلیدهای رسانه، بیدار موندن، تایمر خواب ---------- */
+let prevId = null, connOk = false, reconnectTries = 0, reconnectTimer = 0, waitTimer = 0;
+const RECONNECT_WAIT = [2000, 4000, 8000, 15000];
+function popDigit(){
+  numBuf = numBuf.slice(0, -1);
+  if (!numBuf) { cancelNumber(); return; }
+  numEl.innerHTML = esc(numBuf) + '<span>_</span>';
+  clearTimeout(numTimer);
+  numTimer = setTimeout(() => commitNumber('auto'), 1000);
+}
+// مثل دکمه‌ی «قبلی» کنترل تلویزیون: برگشت به شبکه‌ای که قبل از این بود
+function recallChannel(){
+  const c = prevId && byId(prevId);
+  if (!c || !inPage(c)) { toast('شبکه‌ی قبلی‌ای نیست.'); return; }
+  if (mode === 'full') playChannel(c);
+  else { if (!shown.some(x => x.id === c.id)) setView('all'); select(c.id); previewChannel(c); }
+}
+// صفحه‌ی خاموشی مانیتور موقع پخش
+let wakeLock = null;
+async function keepAwakeOn(){
+  try {
+    if (!('wakeLock' in navigator) || wakeLock) return;
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch { wakeLock = null; }
+}
+function keepAwakeOff(){ try { if (wakeLock) wakeLock.release(); } catch { /* */ } wakeLock = null; }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && playing && mode !== 'off') keepAwakeOn(); });
+// کلیدهای رسانه‌ی کیبورد و AirPods + اسم شبکه توی «Now Playing» مک
+function mediaZap(step){ zap(step); if (mode !== 'full' && playing) select(playing.id); }
+function updateMediaSession(ch){
+  if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: ch.name,
+      artist: ch.fa || 'فهرست شبکه‌ها',
+      album: CAT[ch.cat] ? CAT[ch.cat].name : 'شبکه‌ها',
+      artwork: [{ src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }],
+    });
+  } catch { /* */ }
+}
+if ('mediaSession' in navigator) {
+  const ms = (a, fn) => { try { navigator.mediaSession.setActionHandler(a, fn); } catch { /* این مرورگر این کلید رو نداره */ } };
+  ms('nexttrack', () => mediaZap(1));
+  ms('previoustrack', () => mediaZap(-1));
+  ms('play', () => { if (video.paused) togglePause(); });
+  ms('pause', () => { if (!video.paused) togglePause(); });
+  ms('stop', () => { if (mode === 'full') leaveFull(); else if (mode !== 'off') stopPlayback(); });
+}
+// تایمر خواب
+let sleepTimer = 0, sleepWarn = 0, sleepEnd = 0;
+const SLEEP_STEPS = [0, 30, 60, 90, 120];
+const hhmm = t => new Date(t).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+function setSleep(min){
+  clearTimeout(sleepTimer); clearTimeout(sleepWarn);
+  sleepEnd = 0;
+  if (min > 0) {
+    sleepEnd = Date.now() + min * 60000;
+    sleepTimer = setTimeout(() => {
+      sleepEnd = 0;
+      if (mode === 'full') leaveFull();
+      if (mode !== 'off') stopPlayback();
+      keepAwakeOff();
+      paintSleep();
+      toast('تایمر خواب: پخش خاموش شد. شب‌بخیر 🌙');
+    }, min * 60000);
+    if (min > 1) sleepWarn = setTimeout(() => toast('یک دقیقه‌ی دیگه پخش خاموش می‌شه.'), (min - 1) * 60000);
+  }
+  paintSleep();
+}
+function cycleSleep(){
+  const left = sleepEnd ? Math.round((sleepEnd - Date.now()) / 60000) : 0;
+  const cur = sleepEnd ? SLEEP_STEPS.reduce((b, x) => (x > 0 && Math.abs(x - left) < Math.abs(b - left) ? x : b), SLEEP_STEPS[1]) : 0;
+  const next = SLEEP_STEPS[(SLEEP_STEPS.indexOf(cur) + 1) % SLEEP_STEPS.length];
+  setSleep(next);
+  toast(next ? `تایمر خواب: ${fa(next)} دقیقه دیگه خاموش می‌شه (ساعت ${hhmm(sleepEnd)}).` : 'تایمر خواب خاموش شد.');
+}
+function paintSleep(){
+  const on = !!sleepEnd;
+  $('pSleepT').textContent = on ? ' ' + fa(Math.max(1, Math.round((sleepEnd - Date.now()) / 60000))) : '';
+  $('pSleep').classList.toggle('on', on);
+  $('sleepStatus').textContent = on ? `پخش ساعت ${hhmm(sleepEnd)} خاموش می‌شه.` : '';
+  const near = [15, 30, 60, 90, 120].find(x => on && Math.abs(x - (sleepEnd - Date.now()) / 60000) < 1.5);
+  $('sleepSel').value = on ? String(near || 0) : '0';
+}
+$('sleepSel').addEventListener('change', () => setSleep(+$('sleepSel').value));
+setInterval(() => { if (sleepEnd) paintSleep(); }, 30000);
+
+/* ---------- شروع ---------- */
+// آخرین شبکه‌ای که دیدی انتخاب می‌شه (چیزی پخش نمی‌شه تا خودت کلیک کنی)
+{ const last = store.get('sat.last.v1', null); if (last && typeof last === 'string' && byId(last)) selId = last; }
+render();
+scrollToSel();
+paintSignal();
+paintScan();
+paintPreviewBtn();
+initSubs();
+maybeCheck();
+setInterval(() => maybeCheck(50000), 60000);
+document.addEventListener('visibilitychange', () => maybeCheck(10000));
+window.addEventListener('focus', () => maybeCheck(10000));
+window.addEventListener('online', () => maybeCheck());
+window.addEventListener('offline', () => maybeCheck());
+})();
+</script>
+</body>
+</html>
