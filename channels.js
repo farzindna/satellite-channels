@@ -71,16 +71,16 @@ window.SAT_CHANNELS = [
 window.SAT_ACCESS = {
   defaultDays: 90,
   users: {
-    "user-01": { "expires": "2027-01-29", "active": true },
-    "user-02": { "expires": "2027-01-29", "active": true },
-    "user-03": { "expires": "2027-01-29", "active": true },
-    "user-04": { "expires": "2027-01-29", "active": true },
-    "user-05": { "expires": "2027-01-29", "active": true },
-    "user-06": { "expires": "2027-01-29", "active": true },
-    "user-07": { "expires": "2027-01-29", "active": true },
-    "user-08": { "expires": "2027-01-29", "active": true },
-    "user-09": { "expires": "2027-01-29", "active": true },
-    "user-10": { "expires": "2027-01-29", "active": true }
+    "user-01": { "active": true, "durationDays": 90, "expires": null },
+    "user-02": { "active": true, "durationDays": 90, "expires": null },
+    "user-03": { "active": true, "durationDays": 90, "expires": null },
+    "user-04": { "active": true, "durationDays": 90, "expires": null },
+    "user-05": { "active": true, "durationDays": 90, "expires": null },
+    "user-06": { "active": true, "durationDays": 90, "expires": null },
+    "user-07": { "active": true, "durationDays": 90, "expires": null },
+    "user-08": { "active": true, "durationDays": 90, "expires": null },
+    "user-09": { "active": true, "durationDays": 90, "expires": null },
+    "user-10": { "active": true, "durationDays": 90, "expires": null }
   }
 };
 }

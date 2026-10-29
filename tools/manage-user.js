@@ -3,12 +3,12 @@
  * ابزار مدیریت مهلت و اعتبار یوزرها در satellite-channels
  * 
  * دستورها:
- *   node tools/manage-user.js                 نمایش وضعیت همه یوزرها
- *   node tools/manage-user.js extend user-01  تمدید ۹۰ روزه
- *   node tools/manage-user.js extend user-01 30 تمدید ۳۰ روزه
- *   node tools/manage-user.js close user-01   بستن و غیرفعال‌سازی فوری
- *   node tools/manage-user.js activate user-01 فعال‌سازی مجدد
- *   node tools/manage-user.js set user-01 2027-04-01 تنظیم تاریخ دقیق
+ *   node tools/manage-user.js                   نمایش وضعیت همه یوزرها
+ *   node tools/manage-user.js close user-01     بستن و غیرفعال‌سازی فوری
+ *   node tools/manage-user.js activate user-01   فعال‌سازی مجدد
+ *   node tools/manage-user.js extend user-01 30 تمدید ۳۰ روز اضافه
+ *   node tools/manage-user.js float user-01 90  تنظیم روی شناور (۹۰ روز از اولین ورود)
+ *   node tools/manage-user.js set user-01 2027-04-01 تنظیم تاریخ تقویمی ثابت
  */
 
 const fs = require('fs');
@@ -28,6 +28,7 @@ const cmd = (args[0] || 'list').toLowerCase();
 const userId = args[1];
 
 function formatShamsi(dateStr) {
+  if (!dateStr) return '—';
   try {
     return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(dateStr));
   } catch {
@@ -36,6 +37,7 @@ function formatShamsi(dateStr) {
 }
 
 function calcDays(expStr) {
+  if (!expStr) return null;
   const exp = new Date(expStr).getTime();
   const now = Date.now();
   return Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
@@ -49,14 +51,26 @@ function save() {
 
 if (cmd === 'list') {
   console.log('\n--- فهرست کاربران و وضعیت اعتبار ---');
-  console.log('یوزر\tوضعیت\tروز مانده\tتاریخ انقضا\tشمسی\tتوضیح');
-  console.log('------------------------------------------------------------------------');
+  console.log('یوزر\tوضعیت\tنوع مهلت / روز مانده\tتاریخ انقضا\tشمسی\tتوضیح');
+  console.log('----------------------------------------------------------------------------------------');
   for (const [id, u] of Object.entries(access.users)) {
-    const days = calcDays(u.expires);
-    const st = u.active === false ? 'بسته (غیرفعال)' : (days <= 0 ? 'منقضی' : (days <= 10 ? 'نزدیک انقضا' : 'فعال'));
-    console.log(`${id}\t${st}\t${days} روز\t${u.expires}\t${formatShamsi(u.expires)}\t${u.note || ''}`);
+    const isFloating = !u.expires;
+    let stText = '';
+    let expText = '';
+    if (u.active === false) {
+      stText = '⛔ بسته (غیرفعال)';
+      expText = isFloating ? `شناور (${u.durationDays || 90} روز)` : `${calcDays(u.expires)} روز`;
+    } else if (isFloating) {
+      stText = '✅ فعال';
+      expText = `شناور (${u.durationDays || 90} روز از زمان ورود)`;
+    } else {
+      const days = calcDays(u.expires);
+      stText = days <= 0 ? '❌ منقضی' : (days <= 10 ? '⚠️ نزدیک انقضا' : '✅ فعال');
+      expText = `${days} روز مانده`;
+    }
+    console.log(`${id}\t${stText}\t${expText}\t${u.expires || 'شناور'}\t${formatShamsi(u.expires)}\t${u.note || ''}`);
   }
-  console.log('------------------------------------------------------------------------\n');
+  console.log('----------------------------------------------------------------------------------------\n');
   process.exit(0);
 }
 
@@ -66,20 +80,25 @@ if (!userId) {
 }
 
 if (!access.users[userId]) {
-  access.users[userId] = { expires: new Date().toISOString().slice(0, 10), active: true, note: '' };
+  access.users[userId] = { active: true, durationDays: 90, expires: null, note: '' };
 }
 
 const user = access.users[userId];
 
 if (cmd === 'extend') {
-  const addDays = parseInt(args[2], 10) || 90;
-  const curExp = new Date(user.expires).getTime();
-  const base = curExp > Date.now() ? curExp : Date.now();
-  const newExp = new Date(base + addDays * 24 * 60 * 60 * 1000);
-  user.expires = newExp.toISOString().slice(0, 10);
+  const addDays = parseInt(args[2], 10) || 30;
+  if (user.expires) {
+    const curExp = new Date(user.expires).getTime();
+    const base = curExp > Date.now() ? curExp : Date.now();
+    const newExp = new Date(base + addDays * 24 * 60 * 60 * 1000);
+    user.expires = newExp.toISOString().slice(0, 10);
+    console.log(`کاربر ${userId} تمدید شد. انقضای تقویمی جدید: ${user.expires} (${formatShamsi(user.expires)})`);
+  } else {
+    user.durationDays = (user.durationDays || 90) + addDays;
+    console.log(`کاربر ${userId} تمدید شد. مهلت شناور جدید: ${user.durationDays} روز از زمان ورود.`);
+  }
   user.active = true;
   save();
-  console.log(`کاربر ${userId} به مدت ${addDays} روز تمدید شد. انقضای جدید: ${user.expires} (${formatShamsi(user.expires)})`);
 } else if (cmd === 'close') {
   user.active = false;
   save();
@@ -88,6 +107,13 @@ if (cmd === 'extend') {
   user.active = true;
   save();
   console.log(`کاربر ${userId} فعال شد.`);
+} else if (cmd === 'float') {
+  const days = parseInt(args[2], 10) || 90;
+  user.expires = null;
+  user.durationDays = days;
+  user.active = true;
+  save();
+  console.log(`کاربر ${userId} روی حالت شناور (${days} روز از زمان اولین ورود) تنظیم شد.`);
 } else if (cmd === 'set') {
   const targetDate = args[2];
   if (!targetDate || !/^\d{4}-\d{2}-\d{2}$/.test(targetDate)) {
