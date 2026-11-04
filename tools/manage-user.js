@@ -4,6 +4,9 @@
  * 
  * دستورها:
  *   node tools/manage-user.js                   نمایش وضعیت همه یوزرها
+ *   node tools/manage-user.js free              تنظیم کل سیستم روی حالت آزاد و نامحدود
+ *   node tools/manage-user.js lock              فعال‌سازی سیستم کنترل محدودیت و مهلت
+ *   node tools/manage-user.js unlimited user-01 تنظیم کاربر روی نامحدود همیشگی
  *   node tools/manage-user.js close user-01     بستن و غیرفعال‌سازی فوری
  *   node tools/manage-user.js activate user-01   فعال‌سازی مجدد
  *   node tools/manage-user.js extend user-01 30 تمدید ۳۰ روز اضافه
@@ -49,17 +52,37 @@ function save() {
   console.log('فایل access.json به‌روز شد.');
 }
 
+if (cmd === 'free') {
+  access.enforceAccess = false;
+  save();
+  console.log('🟢 سیستم با موفقیت روی «حالت آزاد و نامحدود برای همه» تنظیم شد.');
+  process.exit(0);
+}
+
+if (cmd === 'lock') {
+  access.enforceAccess = true;
+  save();
+  console.log('🟡 سیستم با موفقیت روی «حالت کنترل محدودیت و مهلت» فعال شد.');
+  process.exit(0);
+}
+
 if (cmd === 'list') {
+  const isEnforced = access.enforceAccess !== false;
   console.log('\n--- فهرست کاربران و وضعیت اعتبار ---');
+  console.log(`وضعیت سراسری سیستم: ${isEnforced ? '🟡 کنترل محدودیت و مهلت فعال است' : '🟢 آزاد و نامحدود برای همه (بدون مهلت و هشدار)'}`);
   console.log('یوزر\tوضعیت\tنوع مهلت / روز مانده\tتاریخ انقضا\tشمسی\tتوضیح');
   console.log('----------------------------------------------------------------------------------------');
   for (const [id, u] of Object.entries(access.users)) {
-    const isFloating = !u.expires;
+    const isUnlimited = u.unlimited === true || u.expires === 'never' || u.durationDays >= 99999;
+    const isFloating = !u.expires && !isUnlimited;
     let stText = '';
     let expText = '';
     if (u.active === false) {
       stText = '⛔ بسته (غیرفعال)';
-      expText = isFloating ? `شناور (${u.durationDays || 90} روز)` : `${calcDays(u.expires)} روز`;
+      expText = isUnlimited ? 'نامحدود' : (isFloating ? `شناور (${u.durationDays || 90} روز)` : `${calcDays(u.expires)} روز`);
+    } else if (isUnlimited) {
+      stText = '✅ فعال';
+      expText = '∞ نامحدود (همیشگی)';
     } else if (isFloating) {
       stText = '✅ فعال';
       expText = `شناور (${u.durationDays || 90} روز از زمان ورود)`;
@@ -68,7 +91,7 @@ if (cmd === 'list') {
       stText = days <= 0 ? '❌ منقضی' : (days <= 10 ? '⚠️ نزدیک انقضا' : '✅ فعال');
       expText = `${days} روز مانده`;
     }
-    console.log(`${id}\t${stText}\t${expText}\t${u.expires || 'شناور'}\t${formatShamsi(u.expires)}\t${u.note || ''}`);
+    console.log(`${id}\t${stText}\t${expText}\t${isUnlimited ? 'نامحدود' : (u.expires || 'شناور')}\t${formatShamsi(u.expires)}\t${u.note || ''}`);
   }
   console.log('----------------------------------------------------------------------------------------\n');
   process.exit(0);
@@ -85,7 +108,14 @@ if (!access.users[userId]) {
 
 const user = access.users[userId];
 
-if (cmd === 'extend') {
+if (cmd === 'unlimited') {
+  user.unlimited = true;
+  user.expires = null;
+  user.durationDays = 99999;
+  user.active = true;
+  save();
+  console.log(`کاربر ${userId} روی حالت «∞ نامحدود همیشگی» تنظیم شد.`);
+} else if (cmd === 'extend') {
   const addDays = parseInt(args[2], 10) || 30;
   if (user.expires) {
     const curExp = new Date(user.expires).getTime();
@@ -109,6 +139,7 @@ if (cmd === 'extend') {
   console.log(`کاربر ${userId} فعال شد.`);
 } else if (cmd === 'float') {
   const days = parseInt(args[2], 10) || 90;
+  user.unlimited = false;
   user.expires = null;
   user.durationDays = days;
   user.active = true;
@@ -120,6 +151,7 @@ if (cmd === 'extend') {
     console.error('تاریخ نامعتبر است. فرمت صحیح: YYYY-MM-DD');
     process.exit(1);
   }
+  user.unlimited = false;
   user.expires = targetDate;
   user.active = true;
   save();

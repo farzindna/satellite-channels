@@ -69,6 +69,7 @@ window.SAT_CHANNELS = [
 ];
 
 window.SAT_ACCESS = {
+  enforceAccess: false,
   defaultDays: 90,
   users: {
     "user-01": { "active": true, "durationDays": 90, "expires": null },

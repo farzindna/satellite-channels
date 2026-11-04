@@ -739,7 +739,7 @@
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 
-<script src="channels.js?v=90"></script>
+<script src="channels.js?v=91"></script>
 <script>
 (() => {
 'use strict';
@@ -896,6 +896,7 @@ let userAccess = {
 };
 
 function isUserExpired(){
+  if (userAccess && userAccess.status === 'unrestricted') return false;
   return userAccess.hasUser && userAccess.isExpired;
 }
 
@@ -920,7 +921,46 @@ async function checkAccess(){
   }
 
   const access = await loadAccessData();
+
+  // در صورتی که سیستم روی حالت آزاد و نامحدود سراسری باشد (enforceAccess: false)
+  if (access && access.enforceAccess === false) {
+    const prevExpired = userAccess.isExpired;
+    userAccess = {
+      hasUser: true,
+      owner,
+      active: true,
+      days: 99999,
+      expiresAt: null,
+      isExpired: false,
+      status: 'unrestricted'
+    };
+    updateUserUI();
+    if (prevExpired && typeof render === 'function') {
+      render();
+    }
+    return userAccess;
+  }
+
   const userEntry = access && access.users && access.users[owner] ? access.users[owner] : null;
+
+  // در صورتی که کاربر خاصی به صورت نامحدود تنظیم شده باشد
+  if (userEntry && (userEntry.unlimited === true || userEntry.expires === 'never' || userEntry.durationDays >= 99999)) {
+    const prevExpired = userAccess.isExpired;
+    userAccess = {
+      hasUser: true,
+      owner,
+      active: true,
+      days: 99999,
+      expiresAt: null,
+      isExpired: false,
+      status: 'unrestricted'
+    };
+    updateUserUI();
+    if (prevExpired && typeof render === 'function') {
+      render();
+    }
+    return userAccess;
+  }
 
   let active = true;
   let expiresAt = null;
@@ -970,7 +1010,7 @@ function updateUserUI(){
   const pill = $('userPill'), daysText = $('userDaysText');
   const box = $('userStatusBox'), title = $('userStatusTitle'), sub = $('userStatusSub');
 
-  if (!userAccess.hasUser) {
+  if (!userAccess.hasUser || userAccess.status === 'unrestricted') {
     if (pill) pill.hidden = true;
     if (box) box.hidden = true;
     return;
@@ -1018,7 +1058,11 @@ function updateUserUI(){
 }
 
 function showWarningNotice(){
-  return new Promise(resolve => {
+  return new Promise(async resolve => {
+    try {
+      const access = await loadAccessData();
+      if (access && access.enforceAccess === false) return resolve();
+    } catch {}
     const dlg = $('warnNoticeDlg'), ok = $('warnNoticeOk');
     if (!dlg || !ok) return resolve();
     let done = false;
